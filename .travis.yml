@@ -1,0 +1,11 @@
+language: node_js
+node_js: 10.15.3
+before_deploy: travis/before_deploy.sh
+deploy:
+  - provider: s3
+    access_key_id: "AKIAZLVOUXM6CV6AIX35"
+    secret_access_key: "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"
+    bucket: "moonlight-client"
+    skip_cleanup: true
+    local_dir: client/build
+    region: us-east-1
