@@ -1,5 +1,6 @@
 language: node_js
 node_js: 10.15.3
+script: skip
 before_deploy: travis/before_deploy.sh
 deploy:
   - provider: s3
@@ -9,6 +10,5 @@ deploy:
     skip_cleanup: true
     local_dir: client/build
     region: us-east-1
-    script: skip
     on: 
       branch: master
