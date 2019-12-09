@@ -9,3 +9,6 @@ deploy:
     skip_cleanup: true
     local_dir: client/build
     region: us-east-1
+    script: skip
+    on: 
+      branch: master
