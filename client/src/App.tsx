@@ -16,11 +16,16 @@ const AppHeader = styled.header`
   color: white;
 `;
 
+const MainHeader = styled.p`
+  font-size: 32px;
+`;
+
 const App: React.FC = () => {
   return (
     <AppContainer>
       <AppHeader>
-        MOONLIGHT HEALTH
+        <p>Offer more. Worry less.</p>
+        <MainHeader>MOONLIGHT HEALTH</MainHeader>
       </AppHeader>
     </AppContainer>
   );

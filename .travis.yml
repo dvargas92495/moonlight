@@ -10,5 +10,7 @@ deploy:
     skip_cleanup: true
     local_dir: client/build
     region: us-east-1
+    delete: true 
     on: 
       branch: master
+post_deploy: travis/post_deploy.sh
