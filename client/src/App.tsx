@@ -1,5 +1,21 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+`;
 
 const AppContainer = styled.div`
   text-align: center;
@@ -23,6 +39,7 @@ const MainHeader = styled.p`
 const App: React.FC = () => {
   return (
     <AppContainer>
+      <GlobalStyle/>
       <AppHeader>
         <p>Offer more. Worry less.</p>
         <MainHeader>MOONLIGHT HEALTH</MainHeader>

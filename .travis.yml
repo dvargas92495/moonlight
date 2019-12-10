@@ -13,4 +13,4 @@ deploy:
     delete: true 
     on: 
       branch: master
-post_deploy: travis/post_deploy.sh
+after_deploy: travis/after_deploy.sh
