@@ -8,6 +8,7 @@ before_deploy: travis/before_deploy.sh
 deploy:
   provider: sript
   script: travis/deploy.sh
+  skip_cleanup: true
   on: 
     branch: master
 after_deploy: travis/after_deploy.sh
