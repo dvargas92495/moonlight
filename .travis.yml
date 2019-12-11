@@ -10,6 +10,6 @@ script: skip
 before_deploy: travis/before_deploy.sh
 deploy:
   - travis/deploy.sh
-    on: 
-      branch: master
+  on: 
+    branch: master
 after_deploy: travis/after_deploy.sh
