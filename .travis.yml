@@ -1,8 +1,5 @@
-language: 
-  - node_js
-  - python
+language: node_js
 node_js: 10.15.3
-python: 3.7
 env:
   - AWS_CONFIG_FILE=.awsconfig
 install: travis/install.sh
