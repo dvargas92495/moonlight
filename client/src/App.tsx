@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
-import {
-  BrowserRouter,
-  Switch,
-  Route
-} from "react-router-dom";
-import { createGlobalStyle } from 'styled-components';
-import HomePage from './components/HomePage';
-import DentistPage from './components/DentistPage';
+import React, { useState } from "react";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { createGlobalStyle } from "styled-components";
+import HomePage from "./components/HomePage";
+import DentistPage from "./components/DentistPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -19,26 +15,26 @@ const GlobalStyle = createGlobalStyle`
   }
 
   code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
   }
 `;
 
 const App: React.FC = () => {
-  const [globalUuid, setGlobalUuid] = useState('');
+  const [globalUuid, setGlobalUuid] = useState("");
   return (
     <BrowserRouter>
-      <GlobalStyle/>
+      <GlobalStyle />
       <Switch>
         <Route exact path="/">
-          <HomePage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid}/>
+          <HomePage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid} />
         </Route>
         <Route path="/dentists">
-          <DentistPage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid}/>
+          <DentistPage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid} />
         </Route>
       </Switch>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
