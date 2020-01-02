@@ -1,5 +1,12 @@
-import React from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
+import React, { useState } from 'react';
+import {
+  BrowserRouter,
+  Switch,
+  Route
+} from "react-router-dom";
+import { createGlobalStyle } from 'styled-components';
+import HomePage from './components/HomePage';
+import DentistPage from './components/DentistPage';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -17,33 +24,20 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const AppContainer = styled.div`
-  text-align: center;
-`;
-
-const AppHeader = styled.header`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: #282c34;
-`;
-
-const MainHeader = styled.p`
-  font-size: 32px;
-`;
-
 const App: React.FC = () => {
+  const [globalUuid, setGlobalUuid] = useState('');
   return (
-    <AppContainer>
+    <BrowserRouter>
       <GlobalStyle/>
-      <AppHeader>
-        <p>Offer more. Worry less.</p>
-        <MainHeader>MOONLIGHT HEALTH</MainHeader>
-      </AppHeader>
-    </AppContainer>
+      <Switch>
+        <Route exact path="/">
+          <HomePage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid}/>
+        </Route>
+        <Route path="/dentists">
+          <DentistPage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid}/>
+        </Route>
+      </Switch>
+    </BrowserRouter>
   );
 }
 
