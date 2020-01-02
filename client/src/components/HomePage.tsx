@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import styled from 'styled-components';
-import PageLink from './PageLink';
-import SignUpWidget from './SignUpWidget';
+import React, { useState, useCallback } from "react";
+import styled from "styled-components";
+import PageLink from "./PageLink";
+import SignUpWidget from "./SignUpWidget";
 
 const AppContainer = styled.div`
   text-align: center;
@@ -23,36 +23,37 @@ const MainHeader = styled.p`
 `;
 
 type HomePageProps = {
-  globalUuid: string,
+  globalUuid: string;
   setGlobalUuid: (uuid: string) => void;
-}
+};
 
-const HomePage = ({ globalUuid, setGlobalUuid } : HomePageProps) => {
-    const [showSignUp, setShowSignup] = useState(false);
-    const signUpToggleCallback = useCallback(() => setShowSignup(!showSignUp), [showSignUp, setShowSignup]);
-    return (
-        <AppContainer>
-            <PageLink  label='Dentists' path='/dentists'/>
-            <PageLink  label='Specialists' path='/specialists'/>
-            <PageLink  label='Patients' path='/patients'/>
-            <AppHeader>
-                <p>Offer more. Worry less.</p>
-                <MainHeader>MOONLIGHT HEALTH</MainHeader>
-            </AppHeader>
-            {showSignUp && <SignUpWidget setGlobalUuid={setGlobalUuid} />}
-            {globalUuid ? (
-              <div>
-                {`Logged in as ${globalUuid}`}
-              </div>
-            ) : (
-              <div>
-                <button onClick={signUpToggleCallback}>
-                    {showSignUp ? 'CLOSE SIGN UP' : 'SIGN UP HERE'}
-                </button>
-              </div>
-            )}
-        </AppContainer>
-    );
-}
+const HomePage = ({ globalUuid, setGlobalUuid }: HomePageProps) => {
+  const [showSignUp, setShowSignup] = useState(false);
+  const signUpToggleCallback = useCallback(() => setShowSignup(!showSignUp), [
+    showSignUp,
+    setShowSignup
+  ]);
+  return (
+    <AppContainer>
+      <PageLink label="Dentists" path="/dentists" />
+      <PageLink label="Specialists" path="/specialists" />
+      <PageLink label="Patients" path="/patients" />
+      <AppHeader>
+        <p>Offer more. Worry less.</p>
+        <MainHeader>MOONLIGHT HEALTH</MainHeader>
+      </AppHeader>
+      {showSignUp && <SignUpWidget setGlobalUuid={setGlobalUuid} />}
+      {globalUuid ? (
+        <div>{`Logged in as ${globalUuid}`}</div>
+      ) : (
+        <div>
+          <button onClick={signUpToggleCallback}>
+            {showSignUp ? "CLOSE SIGN UP" : "SIGN UP HERE"}
+          </button>
+        </div>
+      )}
+    </AppContainer>
+  );
+};
 
 export default HomePage;
