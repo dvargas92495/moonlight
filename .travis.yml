@@ -2,13 +2,33 @@ language: node_js
 node_js: 10.15.3
 env:
   - AWS_CONFIG_FILE=.awsconfig
+  - CI=true
+  - CYPRESS_RECORD_KEY=4be3dc17-34bf-44aa-bcea-c0a869a8d7a4
+
+addons:
+  apt:
+    packages:
+      - libgconf-2-4
+
+# keep the npm cache around to speed up installs
+cache:
+  directories:
+    - "$HOME/.npm"
+
+# before_install: travis/before_install.sh
 install: travis/install.sh
-script: skip
+
+before_script: travis/before_script.sh
+script: travis/script.sh
+# after_success: travis/after_success.sh
+# after_failure: travis/after_failure.sh
+
 before_deploy: travis/before_deploy.sh
 deploy:
   provider: sript
   script: travis/deploy.sh
   skip_cleanup: true
-  on: 
+  on:
     branch: master
 after_deploy: travis/after_deploy.sh
+# after_script: travis/after_script.sh

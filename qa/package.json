@@ -1,0 +1,17 @@
+{
+  "name": "qa",
+  "version": "0.1.0",
+  "description": "End to End tests for Moonlight",
+  "main": "index.ts",
+  "devDependencies": {
+    "cypress": "3.8.1"
+  },
+  "scripts": {
+    "test": "cypress run --record",
+    "test:local": "cypress run",
+    "cypress": "cypress open"
+  },
+  "dependencies": {
+    "typescript": "3.7.4"
+  }
+}
