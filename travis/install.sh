@@ -1,7 +1,6 @@
 #!/bin/bash
 
-pip install awscli --upgrade --user
 cd client
-npm install
-cd ../qa
-npm install
+npm test
+
+pip install awscli --upgrade --user
