@@ -3,6 +3,8 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import HomePage from "./components/HomePage";
 import DentistPage from "./components/DentistPage";
+import LoginPage from "./components/LoginPage";
+import SpecialistPage from "./components/SpecialistPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -30,7 +32,13 @@ const App: React.FC = () => {
           <HomePage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid} />
         </Route>
         <Route path="/dentists">
-          <DentistPage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid} />
+          <DentistPage globalUuid={globalUuid} />
+        </Route>
+        <Route path="/specialists">
+          <SpecialistPage globalUuid={globalUuid} />
+        </Route>
+        <Route path="/login">
+          <LoginPage setGlobalUuid={setGlobalUuid} />
         </Route>
       </Switch>
     </BrowserRouter>
