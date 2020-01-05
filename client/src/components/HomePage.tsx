@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { isEmpty } from "lodash";
 import styled from "styled-components";
 import PageLink from "./PageLink";
 import SignUpWidget from "./SignUpWidget";
@@ -33,11 +34,16 @@ const HomePage = ({ globalUuid, setGlobalUuid }: HomePageProps) => {
     showSignUp,
     setShowSignup
   ]);
+  const logoutCallback = useCallback(() => setGlobalUuid(""), [setGlobalUuid]);
   return (
     <AppContainer>
       <PageLink label="Dentists" path="/dentists" />
       <PageLink label="Specialists" path="/specialists" />
-      <PageLink label="Patients" path="/patients" />
+      {isEmpty(globalUuid) ? (
+        <PageLink label="Log In" path="/login" />
+      ) : (
+        <button onClick={logoutCallback}>LOG OUT</button>
+      )}
       <AppHeader>
         <p>Offer more. Worry less.</p>
         <MainHeader>MOONLIGHT HEALTH</MainHeader>

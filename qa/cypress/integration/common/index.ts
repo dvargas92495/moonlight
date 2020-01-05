@@ -11,18 +11,35 @@ const ordinalToIndex = (ordinal: string) => {
   }
 };
 
+const fillInput = (value: string, index: number) => {
+  cy.get("input")
+    .eq(index)
+    .type(value);
+};
+
 Given("I open {word} page", page => {
   cy.visit(`/${page}`);
 });
 
+Given("I am already logged in", () => {
+  cy.visit("/login");
+  cy.fixture("testUser").then(({ username, password }) => {
+    fillInput(username, 0);
+    fillInput(password, 1);
+  });
+  cy.get("button").click();
+});
+
 Given("I type {string} into {word} input", (value, ordinal) => {
-  cy.get("input")
-    .eq(ordinalToIndex(ordinal))
-    .type(value);
+  fillInput(value, ordinalToIndex(ordinal));
 });
 
 When("I click button with text {string}", buttonText => {
   cy.get(`button:contains("${buttonText}")`).click();
+});
+
+When("I click link with text {string}", linkText => {
+  cy.get(`a:contains("${linkText}")`).click();
 });
 
 Then("I should see {string}", content => {
