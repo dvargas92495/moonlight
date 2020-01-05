@@ -29,7 +29,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "pretest": "npm install",
     "test": "react-scripts test",
+    "posttest": "npm run build",
+    "test:local": "react-scripts test",
     "prettier": "prettier --write src/**/*"
   },
   "eslintConfig": {
