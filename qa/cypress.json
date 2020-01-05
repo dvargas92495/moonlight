@@ -1,4 +1,5 @@
 {
-  "baseUrl": "https://dev.moonlight-health.com",
-  "projectId": "hh3a16"
+  "baseUrl": "http://localhost:3000",
+  "projectId": "hh3a16",
+  "testFiles": "**/*.feature"
 }
