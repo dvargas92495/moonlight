@@ -21,8 +21,7 @@ install: travis/install.sh
 
 jobs:
   include:
-    - env: CYPRESS_BASE_URL=https://dev.moonlight-health.com
-      before_script: travis/before_script-branch.sh
+    - before_script: travis/before_script-branch.sh
       script: travis/script-branch.sh
       if: branch != master
     - env: CYPRESS_BASE_URL=https://moonlight-health.com

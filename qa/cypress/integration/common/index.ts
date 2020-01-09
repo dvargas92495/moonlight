@@ -17,12 +17,13 @@ const fillInput = (value: string, index: number) => {
     .type(value);
 };
 
-Given("I open {word} page", page => {
-  cy.visit(`/${page}`);
-});
+const visitPage = (page: string) =>
+  cy.visit(`/${page}`, { failOnStatusCode: false });
+
+Given("I open {word} page", visitPage);
 
 Given("I am already logged in", () => {
-  cy.visit("/login");
+  visitPage("login");
   cy.fixture("testUser").then(({ username, password }) => {
     fillInput(username, 0);
     fillInput(password, 1);
