@@ -23,6 +23,7 @@ jobs:
   include:
     - before_script: travis/before_script-branch.sh
       script: travis/script-branch.sh
+      after_script: travis/after_script-branch.sh
       if: branch != master
     - env: CYPRESS_BASE_URL=https://moonlight-health.com
       before_script: travis/before_script-master.sh
