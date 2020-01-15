@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useInputState } from "../hooks";
-import { signIn } from "../awsClients/cognitoIdentityServiceProvider";
+import { signIn } from "../awsClients/apiClient";
 import Input from "./Input";
 import PageLink from "./PageLink";
 import { useHistory } from "react-router-dom";

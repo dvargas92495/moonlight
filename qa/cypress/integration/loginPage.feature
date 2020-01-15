@@ -2,7 +2,6 @@ Feature: Login Page
  
   All features available on the log in page
   
-  @master
   Scenario: Successfully Logging In
     Given I open login page
     And I type "dvargas92495@gmail.com" into first input

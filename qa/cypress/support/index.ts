@@ -1,1 +1,1 @@
-// import ./commmands;
+before(() => cy.log("STARTING END TO END TESTS"));
