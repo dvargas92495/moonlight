@@ -1,9 +1,6 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
-import {
-  signUp,
-  confirmSignUp
-} from "../awsClients/cognitoIdentityServiceProvider";
+import { signUp, confirmSignUp } from "../awsClients/apiClient";
 import { useInputState } from "../hooks";
 import Input from "./Input";
 

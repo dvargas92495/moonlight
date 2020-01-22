@@ -4,7 +4,9 @@ language: node_js
 node_js: 10.15.3
 env:
   global:
-    - AWS_CONFIG_FILE=.awsconfig
+    - AWS_ACCESS_KEY_ID=AKIAZLVOUXM6CV6AIX35
+    - AWS_SECRET_ACCESS_KEY=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
+    - AWS_DEFAULT_REGION=us-east-1
     - CYPRESS_RECORD_KEY=4be3dc17-34bf-44aa-bcea-c0a869a8d7a4
 
 addons:
@@ -21,11 +23,8 @@ install: travis/install.sh
 
 jobs:
   include:
-    - before_script: travis/before_script-branch.sh
-      script: travis/script-branch.sh
+    - script: travis/script-branch.sh
       after_script: travis/after_script-branch.sh
       if: branch != master
-    - env: CYPRESS_BASE_URL=https://moonlight-health.com
-      before_script: travis/before_script-master.sh
-      script: travis/script-master.sh
+    - script: travis/script-master.sh
       if: branch = master

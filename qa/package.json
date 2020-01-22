@@ -16,7 +16,6 @@
     "pretest": "npm install",
     "test": "cypress run --record --spec **/*.feature",
     "test:local": "cypress run --spec **/*.feature",
-    "test:master": "npm install && cypress-tags run --record -e TAGS='@master'",
     "cypress": "cypress open"
   },
   "dependencies": {
