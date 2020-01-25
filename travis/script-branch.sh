@@ -24,7 +24,7 @@ aws s3api put-bucket-policy --bucket $DOMAIN --policy "{
       \"Sid\": \"RestrictedWriteObjects\",
       \"Effect\": \"Allow\",
       \"Principal\": {
-        \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-admin\"
+        \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-health-admin\"
       },
       \"Action\": [\"s3:PutObject\", \"s3:DeleteObject\"],
       \"Resource\": \"arn:aws:s3:::${DOMAIN}/*\"
@@ -33,7 +33,7 @@ aws s3api put-bucket-policy --bucket $DOMAIN --policy "{
       \"Sid\": \"RestrictedReadBuckets\",
       \"Effect\": \"Allow\",
       \"Principal\": {
-        \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-admin\"
+        \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-health-admin\"
       },
       \"Action\": \"s3:ListBucket\",
       \"Resource\": \"arn:aws:s3:::${DOMAIN}\"
