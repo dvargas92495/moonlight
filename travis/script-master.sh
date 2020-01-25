@@ -2,6 +2,12 @@
 
 cd client
 npm install
+
+echo "
+REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
+" > .env.local
+
 npm run build
 
 aws s3 sync --delete build s3://moonlight-client
