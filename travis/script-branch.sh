@@ -3,6 +3,11 @@
 cd client
 npm test
 
+echo "
+REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
+" > .env.local
+
 ENV_NUMBER=1
 npm run build
 
