@@ -1,6 +1,6 @@
 import React from "react";
 import UserPage from "./UserPage";
-import Scheduler from "./Scheduler";
+import Scheduler from "./syncfusion/Scheduler";
 
 type SpecialistPageProps = {
   globalUuid: string;
