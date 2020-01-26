@@ -1,11 +1,16 @@
 #!/bin/bash
 
-cd client
+cd db
+npm install
+npm run migrate
+
+cd ../client
 npm test
 
 echo "
 REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
+REACT_APP_RDS_MASTER_USER_PASSWORD=${RDS_MASTER_USER_PASSWORD}
 " > .env.local
 
 ENV_NUMBER=1

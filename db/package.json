@@ -1,0 +1,14 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "description": "Managing Moonlight Data",
+  "scripts": {
+    "create": "db-migrate create",
+    "migrate": "db-migrate up -c 1 -e production",
+    "rollback": "db-migrate down -c 1 -e production"
+  },
+  "dependencies": {
+    "db-migrate": "0.11.6",
+    "db-migrate-pg": "1.0.0"
+  }
+}

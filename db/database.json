@@ -1,0 +1,19 @@
+{
+  "defaultEnv": "dev",
+  "production": {
+    "driver": "postgres",
+    "user": "moonlight",
+    "password": {
+      "ENV": "RDS_MASTER_USER_PASSWORD"
+    },
+    "host": "moonlight-health.c2sjnb5f4d57.us-east-1.rds.amazonaws.com",
+    "database": "moonlight",
+    "port": 5432
+  },
+  "qa": {
+    "driver": "postgres"
+  },
+  "dev": {
+    "driver": "progress"
+  }
+}

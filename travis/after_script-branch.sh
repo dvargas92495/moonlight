@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO - create 1 time job to delete resources in two hours instead of immediately after
-
 ENV_NUMBER=1
 DOMAIN="env${ENV_NUMBER}.qa.moonlight-health.com"
 
@@ -21,3 +19,6 @@ aws route53 change-resource-record-sets --hosted-zone-id Z18VX8M08PX0TW --change
     }
   }]
 }"
+
+cd db
+npm run rollback
