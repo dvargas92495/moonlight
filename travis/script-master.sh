@@ -1,6 +1,10 @@
 #!/bin/bash
 
-cd client
+cd db
+npm install
+npm run migrate
+
+cd ../client
 npm install
 
 echo "
