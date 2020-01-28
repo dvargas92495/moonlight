@@ -1,19 +1,36 @@
 #!/bin/bash
 
-cd db
-npm install
-npm run migrate
-
-cd ../client
-npm test
+ENV_NUMBER=1
+ENV_NAME="env${ENV_NUMBER}-qa-moonlight-health"
 
 echo "
 REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
 REACT_APP_RDS_MASTER_USER_PASSWORD=${RDS_MASTER_USER_PASSWORD}
-" > .env.local
+" > client/.env.local
 
-ENV_NUMBER=1
+cd db
+npm install
+npm run migrate
+
+cd ../lambda
+npm install
+npm run build
+zip -jq signUp.zip ./build/signUp.js
+SIGNUP_LAMBDA_ARN=$(aws lambda create-function \
+    --function-name "${ENV_NAME}-signUp" \
+    --runtime nodejs10.x \
+    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
+    --handler "signUp.handler" \
+    --publish \
+    --zip-file fileb://signUp.zip \
+    --tags Application=Moonlight \
+    --output text \
+    --query "FunctionArn" \
+)
+
+cd ../client
+npm test
 npm run build
 
 DOMAIN="env${ENV_NUMBER}.qa.moonlight-health.com"
