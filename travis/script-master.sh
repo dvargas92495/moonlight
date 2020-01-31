@@ -13,16 +13,17 @@ npm run migrate
 cd ../lambda
 npm install
 npm run build
-    
+zip -jq signUp.zip ./build/signUp.js
+aws lambda update-function-code \
+    --function-name "moonlight-health-signUp" \
+    --publish \
+    --zip-file fileb://signUp.zip \
+
 zip -jq confirmSignUp.zip ./build/confirmSignUp.js
-aws lambda create-function \
+aws lambda update-function-code \
     --function-name "moonlight-health-confirmSignUp" \
-    --runtime nodejs10.x \
-    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
-    --handler "confirmSignUp.handler" \
     --publish \
     --zip-file fileb://confirmSignUp.zip \
-    --tags Application=Moonlight \
 
 cd ../client
 npm install

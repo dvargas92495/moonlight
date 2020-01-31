@@ -13,5 +13,22 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       Password,
       Username
     })
-    .promise();
+    .promise()
+    .then(({ UserConfirmed, UserSub }) => {
+      if (UserConfirmed) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: "User email is already confirmed" })
+        };
+      } else {
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ uuid: UserSub })
+        };
+      }
+    })
+    .catch(e => ({
+      statusCode: 400,
+      body: JSON.stringify({ message: e.message })
+    }));
 };

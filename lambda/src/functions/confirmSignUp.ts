@@ -15,5 +15,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       ConfirmationCode,
       Username
     })
-    .promise();
+    .promise()
+    .then(() => ({
+      statusCode: 200,
+      body: JSON.stringify({ success: true })
+    }))
+    .catch(e => ({
+      statusCode: 400,
+      body: JSON.stringify({ message: e.message })
+    }));
 };
