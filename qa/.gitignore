@@ -1,4 +1,3 @@
-/node_modules
 cypress/videos
 cypress/fixtures/example.json
 cypress/screenshots
