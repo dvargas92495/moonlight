@@ -13,22 +13,6 @@ cd db
 npm install
 npm run migrate
 
-cd ../lambda
-npm install
-npm run build
-zip -jq signUp.zip ./build/signUp.js
-SIGNUP_LAMBDA_ARN=$(aws lambda create-function \
-    --function-name "${ENV_NAME}-signUp" \
-    --runtime nodejs10.x \
-    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
-    --handler "signUp.handler" \
-    --publish \
-    --zip-file fileb://signUp.zip \
-    --tags Application=Moonlight \
-    --output text \
-    --query "FunctionArn" \
-)
-
 cd ../client
 npm test
 npm run build

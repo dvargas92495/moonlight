@@ -14,13 +14,19 @@ cd ../lambda
 npm install
 npm run build
 zip -jq signUp.zip ./build/signUp.js
-aws lambda create-function \
+aws lambda update-function-code \
     --function-name "moonlight-health-signUp" \
-    --runtime nodejs10.x \
-    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
-    --handler "signUp.handler" \
     --publish \
     --zip-file fileb://signUp.zip \
+    
+zip -jq signUp.zip ./build/signUp.js
+aws lambda create-function \
+    --function-name "moonlight-health-confirmSignUp" \
+    --runtime nodejs10.x \
+    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
+    --handler "confirmSignUp.handler" \
+    --publish \
+    --zip-file fileb://confirmSignUp.zip \
     --tags Application=Moonlight \
 
 cd ../client
