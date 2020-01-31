@@ -13,13 +13,8 @@ npm run migrate
 cd ../lambda
 npm install
 npm run build
-zip -jq signUp.zip ./build/signUp.js
-aws lambda update-function-code \
-    --function-name "moonlight-health-signUp" \
-    --publish \
-    --zip-file fileb://signUp.zip \
     
-zip -jq signUp.zip ./build/signUp.js
+zip -jq confirmSignUp.zip ./build/confirmSignUp.js
 aws lambda create-function \
     --function-name "moonlight-health-confirmSignUp" \
     --runtime nodejs10.x \
