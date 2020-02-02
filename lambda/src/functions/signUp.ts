@@ -3,6 +3,7 @@ import {
   cognitoIdentityServiceProvider
 } from "../layers/cognito";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { username: Username, password: Password } = JSON.parse(event.body);
@@ -16,19 +17,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     .promise()
     .then(({ UserConfirmed, UserSub }) => {
       if (UserConfirmed) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ message: "User email is already confirmed" })
-        };
+        return userErrorResponse("User email is already confirmed");
       } else {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({ uuid: UserSub })
-        };
+        return okResponse({ uuid: UserSub });
       }
     })
-    .catch(e => ({
-      statusCode: 400,
-      body: JSON.stringify({ message: e.message })
-    }));
+    .catch(e => userErrorResponse(e.message));
 };

@@ -3,6 +3,7 @@ import {
   cognitoIdentityServiceProvider
 } from "../layers/cognito";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { username: Username, confirmationCode: ConfirmationCode } = JSON.parse(
@@ -16,12 +17,6 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       Username
     })
     .promise()
-    .then(() => ({
-      statusCode: 200,
-      body: JSON.stringify({ success: true })
-    }))
-    .catch(e => ({
-      statusCode: 400,
-      body: JSON.stringify({ message: e.message })
-    }));
+    .then(() => okResponse({ success: true }))
+    .catch(e => userErrorResponse(e.message));
 };
