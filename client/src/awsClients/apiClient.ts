@@ -1,14 +1,10 @@
 import { handler as signInHandler } from "./functions/signIn";
-import { handler as signUpHandler } from "./functions/signUp";
-import { handler as confirmSignUpHandler } from "./functions/confirmSignUp";
 
-/*
 const apiPost = (url: string, body: object) =>
-  fetch(`/api/${url}`, {
+  fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
     method: "POST",
     body: JSON.stringify(body)
   }).then(r => r.json());
-*/
 
 export const signIn = (username: string, password: string) =>
   signInHandler({
@@ -17,13 +13,13 @@ export const signIn = (username: string, password: string) =>
   });
 
 export const signUp = (username: string, password: string) =>
-  signUpHandler({
+  apiPost("signup", {
     username,
     password
   });
 
 export const confirmSignUp = (username: string, confirmationCode: string) =>
-  confirmSignUpHandler({
+  apiPost("confirm-signup", {
     username,
     confirmationCode
   });
