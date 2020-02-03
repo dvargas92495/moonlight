@@ -2,6 +2,7 @@ import JWT from "jsonwebtoken";
 import jwkToPem, { JWK } from "jwk-to-pem";
 import { find, isEmpty } from "lodash";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import axios from "axios";
 import {
   createSecretHashObj,
   cognitoIdentityServiceProvider,
@@ -97,6 +98,6 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 };
 
 const getPublicKey = (kid: string) =>
-  fetch(`${expectedIss}/.well-known/jwks.json`)
-    .then(response => response.json())
-    .then(data => find(data.keys, { kid }) as JWK);
+  axios
+    .get(`${expectedIss}/.well-known/jwks.json`)
+    .then(response => find(response.data.keys, { kid }) as JWK);
