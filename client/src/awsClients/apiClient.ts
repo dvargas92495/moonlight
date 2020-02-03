@@ -1,5 +1,3 @@
-import { handler as signInHandler } from "./functions/signIn";
-
 const apiPost = (url: string, body: object) =>
   fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
     method: "POST",
@@ -15,7 +13,7 @@ const apiPost = (url: string, body: object) =>
   );
 
 export const signIn = (username: string, password: string) =>
-  signInHandler({
+  apiPost("signin", {
     username,
     password
   });

@@ -4,7 +4,8 @@ const Dotenv = require("dotenv-webpack");
 module.exports = {
   entry: {
     signUp: "./src/functions/signUp.ts",
-    confirmSignUp: "./src/functions/confirmSignUp.ts"
+    confirmSignUp: "./src/functions/confirmSignUp.ts",
+    signIn: "./src/functions/signIn.ts"
   },
   target: "node",
   mode: "production",
@@ -34,11 +35,5 @@ module.exports = {
     new Dotenv({
       path: "../client/.env"
     })
-  ],
-  optimization: {
-    splitChunks: {
-      chunks: "all",
-      name: false
-    }
-  }
+  ]
 };

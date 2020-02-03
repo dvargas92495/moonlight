@@ -7,6 +7,9 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.40",
+    "@types/jsonwebtoken": "8.3.7",
+    "@types/jwk-to-pem": "2.0.0",
+    "@types/lodash": "4.14.149",
     "@types/node": "13.5.0",
     "dotenv-webpack": "1.7.0",
     "ts-loader": "6.2.1",
@@ -15,6 +18,9 @@
     "webpack-cli": "3.3.10"
   },
   "dependencies": {
-    "aws-sdk": "2.610.0"
+    "aws-sdk": "2.610.0",
+    "jsonwebtoken": "8.5.1",
+    "jwk-to-pem": "2.0.3",
+    "lodash": "4.17.15"
   }
 }

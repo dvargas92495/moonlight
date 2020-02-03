@@ -1,16 +1,13 @@
 import JWT from "jsonwebtoken";
 import jwkToPem, { JWK } from "jwk-to-pem";
 import { find, isEmpty } from "lodash";
+import { APIGatewayProxyEvent } from "aws-lambda";
 import {
   createSecretHashObj,
   cognitoIdentityServiceProvider,
   region
-} from "../layers";
-
-type RequestType = {
-  username: string;
-  password: string;
-};
+} from "../layers/cognito";
+import { okResponse, userErrorResponse } from "../layers/util";
 
 type JwtPayload = {
   sub: string;
@@ -37,10 +34,8 @@ type DecodeResult = {
 
 const expectedIss = `https://cognito-idp.${region}.amazonaws.com/${process.env.REACT_APP_USER_POOL_ID}`;
 
-export const handler = ({
-  username: USERNAME,
-  password: PASSWORD
-}: RequestType) => {
+export const handler = async (event: APIGatewayProxyEvent) => {
+  const { username: USERNAME, password: PASSWORD } = JSON.parse(event.body);
   const { ClientId, SecretHash: SECRET_HASH } = createSecretHashObj(USERNAME);
   return cognitoIdentityServiceProvider
     .initiateAuth({
@@ -72,32 +67,33 @@ export const handler = ({
 
           const expirationDate = new Date(exp * 1000);
           if (expirationDate < new Date()) {
-            throw new Error(`Log in has expired on ${expirationDate}`);
+            return userErrorResponse(`Log in has expired on ${expirationDate}`);
           }
 
           if (aud !== ClientId) {
-            throw new Error(
+            return userErrorResponse(
               `Log in returned incorrect audience ${aud}, expected ClientId ${ClientId}`
             );
           }
 
           if (iss !== expectedIss) {
-            throw new Error(
+            return userErrorResponse(
               `Log in returned incorrect iss ${iss}, expected ${expectedIss}`
             );
           }
 
           if (token_use !== "id") {
-            throw new Error(
+            return userErrorResponse(
               `Log in returned incorrect token use ${token_use}, expected id`
             );
           }
 
-          return { uuid: sub };
+          return okResponse({ uuid: sub });
         });
       }
-      throw new Error("Missing IdToken from sign in");
-    });
+      return userErrorResponse("Missing IdToken from sign in");
+    })
+    .catch(e => userErrorResponse(e.message));
 };
 
 const getPublicKey = (kid: string) =>
