@@ -26,9 +26,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           password: process.env.REACT_APP_RDS_MASTER_PASSWORD,
           database: "moonlight"
         });
+        client.connect();
         return client
           .query("INSERT INTO users(uuid) VALUES ($1) RETURNING *", [UserSub])
-          .then(res => okResponse(res.rows[0]));
+          .then(res => {
+            client.end();
+            return okResponse(res.rows[0]);
+          });
       }
     })
     .catch(e => userErrorResponse(e.message));
