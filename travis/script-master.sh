@@ -26,14 +26,14 @@ aws lambda update-function-code \
     --zip-file fileb://confirmSignUp.zip \
 
 zip -jq signIn.zip ./build/signIn.js
-aws lambda create-function \	
-    --function-name "${ENV_NAME}-signIn" \	
-    --runtime nodejs10.x \	
-    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \	
-    --handler "signIn.handler" \	
-    --publish \	
-    --zip-file fileb://signIn.zip \	
-    --tags Application=Moonlight \	
+aws lambda create-function \
+    --function-name "moonlight-health-signIn" \
+    --runtime nodejs10.x \
+    --role arn:aws:iam::643537615676:role/Moonlight-Lambda-Execution \
+    --handler "signIn.handler" \
+    --publish \
+    --zip-file fileb://signIn.zip \
+    --tags Application=Moonlight \
 
 cd ../client
 npm install
