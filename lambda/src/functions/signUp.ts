@@ -3,6 +3,7 @@ import {
   cognitoIdentityServiceProvider
 } from "../layers/cognito";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import { Client } from "pg";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
@@ -19,7 +20,15 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       if (UserConfirmed) {
         return userErrorResponse("User email is already confirmed");
       } else {
-        return okResponse({ uuid: UserSub });
+        const client = new Client({
+          host: process.env.REACT_APP_RDS_MASTER_HOST,
+          user: process.env.REACT_APP_RDS_MASTER_USER,
+          password: process.env.REACT_APP_RDS_MASTER_PASSWORD,
+          database: "moonlight"
+        });
+        return client
+          .query("INSERT INTO users(uuid) VALUES ($1) RETURNING *", [UserSub])
+          .then(res => okResponse(res.rows[0]));
       }
     })
     .catch(e => userErrorResponse(e.message));

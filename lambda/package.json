@@ -12,6 +12,7 @@
     "@types/jwk-to-pem": "2.0.0",
     "@types/lodash": "4.14.149",
     "@types/node": "13.5.0",
+    "@types/pg": "7.14.1",
     "dotenv-webpack": "1.7.0",
     "ts-loader": "6.2.1",
     "typescript": "3.7.5",
@@ -23,6 +24,7 @@
     "axios": "0.19.2",
     "jsonwebtoken": "8.5.1",
     "jwk-to-pem": "2.0.3",
-    "lodash": "4.17.15"
+    "lodash": "4.17.15",
+    "pg": "7.18.1"
   }
 }
