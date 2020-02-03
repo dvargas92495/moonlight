@@ -10,9 +10,13 @@ const ErrorMessage = styled.span`
 
 type SignUpWidgetProps = {
   setGlobalUuid: (uuid: string) => void;
+  signUpToggleCallback: () => void;
 };
 
-const SignUpWidget = ({ setGlobalUuid }: SignUpWidgetProps) => {
+const SignUpWidget = ({
+  setGlobalUuid,
+  signUpToggleCallback
+}: SignUpWidgetProps) => {
   const { value: username, setValue: setUsername } = useInputState("");
   const { value: password, setValue: setPassword } = useInputState("");
   const {
@@ -20,35 +24,46 @@ const SignUpWidget = ({ setGlobalUuid }: SignUpWidgetProps) => {
     setValue: setConfirmationCode
   } = useInputState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
   const [uuid, setUuid] = useState("");
 
-  const signUpCallback = useCallback(
-    () =>
-      signUp(username, password)
-        .then(({ UserConfirmed, UserSub }) => {
-          setError("");
-          if (UserConfirmed) {
-            setError("User email is already confirmed");
-          } else {
-            setShowConfirmationCode(true);
-            setUuid(UserSub);
-          }
-        })
-        .catch(e => setError(e.message)),
-    [username, password, setError]
-  );
+  const signUpCallback = useCallback(() => {
+    setLoading(true);
+    signUp(username, password)
+      .then(({ uuid }) => {
+        setError("");
+        setShowConfirmationCode(true);
+        setUuid(uuid);
+        setLoading(false);
+      })
+      .catch(e => {
+        setError(e.message);
+        setLoading(false);
+      });
+  }, [username, password, setError]);
 
-  const confirmSignUpCallback = useCallback(
-    () =>
-      confirmSignUp(username, confirmationCode)
-        .then(() => {
-          setError("");
-          setGlobalUuid(uuid);
-        })
-        .catch(e => setError(e.massage)),
-    [username, confirmationCode, setError, setGlobalUuid, uuid]
-  );
+  const confirmSignUpCallback = useCallback(() => {
+    setLoading(true);
+    confirmSignUp(username, confirmationCode)
+      .then(() => {
+        setError("");
+        setGlobalUuid(uuid);
+        signUpToggleCallback();
+        setLoading(false);
+      })
+      .catch(e => {
+        setError(e.message);
+        setLoading(false);
+      });
+  }, [
+    username,
+    confirmationCode,
+    setError,
+    setGlobalUuid,
+    uuid,
+    signUpToggleCallback
+  ]);
   return (
     <>
       {showConfirmationCode ? (
@@ -67,6 +82,7 @@ const SignUpWidget = ({ setGlobalUuid }: SignUpWidgetProps) => {
           </div>
         </>
       )}
+      {loading && <div>Loading...</div>}
       {error && (
         <div>
           <ErrorMessage>{error}</ErrorMessage>

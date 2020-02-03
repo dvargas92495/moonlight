@@ -4,7 +4,15 @@ const apiPost = (url: string, body: object) =>
   fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
     method: "POST",
     body: JSON.stringify(body)
-  }).then(r => r.json());
+  }).then(r =>
+    r.json().then(b => {
+      if (r.ok) {
+        return b;
+      } else {
+        throw new Error(b.message);
+      }
+    })
+  );
 
 export const signIn = (username: string, password: string) =>
   signInHandler({

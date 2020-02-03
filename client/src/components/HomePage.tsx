@@ -48,7 +48,12 @@ const HomePage = ({ globalUuid, setGlobalUuid }: HomePageProps) => {
         <p>Offer more. Worry less.</p>
         <MainHeader>MOONLIGHT HEALTH</MainHeader>
       </AppHeader>
-      {showSignUp && <SignUpWidget setGlobalUuid={setGlobalUuid} />}
+      {showSignUp && (
+        <SignUpWidget
+          setGlobalUuid={setGlobalUuid}
+          signUpToggleCallback={signUpToggleCallback}
+        />
+      )}
       {globalUuid ? (
         <div>{`Logged in as ${globalUuid}`}</div>
       ) : (
