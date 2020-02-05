@@ -1,5 +1,4 @@
 const path = require("path");
-const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 
 module.exports = {
@@ -35,7 +34,6 @@ module.exports = {
     }),
     new Dotenv({
       path: "../client/.env"
-    }),
-    new webpack.IgnorePlugin(/^pg-native$/)
+    })
   ]
 };
