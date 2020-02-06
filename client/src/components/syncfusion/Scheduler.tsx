@@ -19,8 +19,21 @@ import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
 
-const Scheduler = () => (
-  <ScheduleComponent>
+type SchedulerProps = {
+  workHoursStart: string;
+  workHoursEnd: string;
+  workDays: number[];
+};
+
+const Scheduler = ({
+  workHoursStart,
+  workHoursEnd,
+  workDays
+}: SchedulerProps) => (
+  <ScheduleComponent
+    workHours={{ start: workHoursStart, end: workHoursEnd }}
+    workDays={workDays}
+  >
     <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
   </ScheduleComponent>
 );
