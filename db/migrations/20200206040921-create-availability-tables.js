@@ -22,7 +22,8 @@ exports.up = function(db) {
       notNull: true,
       foreignKey: {
         name: "fk_availability_user_id_users_id",
-        table: "users"
+        table: "users",
+        mapping: "id"
       }
     },
     work_hours_start: { type: "string", notNull: true },
