@@ -24,8 +24,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     .query(
       `INSERT INTO availability(user_id, work_hours_start, work_hours_end, work_days)
                 VALUES ($1, $2, $3, $4) 
-                ON DUPLICATE KEY(user_id) 
-                UPDATE work_hours_start=VALUES(work_hours_start), work_hours_end=VALUES(work_hours_end), work_days=VALUES(work_days)
+                ON CONFLICT (user_id) 
+                DO UPDATE SET work_hours_start=excluded.work_hours_start, work_hours_end=excluded.work_hours_end, work_days=excluded.work_days
                 RETURNING *`,
       [userId, workHoursStart, workHoursEnd, encodedWorkDays]
     )
