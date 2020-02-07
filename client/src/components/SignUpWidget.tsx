@@ -9,12 +9,12 @@ const ErrorMessage = styled.span`
 `;
 
 type SignUpWidgetProps = {
-  setGlobalUuid: (uuid: string) => void;
+  setUserId: (userId: number) => void;
   signUpToggleCallback: () => void;
 };
 
 const SignUpWidget = ({
-  setGlobalUuid,
+  setUserId,
   signUpToggleCallback
 }: SignUpWidgetProps) => {
   const { value: username, setValue: setUsername } = useInputState("");
@@ -26,15 +26,15 @@ const SignUpWidget = ({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
-  const [uuid, setUuid] = useState("");
+  const [uuid, setUuid] = useState(0);
 
   const signUpCallback = useCallback(() => {
     setLoading(true);
     signUp(username, password)
-      .then(({ uuid }) => {
+      .then(({ id }) => {
         setError("");
         setShowConfirmationCode(true);
-        setUuid(uuid);
+        setUuid(id);
         setLoading(false);
       })
       .catch(e => {
@@ -48,7 +48,7 @@ const SignUpWidget = ({
     confirmSignUp(username, confirmationCode)
       .then(() => {
         setError("");
-        setGlobalUuid(uuid);
+        setUserId(uuid);
         signUpToggleCallback();
         setLoading(false);
       })
@@ -60,7 +60,7 @@ const SignUpWidget = ({
     username,
     confirmationCode,
     setError,
-    setGlobalUuid,
+    setUserId,
     uuid,
     signUpToggleCallback
   ]);

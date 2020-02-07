@@ -29,10 +29,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         });
         client.connect();
         return client
-          .query("INSERT INTO users(uuid) VALUES ($1) RETURNING *", [UserSub])
+          .query("INSERT INTO users(uuid) VALUES ($1) RETURNING id", [UserSub])
           .then(res => {
             client.end();
-            return okResponse(res.rows[0]);
+            const { id } = res.rows[0];
+            return okResponse({ id });
           });
       }
     })

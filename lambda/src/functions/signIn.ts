@@ -3,6 +3,7 @@ import jwkToPem, { JWK } from "jwk-to-pem";
 import { find, isEmpty } from "lodash";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import axios from "axios";
+import { Client } from "pg";
 import {
   createSecretHashObj,
   cognitoIdentityServiceProvider,
@@ -89,7 +90,25 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             );
           }
 
-          return okResponse({ uuid: sub });
+          const client = new Client({
+            host: process.env.REACT_APP_RDS_MASTER_HOST,
+            user: process.env.REACT_APP_RDS_MASTER_USER,
+            password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
+            database: "moonlight",
+            query_timeout: 10000
+          });
+          client.connect();
+          return client
+            .query(
+              `SELECT id FROM users
+             WHERE uuid=($1)`,
+              [sub]
+            )
+            .then(res => {
+              client.end();
+              const { id } = res.rows[0];
+              return okResponse({ id });
+            });
         });
       }
       return userErrorResponse("Missing IdToken from sign in");

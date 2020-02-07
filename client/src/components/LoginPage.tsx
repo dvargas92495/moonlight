@@ -6,10 +6,10 @@ import PageLink from "./PageLink";
 import { useHistory } from "react-router-dom";
 
 type LoginPageProps = {
-  setGlobalUuid: (uuid: string) => void;
+  setUserId: (userId: number) => void;
 };
 
-const LoginPage = ({ setGlobalUuid }: LoginPageProps) => {
+const LoginPage = ({ setUserId }: LoginPageProps) => {
   const { value: username, setValue: setUsername } = useInputState("");
   const { value: password, setValue: setPassword } = useInputState("");
   const [error, setError] = useState("");
@@ -17,12 +17,12 @@ const LoginPage = ({ setGlobalUuid }: LoginPageProps) => {
   const signInCallback = useCallback(
     () =>
       signIn(username, password)
-        .then(({ uuid }) => {
-          setGlobalUuid(uuid);
+        .then(({ id = 1 }) => {
+          setUserId(id);
           history.push("/");
         })
         .catch(e => setError(e.message)),
-    [username, password, history, setError, setGlobalUuid]
+    [username, password, history, setError, setUserId]
   );
   return (
     <>

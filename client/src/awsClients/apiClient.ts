@@ -1,3 +1,5 @@
+import { join, keys, map } from "lodash";
+
 const handleResponse = (r: Response) =>
   r.json().then(b => {
     if (r.ok) {
@@ -6,11 +8,15 @@ const handleResponse = (r: Response) =>
       throw new Error(b.message);
     }
   });
-/*
-const apiGet = (url: string) =>
-    fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`)
-        .then(handleResponse);
-*/
+
+const apiGet = (url: string, queryParams: { [key: string]: any }) =>
+  fetch(
+    `${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}?${join(
+      map(keys(queryParams), k => `${k}=${queryParams[k]}`),
+      "&"
+    )}`
+  ).then(handleResponse);
+
 const apiPost = (url: string, body: object) =>
   fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
     method: "POST",
@@ -35,8 +41,5 @@ export const confirmSignUp = (username: string, confirmationCode: string) =>
     confirmationCode
   });
 
-export const getAvailablity = () => ({
-  workHoursStart: "12:00",
-  workHoursEnd: "20:00",
-  workDays: [0, 1, 2, 5, 6]
-});
+export const getAvailablity = (userId: number) =>
+  apiGet("availability", { userId });

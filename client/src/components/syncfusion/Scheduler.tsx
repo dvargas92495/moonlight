@@ -33,6 +33,8 @@ const Scheduler = ({
   <ScheduleComponent
     workHours={{ start: workHoursStart, end: workHoursEnd }}
     workDays={workDays}
+    startHour="07:00"
+    endHour="19:00"
   >
     <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
   </ScheduleComponent>

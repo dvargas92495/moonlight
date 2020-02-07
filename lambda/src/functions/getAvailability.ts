@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
-import { filter, range, reduce, reverse } from "lodash";
+import { filter, range, reverse } from "lodash";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {

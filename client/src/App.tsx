@@ -23,22 +23,22 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const App: React.FC = () => {
-  const [globalUuid, setGlobalUuid] = useState("");
+  const [userId, setUserId] = useState(0);
   return (
     <BrowserRouter>
       <GlobalStyle />
       <Switch>
         <Route exact path="/">
-          <HomePage globalUuid={globalUuid} setGlobalUuid={setGlobalUuid} />
+          <HomePage userId={userId} setUserId={setUserId} />
         </Route>
         <Route path="/dentists">
-          <DentistPage globalUuid={globalUuid} />
+          <DentistPage userId={userId} />
         </Route>
         <Route path="/specialists">
-          <SpecialistPage globalUuid={globalUuid} />
+          <SpecialistPage userId={userId} />
         </Route>
         <Route path="/login">
-          <LoginPage setGlobalUuid={setGlobalUuid} />
+          <LoginPage setUserId={setUserId} />
         </Route>
       </Switch>
     </BrowserRouter>

@@ -2,12 +2,19 @@ import React from "react";
 import UserPage from "./UserPage";
 
 type DentistPageProps = {
-  globalUuid: string;
+  userId: number;
 };
 
-const DentistPage = ({ globalUuid }: DentistPageProps) => (
+const DentistPage = ({ userId }: DentistPageProps) => (
   <>
-    <UserPage globalUuid={globalUuid}>Your Dentist Dashboard</UserPage>
+    <UserPage
+      userId={userId}
+      header="Your Dentist Dashboard"
+      initialTab="todo"
+      tabContent={{
+        todo: <div>Coming Soon...</div>
+      }}
+    />
   </>
 );
 

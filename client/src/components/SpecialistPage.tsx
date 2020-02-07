@@ -4,32 +4,36 @@ import Scheduler from "./syncfusion/Scheduler";
 import { getAvailablity } from "../awsClients/apiClient";
 
 type SpecialistPageProps = {
-  globalUuid: string;
+  userId: number;
 };
 
-/*
-enum DashboardTab {
-  None,
-  Scheduler,
-}
-*/
-
-const SpecialistPage = ({ globalUuid }: SpecialistPageProps) => {
-  // const [dashboardTab, setDashboardTab] = useState(DashboardTab.None);
+const SchedulerContent = ({ userId }: SpecialistPageProps) => {
   const [availability, setAvailability] = useState({
     workHoursStart: "9:00",
     workHoursEnd: "16:00",
     workDays: [1, 2, 3, 4, 5]
   });
   useEffect(() => {
-    setAvailability(getAvailablity());
-  }, [setAvailability]);
-  return (
-    <UserPage globalUuid={globalUuid}>
-      <header>Your Specialist Dashboard</header>
-      <Scheduler {...availability} />
-    </UserPage>
-  );
+    getAvailablity(userId).then(({ workHoursStart, workHoursEnd, workDays }) =>
+      setAvailability({
+        workHoursStart,
+        workHoursEnd,
+        workDays
+      })
+    );
+  }, [userId, setAvailability]);
+  return <Scheduler {...availability} />;
 };
+
+const SpecialistPage = ({ userId }: SpecialistPageProps) => (
+  <UserPage
+    userId={userId}
+    header={"Your Specialist Dashboard"}
+    initialTab={"schedule"}
+    tabContent={{
+      schedule: <SchedulerContent userId={userId} />
+    }}
+  />
+);
 
 export default SpecialistPage;

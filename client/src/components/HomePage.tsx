@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import { isEmpty } from "lodash";
 import styled from "styled-components";
 import PageLink from "./PageLink";
 import SignUpWidget from "./SignUpWidget";
@@ -24,22 +23,22 @@ const MainHeader = styled.p`
 `;
 
 type HomePageProps = {
-  globalUuid: string;
-  setGlobalUuid: (uuid: string) => void;
+  userId: number;
+  setUserId: (userId: number) => void;
 };
 
-const HomePage = ({ globalUuid, setGlobalUuid }: HomePageProps) => {
+const HomePage = ({ userId, setUserId }: HomePageProps) => {
   const [showSignUp, setShowSignup] = useState(false);
   const signUpToggleCallback = useCallback(() => setShowSignup(!showSignUp), [
     showSignUp,
     setShowSignup
   ]);
-  const logoutCallback = useCallback(() => setGlobalUuid(""), [setGlobalUuid]);
+  const logoutCallback = useCallback(() => setUserId(0), [setUserId]);
   return (
     <AppContainer>
       <PageLink label="Dentists" path="/dentists" />
       <PageLink label="Specialists" path="/specialists" />
-      {isEmpty(globalUuid) ? (
+      {userId === 0 ? (
         <PageLink label="Log In" path="/login" />
       ) : (
         <button onClick={logoutCallback}>LOG OUT</button>
@@ -50,12 +49,12 @@ const HomePage = ({ globalUuid, setGlobalUuid }: HomePageProps) => {
       </AppHeader>
       {showSignUp && (
         <SignUpWidget
-          setGlobalUuid={setGlobalUuid}
+          setUserId={setUserId}
           signUpToggleCallback={signUpToggleCallback}
         />
       )}
-      {globalUuid ? (
-        <div>{`Logged in as ${globalUuid}`}</div>
+      {userId > 0 ? (
+        <div>{`Logged in as ${userId}`}</div>
       ) : (
         <div>
           <button onClick={signUpToggleCallback}>
