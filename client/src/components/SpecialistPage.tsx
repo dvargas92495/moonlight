@@ -3,11 +3,11 @@ import UserPage from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
 import { getAvailablity } from "../awsClients/apiClient";
 
-type SpecialistPageProps = {
+type UserProps = {
   userId: number;
 };
 
-const SchedulerContent = ({ userId }: SpecialistPageProps) => {
+const SchedulerContent = ({ userId }: UserProps) => {
   const [availability, setAvailability] = useState({
     workHoursStart: "9:00",
     workHoursEnd: "16:00",
@@ -25,7 +25,7 @@ const SchedulerContent = ({ userId }: SpecialistPageProps) => {
   return <Scheduler {...availability} />;
 };
 
-const SpecialistPage = ({ userId }: SpecialistPageProps) => (
+const SpecialistPage = ({ userId }: UserProps) => (
   <UserPage
     userId={userId}
     header={"Your Specialist Dashboard"}
