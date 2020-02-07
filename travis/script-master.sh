@@ -31,6 +31,12 @@ aws lambda update-function-code \
     --publish \
     --zip-file fileb://signIn.zip \
 
+zip -jq getAvailability.zip ./build/getAvailability.js
+aws lambda update-function-code \
+    --function-name "moonlight-health-getAvailability" \
+    --publish \
+    --zip-file fileb://getAvailability.zip \
+
 zip -jq putAvailability.zip ./build/putAvailability.js
 aws lambda update-function-code \
     --function-name "moonlight-health-putAvailability" \

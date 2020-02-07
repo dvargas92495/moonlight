@@ -4,14 +4,7 @@ import { filter, range, reduce, reverse } from "lodash";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const { userId, workHoursStart, workHoursEnd, workDays } = JSON.parse(
-    event.body
-  );
-  const encodedWorkDays = reduce(
-    workDays,
-    (t, b, i: number) => (b ? t + Math.pow(2, i) : t),
-    0
-  );
+  const { userId } = event.queryStringParameters;
   const client = new Client({
     host: process.env.REACT_APP_RDS_MASTER_HOST,
     user: process.env.REACT_APP_RDS_MASTER_USER,
@@ -22,12 +15,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   client.connect();
   return client
     .query(
-      `INSERT INTO availability(user_id, work_hours_start, work_hours_end, work_days)
-                VALUES ($1, $2, $3, $4) 
-                ON CONFLICT (user_id) 
-                DO UPDATE SET work_hours_start=excluded.work_hours_start, work_hours_end=excluded.work_hours_end, work_days=excluded.work_days
-                RETURNING *`,
-      [userId, workHoursStart, workHoursEnd, encodedWorkDays]
+      `SELECT * FROM availability
+       WHERE user_id=($1)`,
+      [userId]
     )
     .then(res => {
       client.end();

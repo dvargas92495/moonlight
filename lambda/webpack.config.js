@@ -7,6 +7,7 @@ module.exports = {
     signUp: "./src/functions/signUp.ts",
     confirmSignUp: "./src/functions/confirmSignUp.ts",
     signIn: "./src/functions/signIn.ts",
+    getAvailability: "./src/functions/getAvailability.ts",
     putAvailability: "./src/functions/putAvailability.ts"
   },
   target: "node",
