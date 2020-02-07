@@ -6,7 +6,8 @@ module.exports = {
   entry: {
     signUp: "./src/functions/signUp.ts",
     confirmSignUp: "./src/functions/confirmSignUp.ts",
-    signIn: "./src/functions/signIn.ts"
+    signIn: "./src/functions/signIn.ts",
+    putAvailability: "./src/functions/putAvailability.ts"
   },
   target: "node",
   mode: "production",

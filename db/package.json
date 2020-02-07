@@ -4,7 +4,7 @@
   "description": "Managing Moonlight Data",
   "scripts": {
     "create": "db-migrate create",
-    "migrate": "db-migrate up -c 1 -e production",
+    "migrate": "db-migrate up -e production",
     "rollback": "db-migrate down -c 1 -e production"
   },
   "dependencies": {
