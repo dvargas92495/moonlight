@@ -23,7 +23,11 @@ exports.up = function(db) {
       foreignKey: {
         name: "fk_availability_user_id_users_id",
         table: "users",
-        mapping: "id"
+        mapping: "id",
+        rules: {
+          onDelete: "RESTRICT",
+          onUpdate: "RESTRICT"
+        }
       }
     },
     work_hours_start: { type: "string", notNull: true },
