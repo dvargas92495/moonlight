@@ -18,6 +18,14 @@ const SettingsContent = ({ userId }: UserProps) => {
   const [workHoursStart, setWorkHoursStart] = useState("");
   const [workHoursEnd, setWorkHoursEnd] = useState("");
   const [workDays, setWorkDays] = useState(initialWorkDays);
+  const handleAvailabilityCallback = useCallback(
+    ({ workHoursStart, workHoursEnd, workDays }) => {
+      setWorkHoursStart(workHoursStart);
+      setWorkHoursEnd(workHoursEnd);
+      setWorkDays(map(range7, i => includes(workDays, i)));
+    },
+    [setWorkHoursStart, setWorkHoursEnd, setWorkDays]
+  );
   const submitSettingsCallback = useCallback(() => {
     saveAvailability({
       userId,
@@ -27,17 +35,17 @@ const SettingsContent = ({ userId }: UserProps) => {
         map(workDays, (b, i) => (b ? i : -1)),
         i => i > -1
       )
-    });
-  }, [userId, workDays, workHoursStart, workHoursEnd]);
+    }).then(handleAvailabilityCallback);
+  }, [
+    userId,
+    workDays,
+    workHoursStart,
+    workHoursEnd,
+    handleAvailabilityCallback
+  ]);
   useEffect(() => {
-    getAvailablity(userId).then(
-      ({ workHoursStart, workHoursEnd, workDays }) => {
-        setWorkHoursStart(workHoursStart);
-        setWorkHoursEnd(workHoursEnd);
-        setWorkDays(map(range7, i => includes(workDays, i)));
-      }
-    );
-  }, [userId, setWorkHoursStart, setWorkHoursEnd, setWorkDays]);
+    getAvailablity(userId).then(handleAvailabilityCallback);
+  }, [userId, handleAvailabilityCallback]);
   return (
     <div>
       <Input
