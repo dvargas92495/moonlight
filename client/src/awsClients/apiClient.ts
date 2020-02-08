@@ -23,6 +23,12 @@ const apiPost = (url: string, body: object) =>
     body: JSON.stringify(body)
   }).then(handleResponse);
 
+const apiPut = (url: string, body: object) =>
+  fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
+    method: "PUT",
+    body: JSON.stringify(body)
+  }).then(handleResponse);
+
 export const signIn = (username: string, password: string) =>
   apiPost("signin", {
     username,
@@ -43,3 +49,13 @@ export const confirmSignUp = (username: string, confirmationCode: string) =>
 
 export const getAvailablity = (userId: number) =>
   apiGet("availability", { userId });
+
+type SaveAvailabilityRequest = {
+  userId: number;
+  workHoursStart: string;
+  workHoursEnd: string;
+  workDays: number[];
+};
+
+export const saveAvailability = (request: SaveAvailabilityRequest) =>
+  apiPut("availability", request);

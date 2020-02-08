@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from "react";
-import { useInputState } from "../hooks";
 import { signIn } from "../awsClients/apiClient";
 import Input from "./Input";
 import PageLink from "./PageLink";
@@ -10,8 +9,8 @@ type LoginPageProps = {
 };
 
 const LoginPage = ({ setUserId }: LoginPageProps) => {
-  const { value: username, setValue: setUsername } = useInputState("");
-  const { value: password, setValue: setPassword } = useInputState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const history = useHistory();
   const signInCallback = useCallback(
@@ -27,8 +26,13 @@ const LoginPage = ({ setUserId }: LoginPageProps) => {
   return (
     <>
       <PageLink label="Home" path="/" />
-      <Input onChange={setUsername} label="Username" />
-      <Input onChange={setPassword} label="Password" hideText />
+      <Input onChange={setUsername} label="Username" value={username} />
+      <Input
+        onChange={setPassword}
+        label="Password"
+        type="password"
+        value={password}
+      />
       <div>
         <button onClick={signInCallback}>LOG IN</button>
       </div>

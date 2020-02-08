@@ -9,7 +9,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   );
   const encodedWorkDays = reduce(
     workDays,
-    (t, b, i: number) => (b ? t + Math.pow(2, i) : t),
+    (t, i: number) => t + Math.pow(2, i),
     0
   );
   const client = new Client({

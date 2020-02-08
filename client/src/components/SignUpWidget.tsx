@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { signUp, confirmSignUp } from "../awsClients/apiClient";
-import { useInputState } from "../hooks";
 import Input from "./Input";
 
 const ErrorMessage = styled.span`
@@ -17,12 +16,9 @@ const SignUpWidget = ({
   setUserId,
   signUpToggleCallback
 }: SignUpWidgetProps) => {
-  const { value: username, setValue: setUsername } = useInputState("");
-  const { value: password, setValue: setPassword } = useInputState("");
-  const {
-    value: confirmationCode,
-    setValue: setConfirmationCode
-  } = useInputState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmationCode, setConfirmationCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
@@ -68,15 +64,24 @@ const SignUpWidget = ({
     <>
       {showConfirmationCode ? (
         <>
-          <Input onChange={setConfirmationCode} label="Confirmation Code" />
+          <Input
+            onChange={setConfirmationCode}
+            label="Confirmation Code"
+            value={confirmationCode}
+          />
           <div>
             <button onClick={confirmSignUpCallback}>Confirm</button>
           </div>
         </>
       ) : (
         <>
-          <Input onChange={setUsername} label="Username" />
-          <Input onChange={setPassword} label="Password" hideText={true} />
+          <Input onChange={setUsername} label="Username" value={username} />
+          <Input
+            onChange={setPassword}
+            label="Password"
+            type="password"
+            value={password}
+          />
           <div>
             <button onClick={signUpCallback}>SIGN UP</button>
           </div>
