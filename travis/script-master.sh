@@ -43,6 +43,12 @@ aws lambda update-function-code \
     --publish \
     --zip-file fileb://putAvailability.zip \
 
+zip -jq getSpecialistViews.zip ./build/getSpecialistViews.js
+aws lambda update-function-code \
+    --function-name "moonlight-health-getSpecialistViews" \
+    --publish \
+    --zip-file fileb://getSpecialistViews.zip \
+
 cd ../client
 npm install
 npm run build

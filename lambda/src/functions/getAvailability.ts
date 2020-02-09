@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
-import { filter, range, reverse } from "lodash";
+import { filter, isEmpty, range, reverse } from "lodash";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
@@ -21,6 +21,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     )
     .then(res => {
       client.end();
+      if (isEmpty(res.rows)) {
+        return userErrorResponse("No availability for user set");
+      }
       const {
         user_id,
         work_hours_start,

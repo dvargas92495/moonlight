@@ -1,4 +1,4 @@
-import { join, keys, map } from "lodash";
+import { join, keys, map, isEmpty } from "lodash";
 
 const handleResponse = (r: Response) =>
   r.json().then(b => {
@@ -11,7 +11,9 @@ const handleResponse = (r: Response) =>
 
 const apiGet = (url: string, queryParams: { [key: string]: any }) =>
   fetch(
-    `${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}?${join(
+    `${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}${
+      isEmpty(queryParams) ? "" : "?"
+    }${join(
       map(keys(queryParams), k => `${k}=${queryParams[k]}`),
       "&"
     )}`
@@ -53,3 +55,5 @@ type SaveAvailabilityRequest = {
 
 export const saveAvailability = (request: SaveAvailabilityRequest) =>
   apiPost("availability", request);
+
+export const getSpecialistViews = () => apiGet("specialist-views", {});

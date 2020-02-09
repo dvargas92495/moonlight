@@ -8,7 +8,8 @@ module.exports = {
     confirmSignUp: "./src/functions/confirmSignUp.ts",
     signIn: "./src/functions/signIn.ts",
     getAvailability: "./src/functions/getAvailability.ts",
-    putAvailability: "./src/functions/putAvailability.ts"
+    putAvailability: "./src/functions/putAvailability.ts",
+    getSpecialistViews: "./src/functions/getSpecialistViews.ts"
   },
   target: "node",
   mode: "production",

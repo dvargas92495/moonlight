@@ -3,9 +3,7 @@ import {
   ScheduleComponent,
   Day,
   Week,
-  WorkWeek,
   Month,
-  Agenda,
   Inject
 } from "@syncfusion/ej2-react-schedule";
 import "@syncfusion/ej2-base/styles/material.css";
@@ -23,12 +21,14 @@ type SchedulerProps = {
   workHoursStart: string;
   workHoursEnd: string;
   workDays: number[];
+  personal?: boolean;
 };
 
 const Scheduler = ({
   workHoursStart,
   workHoursEnd,
-  workDays
+  workDays,
+  personal
 }: SchedulerProps) => (
   <ScheduleComponent
     workHours={{ start: workHoursStart, end: workHoursEnd }}
@@ -36,7 +36,7 @@ const Scheduler = ({
     startHour="07:00"
     endHour="19:00"
   >
-    <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+    <Inject services={personal ? [Day, Week, Month] : [Week]} />
   </ScheduleComponent>
 );
 
