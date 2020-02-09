@@ -1,6 +1,9 @@
 #!/bin/bash
 
-./terraform --version
+cd terraform
+./terraform init
+./terraform plan
+./terraform apply -auto-approve
 
 # ENV_NUMBER=1
 # ENV_NAME="env${ENV_NUMBER}-qa-moonlight-health"
@@ -18,43 +21,6 @@
 # cd ../client
 # npm test
 # npm run build
-
-# DOMAIN="env${ENV_NUMBER}.qa.moonlight-health.com"
-
-# aws s3api create-bucket --bucket $DOMAIN
-# aws s3 website "s3://${DOMAIN}" --index-document index.html --error-document index.html
-# aws s3api put-bucket-tagging --bucket $DOMAIN --tagging TagSet="[{Key=Application,Value=Moonlight}]"
-# aws s3api put-public-access-block --bucket $DOMAIN --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=false
-# aws s3api put-bucket-policy --bucket $DOMAIN --policy "{
-#   \"Version\": \"2012-10-17\",
-#   \"Statement\": [
-#     {
-#       \"Sid\": \"RestrictedWriteObjects\",
-#       \"Effect\": \"Allow\",
-#       \"Principal\": {
-#         \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-health-admin\"
-#       },
-#       \"Action\": [\"s3:PutObject\", \"s3:DeleteObject\"],
-#       \"Resource\": \"arn:aws:s3:::${DOMAIN}/*\"
-#     },
-#     {
-#       \"Sid\": \"RestrictedReadBuckets\",
-#       \"Effect\": \"Allow\",
-#       \"Principal\": {
-#         \"AWS\": \"arn:aws:iam::643537615676:user/moonlight-health-admin\"
-#       },
-#       \"Action\": \"s3:ListBucket\",
-#       \"Resource\": \"arn:aws:s3:::${DOMAIN}\"
-#     },
-#     {
-#       \"Sid\": \"PublicReadObject\",
-#       \"Effect\": \"Allow\",
-#       \"Principal\": \"*\",
-#       \"Action\": \"s3:GetObject\",
-#       \"Resource\": \"arn:aws:s3:::${DOMAIN}/*\"
-#     }
-#   ]
-# }"
 # aws s3 sync build "s3://${DOMAIN}"
 
 # ROUTE53_CHANGE_ID=$(aws route53 change-resource-record-sets --hosted-zone-id Z18VX8M08PX0TW --query "ChangeInfo.Id" --output text --change-batch "{

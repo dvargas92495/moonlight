@@ -10,6 +10,9 @@ env:
     - secure: "fRBYmhxKNIhDXxoDeRWvHiXhWaLRXA9KuuPIKnWGoLgfMW0B6umUqTGwcH4N1IuEj4G/67xZpLkcHlw3Ae6n1mWPc7LRuqRyQjNKk5m/RXC/QO6Mk5kkYwZ6coWJGA4nkkBIZLwznxNMY5J4CBsHNEHEzjgi/PHnjT4lD7A1u8lEA7L/q7mJmAnP9R8zJrs7R57H3SqtknvkAmRqKNq9m2r3E158rn4+LJqkPeyxWU8un9fcV6J9zJMNAQ7j9KP2yP2QWGmZVvT5qi4XflTcNNYHGGTuzc/RLlQ1Dic/PRmWZZfdqEOZcQWpVI0yS0Nc/oXR205WKUDX63Er3BP/Oai3nYwtxyVtxTRvS1ydrRCvjY+U2bBc2c0GKtvypDfMqTrlCOEi3C7b2E8K17dcaW44K7cjF/KhIte1zzF6ZsCdlEb+X2KQKYWh2VlEN+0F2NumV1FFfyQkzj4pSsXvCAfSKEbfT5TPRh9n4fWypzmKX1AD3lpZwrFIxa/lphdTtSUlxuzXPVOYQuOSyNn2VfbTbBFi6quSxqM1BsFXZuwDXDZn5cOSAkqqveQO4g+Z6FYsSdY3Q/kLQYsAHbF3JU9/9sPkFxfrBr0+MmcS/1TCNqh8wvGcBdp8tDuFzjBbu1KJAUy9l5LicSmKQQ4lXB3WOmU/g6q9odOfoRpb9fg="
     - secure: "SN2+5cV5GzU/6Yx934ICvdS2au7450jtkqSNb6dIe6wqziVD8x9sS6N5E7+GBgyufAWfH3WsNH24khwcjWXyq3Syc+rCD/0tMLd6VISvzKSoyw7YFZF1VuriHnAPx0VypZPg9tISKeJXR+u813Ajp8jFo3UabJXtTSZHQWPfcozFpCViKYBnpOOt7nA0U4dmX8P4MOaN2Pf3bBGNDVUQ6VlTPfc9KA1SkAryxxb6yIpNi132EN3qTsRXRMACfyYyqOXXY77V65Z2NTuzGpYC8LlW2nM5geYo3gll/GSexT0sU9AUbrl0ly2I8RLXpgfyQnESlpFpQq1aGwo8va9iQC/H/Peutq6vRalV+Zuom7eHjyEY+89D70rt0hHPGXYqhNIMiifXaAb8hyToNzRTq2cpQ0gr+dZF6TtdJjHSE3h+ykhvj5A0ueJ3iALgfqydvYino7VZH9QNcgGLYM6ILyJcwhhVfpSPbWVTvXDv9mk7oBJ+Wqhny+vzuuyFYzYtrp2ss1vFwzJkIAQn/mBpzfXitYthosyebxIXbZV2jbjgYWb3t4+LhsmDXUfn0YhAY0krc/0mLTZ5B8GwxZN5nC9i3bvKpVRFPo74mAEwg9TzibBVcXQOvFOmaiCHLFkUHCM7JgOF9wzPllTUVgfnVGU4qJccep+sJ6P2uO7NtBo="
     - CYPRESS_RECORD_KEY=4be3dc17-34bf-44aa-bcea-c0a869a8d7a4
+    - TF_CLI_CONFIG_FILE=/home/travis/.terraformrc
+    - TF_IN_AUTOMATION=true
+    - secure: "kFq6rd8vPr0qIujLcZEqSRlACaH4IDcU1Z0ebf1WwISulZBO5Vgh9kZOCc4QmggbMuAKAvTx3W5BAxYu6JDVVRW/awDHJ6RVfJ909xh2vKN+e/44TRD/u9ZpYnu/32sOhnRYEiZH3BbdBOBi5L03D37Mr4eK6U8KZuusX0Z9+oqYDwA8ldmaw69CCALhpE7BjlQOFBir7mrnV0TaM0QJnW88TLYEHQslyGi8lDqJ3UX8vKqToOHKsfks01UUGTT/4ShcMjLvXXhTAbruMmo9BrpkpRSRyqqFHSkuMEH3grns4WK3pYjrXJ+NgTG/9lUiEIaFcIHBviPd68I43iPndMk/d3NUPf9iR2SbEYhRM2O6dE2l/IK+bEIEie0RUfNGIXwMEqp3L3rUE9o9PzKBWEXnDiI1oIUnl5JqbSY0XD2ibfpbvuvQs409CXn3+5cAkP4PQOeUbGMjRoE0/ONvlpYlIHfGD6BEyRpZEENxbF+TS5ARw0oWT2LzfB44tdtxVj6av1GydSM1yfOPREALDtFs4EpU/ickVYGBh0U5cAOMpdj2qtSeGM8IH6YvGd1blwwyLtoBowZLnn+GfHmw1ff5gGpdXxo7gvd6sHb8jkVgB0t7T3KibLqh/8Yntxpstdr4e7btUapUltTQ6W3WDA3zAPqAZJKRMbSmThGaA78="
 
 addons:
   apt:
@@ -25,7 +28,8 @@ install: travis/install.sh
 
 jobs:
   include:
-    - script: travis/script-branch.sh
+    - env: TF_WORKSPACE=env1-qa-moonlight-health
+      script: travis/script-branch.sh
       after_script: travis/after_script-branch.sh
       if: branch != master
     - script: travis/script-master.sh
