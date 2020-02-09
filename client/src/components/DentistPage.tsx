@@ -18,6 +18,9 @@ type SpecialistView = {
 const SpecialistViewContainer = styled.div`
   width: 50%;
   height: 50%;
+  display: inline-block;
+  overflow-y: scroll;
+  padding: 10px;
 `;
 
 const SpecialistsContent = () => {
