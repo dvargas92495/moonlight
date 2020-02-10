@@ -2,26 +2,26 @@
 
 cd terraform
 ./terraform init
-./terraform plan
 ./terraform apply -auto-approve
 
-# ENV_NUMBER=1
-# ENV_NAME="env${ENV_NUMBER}-qa-moonlight-health"
+cd ..
+echo "
+REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
+REACT_APP_RDS_MASTER_USER_PASSWORD=${RDS_MASTER_USER_PASSWORD}
+" > client/.env.local
 
-# echo "
-# REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-# REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
-# REACT_APP_RDS_MASTER_USER_PASSWORD=${RDS_MASTER_USER_PASSWORD}
-# " > client/.env.local
-
-# cd db
+cd db
 # npm install
 # npm run migrate
 
-# cd ../client
-# npm test
-# npm run build
-# aws s3 sync build "s3://${DOMAIN}"
+cd ../client
+npm test
+npm run build
+aws s3 sync --delete build "s3://${TF_WORKSPACE}"
+
+CLOUDFRONT_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{Alias:Aliases.Items[0],Id:Id}[?Alias=='env1.qa.moonlight-health.com'].Id" --output text)
+aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
 
 # ROUTE53_CHANGE_ID=$(aws route53 change-resource-record-sets --hosted-zone-id Z18VX8M08PX0TW --query "ChangeInfo.Id" --output text --change-batch "{
 #   \"Comment\": \"Creating Alias resource record set in Route 53 for ${DOMAIN}\",
