@@ -30,7 +30,6 @@ jobs:
   include:
     - env: TF_WORKSPACE=env1-qa-moonlight-health
       script: travis/script-branch.sh
-      after_script: travis/after_script-branch.sh
       if: branch != master
     - script: travis/script-master.sh
       if: branch = master
