@@ -1,8 +1,8 @@
 #!/bin/bash
 
-./script.sh moonlight-client moonlight-health.com
+./travis/script.sh moonlight-client moonlight-health.com
 
-cd ../lambda
+cd lambda
 npm install
 npm run build
 zip -jq signUp.zip ./build/signUp.js
