@@ -39,7 +39,6 @@ const ContentContainer = styled.div`
   bottom: 0;
   left: 180px;
   right: 0;
-  overflow-y: scroll;
 `;
 
 const UserPage = ({

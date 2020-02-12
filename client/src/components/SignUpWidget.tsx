@@ -18,6 +18,7 @@ const SignUpWidget = ({
 }: SignUpWidgetProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const SignUpWidget = ({
 
   const signUpCallback = useCallback(() => {
     setLoading(true);
-    signUp(username, password)
+    signUp({ username, password, name })
       .then(({ id }) => {
         setError("");
         setShowConfirmationCode(true);
@@ -37,7 +38,7 @@ const SignUpWidget = ({
         setError(e.message);
         setLoading(false);
       });
-  }, [username, password, setError]);
+  }, [username, password, name, setError]);
 
   const confirmSignUpCallback = useCallback(() => {
     setLoading(true);
@@ -82,6 +83,7 @@ const SignUpWidget = ({
             type="password"
             value={password}
           />
+          <Input onChange={setName} label="Name" value={name} />
           <div>
             <button onClick={signUpCallback}>SIGN UP</button>
           </div>

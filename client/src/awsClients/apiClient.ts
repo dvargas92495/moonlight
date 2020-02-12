@@ -31,11 +31,12 @@ export const signIn = (username: string, password: string) =>
     password
   });
 
-export const signUp = (username: string, password: string) =>
-  apiPost("signup", {
-    username,
-    password
-  });
+type SignUpRequest = {
+  username: string;
+  password: string;
+  name: string;
+};
+export const signUp = (request: SignUpRequest) => apiPost("signup", request);
 
 export const confirmSignUp = (username: string, confirmationCode: string) =>
   apiPost("confirm-signup", {
