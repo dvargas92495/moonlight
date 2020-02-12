@@ -17,10 +17,13 @@ import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
 
-type SchedulerProps = {
+export type AvailabilityProps = {
   workHoursStart: string;
   workHoursEnd: string;
   workDays: number[];
+};
+
+type SchedulerProps = AvailabilityProps & {
   personal?: boolean;
 };
 
