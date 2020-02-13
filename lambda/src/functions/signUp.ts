@@ -15,13 +15,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     .signUp({
       ...hashObj,
       Password,
-      Username,
-      UserAttributes: [
-        {
-          Name: "name",
-          Value: name
-        }
-      ]
+      Username
     })
     .promise()
     .then(({ UserConfirmed, UserSub }) => {
@@ -41,7 +35,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           .then(res => {
             client.end();
             const { id } = res.rows[0];
-            return okResponse({ id });
+            return okResponse({ id, name });
           });
       }
     })

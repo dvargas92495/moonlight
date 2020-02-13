@@ -73,8 +73,18 @@ const SettingsContent = ({ userId }: UserProps) => {
         ))}
       </div>
       <div>
-        <button onClick={submitSettingsCallback}>SUBMIT</button>
+        <button onClick={submitSettingsCallback}>SAVE</button>
       </div>
+    </div>
+  );
+};
+
+const ProfileContent = ({ userId }: UserProps) => {
+  const [name, setName] = useState("");
+  return (
+    <div>
+      <Input value={name} onChange={setName} label="Name" />
+      <button>SAVE</button>
     </div>
   );
 };
@@ -97,6 +107,7 @@ const SpecialistPage = ({ userId }: UserProps) => (
     header={"Your Specialist Dashboard"}
     initialTab={"schedule"}
     tabContent={{
+      profile: <ProfileContent userId={userId} />,
       settings: <SettingsContent userId={userId} />,
       schedule: <SchedulerContent userId={userId} />
     }}
