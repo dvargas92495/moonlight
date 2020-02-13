@@ -30,6 +30,8 @@ const Sidebar = styled.div`
 const SidebarTab = styled.div`
   height: 48px;
   color: white;
+  vertical-align: middle;
+  horizontal-align: center;
 `;
 
 const ContentContainer = styled.div`
@@ -57,7 +59,7 @@ const UserPage = ({
         <StyledHeader>{header}</StyledHeader>
         {map(keys(tabContent), (t, i) => (
           <SidebarTab key={i} onClick={() => setTab(t)}>
-            {t}
+            {t.toUpperCase()}
           </SidebarTab>
         ))}
       </Sidebar>

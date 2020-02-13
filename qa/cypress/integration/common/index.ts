@@ -35,12 +35,40 @@ Given("I type {string} into {word} input", (value, ordinal) => {
   fillInput(value, ordinalToIndex(ordinal));
 });
 
+When("I type {string} into {string} input", (value, label) => {
+  cy.get(`span:contains("${label}")`)
+    .parent()
+    .find("input")
+    .clear()
+    .type(value);
+});
+
+When("I check {string} input", label => {
+  cy.get(`span:contains("${label}")`)
+    .parent()
+    .find('input[type="checkbox"]')
+    .check();
+});
+
+When("I uncheck {string} input", label => {
+  cy.get(`span:contains("${label}")`)
+    .parent()
+    .find('input[type="checkbox"]')
+    .uncheck();
+});
+
 When("I click button with text {string}", buttonText => {
   cy.get(`button:contains("${buttonText}")`).click();
 });
 
 When("I click link with text {string}", linkText => {
   cy.get(`a:contains("${linkText}")`).click();
+});
+
+When("I click {word}", text => {
+  cy.get(`div:contains("${text}")`)
+    .last()
+    .click();
 });
 
 Then("I should see {string}", content => {
