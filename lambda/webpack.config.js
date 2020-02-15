@@ -9,6 +9,7 @@ module.exports = {
     signIn: "./src/functions/signIn.ts",
     getAvailability: "./src/functions/getAvailability.ts",
     putAvailability: "./src/functions/putAvailability.ts",
+    postEvents: "./src/functions/postEvents.ts",
     getProfile: "./src/functions/getProfile.ts",
     putProfile: "./src/functions/putProfile.ts",
     getSpecialistViews: "./src/functions/getSpecialistViews.ts"
