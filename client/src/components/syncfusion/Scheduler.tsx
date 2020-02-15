@@ -1,5 +1,13 @@
 import React, { useCallback, useState, useEffect } from "react";
-import { format } from "date-fns";
+import {
+  format,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth
+} from "date-fns";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -74,6 +82,27 @@ const QuickInfoTemplatesFooter: any = () => (
   </button>
 );
 
+const getScheduleBounds = (currentDate: Date, currentView: string) => {
+  if (currentView === "Day") {
+    return {
+      startTime: startOfDay(currentDate),
+      endTime: endOfDay(currentDate)
+    };
+  } else if (currentView === "Week") {
+    return {
+      startTime: startOfWeek(currentDate),
+      endTime: endOfWeek(currentDate)
+    };
+  } else if (currentView === "Month") {
+    return {
+      startTime: startOfMonth(currentDate),
+      endTime: endOfMonth(currentDate)
+    };
+  } else {
+    throw new Error(`Unknown Current View: ${currentView}`);
+  }
+};
+
 const Scheduler = ({
   userId,
   viewUserId,
@@ -83,6 +112,8 @@ const Scheduler = ({
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
   const [dataSource, setDataSource] = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState("Week");
   const actionBegin = useCallback(
     ({ requestType, ...rest }) => {
       switch (requestType) {
@@ -103,20 +134,33 @@ const Scheduler = ({
     },
     [userId, viewUserId]
   );
+  const navigating = useCallback(
+    ({ action, currentDate, currentView }) => {
+      if (action === "date") {
+        setCurrentDate(currentDate);
+      } else if (action === "view") {
+        setCurrentView(currentView);
+      }
+    },
+    [setCurrentDate, setCurrentView]
+  );
   useEffect(() => {
+    const { startTime, endTime } = getScheduleBounds(currentDate, currentView);
     getEvents({
       userId,
       viewUserId,
-      startTime: new Date(2020, 2, 9),
-      endTime: new Date(2020, 2, 16)
+      startTime: startTime.toJSON(),
+      endTime: endTime.toJSON()
     }).then(events => setDataSource(events));
-  }, [userId, viewUserId, setDataSource]);
+  }, [userId, viewUserId, currentDate, currentView, setDataSource]);
   return (
     <ScheduleComponent
       workHours={{ start: workHoursStart, end: workHoursEnd }}
       workDays={workDays}
-      startHour="07:00"
-      endHour="19:00"
+      startHour="06:00"
+      endHour="21:00"
+      height="100%"
+      timeScale={{ slotCount: 1 }}
       quickInfoTemplates={
         personal
           ? {}
@@ -126,6 +170,7 @@ const Scheduler = ({
             }
       }
       actionBegin={actionBegin}
+      navigating={navigating}
       eventSettings={{ dataSource }}
     >
       <ViewsDirective>

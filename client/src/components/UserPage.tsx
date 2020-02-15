@@ -15,6 +15,7 @@ type UserPageProps = {
 
 const StyledHeader = styled.header`
   color: white;
+  margin-left: 10px;
 `;
 
 const Sidebar = styled.div`

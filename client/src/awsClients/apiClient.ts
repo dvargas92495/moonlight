@@ -84,8 +84,8 @@ export const createEvent = (request: CreateEventRequest) =>
 type GetEventsRequest = {
   userId: number;
   viewUserId: number;
-  startTime: Date;
-  endTime: Date;
+  startTime: string;
+  endTime: string;
 };
 export const getEvents = (request: GetEventsRequest) =>
   apiGet("events", request);

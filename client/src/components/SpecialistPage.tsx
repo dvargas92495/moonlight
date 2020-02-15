@@ -117,7 +117,7 @@ const SchedulerContent = ({ userId }: UserProps) => {
   useEffect(() => {
     getAvailablity(userId).then(a => setAvailability(a));
   }, [userId, setAvailability]);
-  return <Scheduler {...availability} viewUserId={userId} />;
+  return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
 };
 
 const SpecialistPage = ({ userId }: UserProps) => (
