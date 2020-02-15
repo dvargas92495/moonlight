@@ -68,4 +68,15 @@ type SaveAvailabilityRequest = {
 export const saveAvailability = (request: SaveAvailabilityRequest) =>
   apiPost("availability", request);
 
-export const getSpecialistViews = () => apiGet("specialist-views", {});
+export const getSpecialistViews = (userId: number) =>
+  apiGet("specialist-views", { userId });
+
+type CreateEventRequest = {
+  userId: number;
+  createdBy: number;
+  Subject: string;
+  StartTime: Date;
+  EndTime: Date;
+};
+export const createEvent = (request: CreateEventRequest) =>
+  apiPost("events", request);
