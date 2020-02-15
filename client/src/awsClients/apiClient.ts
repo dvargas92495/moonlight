@@ -44,6 +44,17 @@ export const confirmSignUp = (username: string, confirmationCode: string) =>
     confirmationCode
   });
 
+export const getProfile = (userId: number) => apiGet("profile", { userId });
+
+type SaveProfileRequest = {
+  userId: number;
+  firstName: string;
+  lastName: string;
+};
+
+export const saveProfile = (request: SaveProfileRequest) =>
+  apiPost("profile", request);
+
 export const getAvailablity = (userId: number) =>
   apiGet("availability", { userId });
 
