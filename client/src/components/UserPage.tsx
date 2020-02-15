@@ -31,7 +31,7 @@ const SidebarTab = styled.div`
   height: 48px;
   color: white;
   vertical-align: middle;
-  horizontal-align: center;
+  margin-left: 10px;
 `;
 
 const ContentContainer = styled.div`

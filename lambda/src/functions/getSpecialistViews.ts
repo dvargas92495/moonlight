@@ -13,8 +13,10 @@ export const handler = async () => {
   client.connect();
   return client
     .query(
-      `SELECT a.* FROM users u
-       INNER JOIN availability a ON u.id = a.user_id`
+      `SELECT a.*, CONCAT(p.first_name, ' ', p.last_name) as full_name 
+       FROM users u
+       INNER JOIN availability a ON u.id = a.user_id
+       INNER JOIN profile p ON u.id = p.user_id`
     )
     .then(res => {
       client.end();
@@ -23,7 +25,13 @@ export const handler = async () => {
       }
       const specialists = map(
         res.rows,
-        ({ user_id, work_hours_start, work_hours_end, work_days }) => {
+        ({
+          user_id,
+          work_hours_start,
+          work_hours_end,
+          work_days,
+          full_name
+        }) => {
           let encodedValue = work_days;
           const decodedWorkDays = filter(range(6, -1, -1), i => {
             const powerOf2 = Math.pow(2, i);
@@ -38,7 +46,8 @@ export const handler = async () => {
             userId: user_id,
             workHoursStart: work_hours_start,
             workHoursEnd: work_hours_end,
-            workDays: reverse(decodedWorkDays)
+            workDays: reverse(decodedWorkDays),
+            fullName: full_name
           };
         }
       );

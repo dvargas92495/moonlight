@@ -13,7 +13,11 @@ type DentistPageProps = {
   userId: number;
 };
 
-type SpecialistView = DentistPageProps & AvailabilityProps;
+type SelectedSchedule = DentistPageProps & AvailabilityProps;
+
+type SpecialistView = SelectedSchedule & {
+  fullName: string;
+};
 
 const SpecialistOptionsContainer = styled.div`
   width: 50%;
@@ -41,7 +45,7 @@ const SpecialistsContent = () => {
   const [
     selectedSchedule,
     setSelectedSchedule
-  ] = useState<SpecialistView | null>(null);
+  ] = useState<SelectedSchedule | null>(null);
   useEffect(() => {
     getSpecialistViews().then(s => setSpecialistViews(s));
   }, [setSpecialistViews]);
@@ -53,7 +57,7 @@ const SpecialistsContent = () => {
             selected={selectedSchedule?.userId === v.userId}
             key={v.userId}
           >
-            <div>{v.userId}</div>
+            <div>{v.fullName}</div>
             <button onClick={() => setSelectedSchedule(v)}>
               {"SEE AVAILABILITY"}
             </button>
