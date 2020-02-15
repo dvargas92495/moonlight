@@ -1,8 +1,10 @@
 import { Client } from "pg";
 import { filter, isEmpty, range, reverse, map } from "lodash";
 import { okResponse, userErrorResponse } from "../layers/util";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
-export const handler = async () => {
+export const handler = async (event: APIGatewayProxyEvent) => {
+  const { userId } = event.queryStringParameters;
   const client = new Client({
     host: process.env.REACT_APP_RDS_MASTER_HOST,
     user: process.env.REACT_APP_RDS_MASTER_USER,
@@ -16,7 +18,9 @@ export const handler = async () => {
       `SELECT a.*, CONCAT(p.first_name, ' ', p.last_name) as full_name 
        FROM users u
        INNER JOIN availability a ON u.id = a.user_id
-       INNER JOIN profile p ON u.id = p.user_id`
+       INNER JOIN profile p ON u.id = p.user_id
+       WHERE u.id <> ($1)`,
+      [userId]
     )
     .then(res => {
       client.end();

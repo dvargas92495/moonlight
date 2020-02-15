@@ -113,15 +113,11 @@ const SettingsContent = ({ userId }: UserProps) => {
 };
 
 const SchedulerContent = ({ userId }: UserProps) => {
-  const [availability, setAvailability] = useState({
-    workHoursStart: "9:00",
-    workHoursEnd: "17:00",
-    workDays: [1, 2, 3, 4, 5]
-  });
+  const [availability, setAvailability] = useState(null);
   useEffect(() => {
     getAvailablity(userId).then(a => setAvailability(a));
   }, [userId, setAvailability]);
-  return <Scheduler {...availability} personal />;
+  return <Scheduler {...availability} viewUserId={userId} />;
 };
 
 const SpecialistPage = ({ userId }: UserProps) => (

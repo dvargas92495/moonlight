@@ -20,7 +20,7 @@ type SpecialistView = SelectedSchedule & {
 };
 
 const SpecialistOptionsContainer = styled.div`
-  width: 50%;
+  width: 30%;
   display: inline-block;
   vertical-align: top;
   height: 100%;
@@ -34,21 +34,21 @@ const SpecialistOption = styled.div`
 `;
 
 const SpecialistViewContainer = styled.div`
-  width: 50%;
+  width: 70%;
   display: inline-block;
   overflow-y: scroll;
   height: 100%;
 `;
 
-const SpecialistsContent = () => {
+const SpecialistsContent = ({ userId }: DentistPageProps) => {
   const [specialistViews, setSpecialistViews] = useState([]);
   const [
     selectedSchedule,
     setSelectedSchedule
   ] = useState<SelectedSchedule | null>(null);
   useEffect(() => {
-    getSpecialistViews().then(s => setSpecialistViews(s));
-  }, [setSpecialistViews]);
+    getSpecialistViews(userId).then(s => setSpecialistViews(s));
+  }, [userId, setSpecialistViews]);
   return (
     <>
       <SpecialistOptionsContainer>
@@ -59,14 +59,14 @@ const SpecialistsContent = () => {
           >
             <div>{v.fullName}</div>
             <button onClick={() => setSelectedSchedule(v)}>
-              {"SEE AVAILABILITY"}
+              SEE AVAILABILITY
             </button>
           </SpecialistOption>
         ))}
       </SpecialistOptionsContainer>
       {selectedSchedule && (
         <SpecialistViewContainer>
-          <Scheduler {...selectedSchedule} />
+          <Scheduler {...selectedSchedule} viewUserId={userId} />
         </SpecialistViewContainer>
       )}
     </>
@@ -80,7 +80,7 @@ const DentistPage = ({ userId }: DentistPageProps) => (
       header="Your Dentist Dashboard"
       initialTab="specialists"
       tabContent={{
-        specialists: <SpecialistsContent />
+        specialists: <SpecialistsContent userId={userId} />
       }}
     />
   </>
