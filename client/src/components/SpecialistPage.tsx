@@ -2,9 +2,15 @@ import React, { useState, useEffect, useCallback } from "react";
 import { filter, includes, map, range } from "lodash";
 import UserPage from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
-import { getAvailablity, saveAvailability } from "../awsClients/apiClient";
+import {
+  getAvailablity,
+  saveAvailability,
+  saveProfile,
+  getProfile
+} from "../awsClients/apiClient";
 import Input from "./Input";
 import Checkbox from "./Checkbox";
+import SaveButton from "./SaveButton";
 
 type UserProps = {
   userId: number;
@@ -13,6 +19,37 @@ type UserProps = {
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
 const initialWorkDays = map(range7, () => false);
+
+const ProfileContent = ({ userId }: UserProps) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const handleProfileCallback = useCallback(
+    ({ firstName, lastName }) => {
+      setFirstName(firstName);
+      setLastName(lastName);
+    },
+    [setFirstName, setLastName]
+  );
+  const saveProfileCallback = useCallback(
+    () =>
+      saveProfile({
+        firstName,
+        lastName,
+        userId
+      }).then(handleProfileCallback),
+    [userId, firstName, lastName, handleProfileCallback]
+  );
+  useEffect(() => {
+    getProfile(userId).then(handleProfileCallback);
+  }, [userId, handleProfileCallback]);
+  return (
+    <div>
+      <Input value={firstName} onChange={setFirstName} label="First Name" />
+      <Input value={lastName} onChange={setLastName} label="Last Name" />
+      <SaveButton apiCall={saveProfileCallback} />
+    </div>
+  );
+};
 
 const SettingsContent = ({ userId }: UserProps) => {
   const [workHoursStart, setWorkHoursStart] = useState("");
@@ -26,23 +63,19 @@ const SettingsContent = ({ userId }: UserProps) => {
     },
     [setWorkHoursStart, setWorkHoursEnd, setWorkDays]
   );
-  const submitSettingsCallback = useCallback(() => {
-    saveAvailability({
-      userId,
-      workHoursStart,
-      workHoursEnd,
-      workDays: filter(
-        map(workDays, (b, i) => (b ? i : -1)),
-        i => i > -1
-      )
-    }).then(handleAvailabilityCallback);
-  }, [
-    userId,
-    workDays,
-    workHoursStart,
-    workHoursEnd,
-    handleAvailabilityCallback
-  ]);
+  const submitSettingsCallback = useCallback(
+    () =>
+      saveAvailability({
+        userId,
+        workHoursStart,
+        workHoursEnd,
+        workDays: filter(
+          map(workDays, (b, i) => (b ? i : -1)),
+          i => i > -1
+        )
+      }).then(handleAvailabilityCallback),
+    [userId, workDays, workHoursStart, workHoursEnd, handleAvailabilityCallback]
+  );
   useEffect(() => {
     getAvailablity(userId).then(handleAvailabilityCallback);
   }, [userId, handleAvailabilityCallback]);
@@ -73,18 +106,8 @@ const SettingsContent = ({ userId }: UserProps) => {
         ))}
       </div>
       <div>
-        <button onClick={submitSettingsCallback}>SAVE</button>
+        <SaveButton apiCall={submitSettingsCallback} />
       </div>
-    </div>
-  );
-};
-
-const ProfileContent = ({ userId }: UserProps) => {
-  const [name, setName] = useState("");
-  return (
-    <div>
-      <Input value={name} onChange={setName} label="Name" />
-      <button>SAVE</button>
     </div>
   );
 };

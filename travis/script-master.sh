@@ -35,6 +35,18 @@ aws lambda update-function-code \
     --publish \
     --zip-file fileb://putAvailability.zip \
 
+zip -jq getProfile.zip ./build/getProfile.js
+aws lambda update-function-code \
+    --function-name "moonlight-health-getProfile" \
+    --publish \
+    --zip-file fileb://getProfile.zip \
+
+zip -jq putProfile.zip ./build/putProfile.js
+aws lambda update-function-code \
+    --function-name "moonlight-health-putProfile" \
+    --publish \
+    --zip-file fileb://putProfile.zip \
+
 zip -jq getSpecialistViews.zip ./build/getSpecialistViews.js
 aws lambda update-function-code \
     --function-name "moonlight-health-getSpecialistViews" \
