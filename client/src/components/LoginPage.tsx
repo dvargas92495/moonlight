@@ -3,6 +3,7 @@ import { signIn } from "../awsClients/apiClient";
 import Input from "./Input";
 import PageLink from "./PageLink";
 import { useHistory } from "react-router-dom";
+import ApiButton from "./ApiButton";
 
 type LoginPageProps = {
   setUserId: (userId: number) => void;
@@ -11,17 +12,14 @@ type LoginPageProps = {
 const LoginPage = ({ setUserId }: LoginPageProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const history = useHistory();
   const signInCallback = useCallback(
     () =>
-      signIn(username, password)
-        .then(({ id = 1 }) => {
-          setUserId(id);
-          history.push("/");
-        })
-        .catch(e => setError(e.message)),
-    [username, password, history, setError, setUserId]
+      signIn(username, password).then(({ id }) => {
+        setUserId(id);
+        history.push("/");
+      }),
+    [username, password, history, setUserId]
   );
   return (
     <>
@@ -34,9 +32,8 @@ const LoginPage = ({ setUserId }: LoginPageProps) => {
         value={password}
       />
       <div>
-        <button onClick={signInCallback}>LOG IN</button>
+        <ApiButton apiCall={signInCallback} label="log in" />
       </div>
-      {error && <div>{error}</div>}
     </>
   );
 };

@@ -34,8 +34,8 @@ export const signIn = (username: string, password: string) =>
 type SignUpRequest = {
   username: string;
   password: string;
-  name: string;
 };
+
 export const signUp = (request: SignUpRequest) => apiPost("signup", request);
 
 export const confirmSignUp = (username: string, confirmationCode: string) =>
@@ -80,3 +80,12 @@ type CreateEventRequest = {
 };
 export const createEvent = (request: CreateEventRequest) =>
   apiPost("events", request);
+
+type GetEventsRequest = {
+  userId: number;
+  viewUserId: number;
+  startTime: Date;
+  endTime: Date;
+};
+export const getEvents = (request: GetEventsRequest) =>
+  apiGet("events", request);

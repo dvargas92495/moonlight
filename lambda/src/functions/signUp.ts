@@ -7,9 +7,7 @@ import { Client } from "pg";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const { username: Username, password: Password, name } = JSON.parse(
-    event.body
-  );
+  const { username: Username, password: Password } = JSON.parse(event.body);
   const hashObj = createSecretHashObj(Username);
   return cognitoIdentityServiceProvider
     .signUp({
@@ -35,7 +33,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           .then(res => {
             client.end();
             const { id } = res.rows[0];
-            return okResponse({ id, name });
+            return okResponse({ id });
           });
       }
     })

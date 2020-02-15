@@ -1,19 +1,16 @@
+const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 
+const entries = fs.readdirSync("./src/functions/");
+const entry = entries.reduce(
+  (acc, e) => (acc[e.substring(0, e.length - 3)] = e),
+  {}
+);
+
 module.exports = {
-  entry: {
-    signUp: "./src/functions/signUp.ts",
-    confirmSignUp: "./src/functions/confirmSignUp.ts",
-    signIn: "./src/functions/signIn.ts",
-    getAvailability: "./src/functions/getAvailability.ts",
-    putAvailability: "./src/functions/putAvailability.ts",
-    postEvents: "./src/functions/postEvents.ts",
-    getProfile: "./src/functions/getProfile.ts",
-    putProfile: "./src/functions/putProfile.ts",
-    getSpecialistViews: "./src/functions/getSpecialistViews.ts"
-  },
+  entry,
   target: "node",
   mode: "production",
   externals: ["aws-sdk"],

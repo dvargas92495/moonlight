@@ -9,11 +9,12 @@ const ErrorSpan = styled.span`
   color: red;
 `;
 
-type SaveButtonProps = {
+type ApiButtonProps = {
   apiCall: () => Promise<void>;
+  label?: string;
 };
 
-const SaveButton = ({ apiCall }: SaveButtonProps) => {
+const ApiButton = ({ apiCall, label = "save" }: ApiButtonProps) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const onClick = useCallback(() => {
@@ -25,11 +26,11 @@ const SaveButton = ({ apiCall }: SaveButtonProps) => {
   }, [apiCall, setError, setLoading]);
   return (
     <>
-      <button onClick={onClick}>SAVE</button>
+      <button onClick={onClick}>{label.toUpperCase()}</button>
       {loading && <LoadingSpan>Loading...</LoadingSpan>}
       {error && <ErrorSpan>{error}</ErrorSpan>}
     </>
   );
 };
 
-export default SaveButton;
+export default ApiButton;

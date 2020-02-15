@@ -1,11 +1,7 @@
 import React, { useCallback, useState } from "react";
-import styled from "styled-components";
 import { signUp, confirmSignUp } from "../awsClients/apiClient";
 import Input from "./Input";
-
-const ErrorMessage = styled.span`
-  color: red;
-`;
+import ApiButton from "./ApiButton";
 
 type SignUpWidgetProps = {
   setUserId: (userId: number) => void;
@@ -18,49 +14,27 @@ const SignUpWidget = ({
 }: SignUpWidgetProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [confirmationCode, setConfirmationCode] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
   const [uuid, setUuid] = useState(0);
 
-  const signUpCallback = useCallback(() => {
-    setLoading(true);
-    signUp({ username, password, name })
-      .then(({ id }) => {
-        setError("");
+  const signUpCallback = useCallback(
+    () =>
+      signUp({ username, password }).then(({ id }) => {
         setShowConfirmationCode(true);
         setUuid(id);
-        setLoading(false);
-      })
-      .catch(e => {
-        setError(e.message);
-        setLoading(false);
-      });
-  }, [username, password, name, setError]);
+      }),
+    [username, password]
+  );
 
-  const confirmSignUpCallback = useCallback(() => {
-    setLoading(true);
-    confirmSignUp(username, confirmationCode)
-      .then(() => {
-        setError("");
+  const confirmSignUpCallback = useCallback(
+    () =>
+      confirmSignUp(username, confirmationCode).then(() => {
         setUserId(uuid);
         signUpToggleCallback();
-        setLoading(false);
-      })
-      .catch(e => {
-        setError(e.message);
-        setLoading(false);
-      });
-  }, [
-    username,
-    confirmationCode,
-    setError,
-    setUserId,
-    uuid,
-    signUpToggleCallback
-  ]);
+      }),
+    [username, confirmationCode, setUserId, uuid, signUpToggleCallback]
+  );
   return (
     <>
       {showConfirmationCode ? (
@@ -71,7 +45,7 @@ const SignUpWidget = ({
             value={confirmationCode}
           />
           <div>
-            <button onClick={confirmSignUpCallback}>Confirm</button>
+            <ApiButton apiCall={confirmSignUpCallback} label="Confirm" />
           </div>
         </>
       ) : (
@@ -83,17 +57,10 @@ const SignUpWidget = ({
             type="password"
             value={password}
           />
-          <Input onChange={setName} label="Name" value={name} />
           <div>
-            <button onClick={signUpCallback}>SIGN UP</button>
+            <ApiButton apiCall={signUpCallback} label="sign up" />
           </div>
         </>
-      )}
-      {loading && <div>Loading...</div>}
-      {error && (
-        <div>
-          <ErrorMessage>{error}</ErrorMessage>
-        </div>
       )}
     </>
   );

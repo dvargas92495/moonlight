@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
@@ -20,7 +20,7 @@ import "@syncfusion/ej2-navigations/styles/material.css";
 import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
-import { createEvent } from "../../awsClients/apiClient";
+import { createEvent, getEvents } from "../../awsClients/apiClient";
 
 type QuickInfoProps = {
   StartTime: Date;
@@ -82,10 +82,11 @@ const Scheduler = ({
   workDays
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
+  const [dataSource, setDataSource] = useState([]);
   const actionBegin = useCallback(
     ({ requestType, ...rest }) => {
       switch (requestType) {
-        case "eventAdd":
+        case "eventCreate":
           const { addedRecords } = rest;
           const { Subject, StartTime, EndTime } = addedRecords[0];
           createEvent({
@@ -102,17 +103,30 @@ const Scheduler = ({
     },
     [userId, viewUserId]
   );
+  useEffect(() => {
+    getEvents({
+      userId,
+      viewUserId,
+      startTime: new Date(2020, 2, 9),
+      endTime: new Date(2020, 2, 16)
+    }).then(events => setDataSource(events));
+  }, [userId, viewUserId, setDataSource]);
   return (
     <ScheduleComponent
       workHours={{ start: workHoursStart, end: workHoursEnd }}
       workDays={workDays}
       startHour="07:00"
       endHour="19:00"
-      quickInfoTemplates={{
-        content: QuickInfoTemplatesContent,
-        footer: QuickInfoTemplatesFooter
-      }}
+      quickInfoTemplates={
+        personal
+          ? {}
+          : {
+              content: QuickInfoTemplatesContent,
+              footer: QuickInfoTemplatesFooter
+            }
+      }
       actionBegin={actionBegin}
+      eventSettings={{ dataSource }}
     >
       <ViewsDirective>
         {personal && <ViewDirective option="Day" />}

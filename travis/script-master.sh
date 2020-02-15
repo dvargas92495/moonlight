@@ -19,6 +19,7 @@ update_function putAvailability
 update_function getProfile
 update_function putProfile
 update_function getSpecialistViews
+update_function getEvents
 update_function postEvents
 
 aws cloudfront create-invalidation --distribution-id E2E35W4UJ7YKON --paths "/*"

@@ -10,7 +10,7 @@ import {
 } from "../awsClients/apiClient";
 import Input from "./Input";
 import Checkbox from "./Checkbox";
-import SaveButton from "./SaveButton";
+import ApiButton from "./ApiButton";
 
 type UserProps = {
   userId: number;
@@ -46,7 +46,7 @@ const ProfileContent = ({ userId }: UserProps) => {
     <div>
       <Input value={firstName} onChange={setFirstName} label="First Name" />
       <Input value={lastName} onChange={setLastName} label="Last Name" />
-      <SaveButton apiCall={saveProfileCallback} />
+      <ApiButton apiCall={saveProfileCallback} />
     </div>
   );
 };
@@ -106,7 +106,7 @@ const SettingsContent = ({ userId }: UserProps) => {
         ))}
       </div>
       <div>
-        <SaveButton apiCall={submitSettingsCallback} />
+        <ApiButton apiCall={submitSettingsCallback} />
       </div>
     </div>
   );
