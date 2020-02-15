@@ -27,6 +27,7 @@ cache:
 install: travis/install.sh
 
 jobs:
+  fail_fast: true
   include:
     - env: TF_WORKSPACE=env1-qa-moonlight-health
       script: travis/script-branch.sh

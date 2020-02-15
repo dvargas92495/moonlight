@@ -4,10 +4,10 @@ const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 
 const entries = fs.readdirSync("./src/functions/");
-const entry = entries.reduce(
-  (acc, e) => (acc[e.substring(0, e.length - 3)] = e),
-  {}
-);
+const entry = entries.reduce((acc, e) => {
+  acc[e.substring(0, e.length - 3)] = `./src/functions/${e}`;
+  return acc;
+}, {});
 
 module.exports = {
   entry,
