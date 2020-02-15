@@ -7,6 +7,7 @@ npm install
 npm run build
 
 update_function () {
+    zip -jq $1.zip ./build/$1.js
     aws lambda update-function-code --function-name "moonlight-health-${1}" --publish --zip-file "fileb://${1}.zip"
 }
 
