@@ -197,3 +197,9 @@ resource "aws_route53_record" "AAAA" {
     evaluate_target_health = false
   }
 }
+
+module "backend" {
+  source = "./backend"
+
+  env_name = local.env_name
+}
