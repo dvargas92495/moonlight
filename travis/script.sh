@@ -13,6 +13,26 @@ cd db
 npm install
 npm run migrate
 
+cd ../lambda
+npm install
+npm run build
+
+update_function () {
+    zip -jq $1.zip ./build/$1.js
+    aws lambda update-function-code --function-name "${ENV_NAME}-${1}" --publish --zip-file "fileb://${1}.zip"
+}
+
+update_function post-signup
+update_function post-confirm-signup
+update_function post-signin
+update_function get-availability
+update_function post-availability
+update_function get-profile
+update_function post-profile
+update_function get-specialist-views
+update_function get-events
+update_function post-events
+
 cd ../client
 npm test
 npm run build

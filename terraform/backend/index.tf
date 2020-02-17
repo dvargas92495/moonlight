@@ -2,62 +2,76 @@ variable "env_name" {
   type = string
 }
 
-module "lambda-signUp" {
-  source = "./lambda"
-  name = "signUp"
-  env_name = var.env_name
+resource "aws_api_gateway_rest_api" "rest_api" {
+  name        = var.env_name
 }
 
-module "lambda-confirmSignUp" {
-  source = "./lambda"
-  name = "confirmSignUp"
-  env_name = var.env_name
+module "availability-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "availability"
+  methods      = ["get", "post"]
+  env_name    = var.env_name
 }
 
-module "lambda-signIn" {
-  source = "./lambda"
-  name = "signIn"
-  env_name = var.env_name
+module "confirm-signup-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "confirm-signup"
+  methods      = ["post"]
+  env_name    = var.env_name
 }
 
-module "lambda-getAvailability" {
-  source = "./lambda"
-  name = "getAvailability"
-  env_name = var.env_name
+module "events-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "events"
+  methods      = ["get", "post"]
+  env_name    = var.env_name
 }
 
-module "lambda-putAvailability" {
-  source = "./lambda"
-  name = "putAvailability"
-  env_name = var.env_name
+module "profile-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "profile"
+  methods      = ["get", "post"]
+  env_name    = var.env_name
 }
 
-module "lambda-getProfile" {
-  source = "./lambda"
-  name = "getProfile"
-  env_name = var.env_name
+module "signin-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "signin"
+  methods      = ["post"]
+  env_name    = var.env_name
 }
 
-module "lambda-putProfile" {
-  source = "./lambda"
-  name = "putProfile"
-  env_name = var.env_name
+module "signup-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "signup"
+  methods      = ["post"]
+  env_name    = var.env_name
 }
 
-module "lambda-getSpecialistViews" {
-  source = "./lambda"
-  name = "getSpecialistViews"
-  env_name = var.env_name
-}
+module "specialist-views-resource" {
+  source      = "./resource"
 
-module "lambda-getEvents" {
-  source = "./lambda"
-  name = "getEvents"
-  env_name = var.env_name
-}
-
-module "lambda-postEvents" {
-  source = "./lambda"
-  name = "postEvents"
-  env_name = var.env_name
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "specialist-views"
+  methods      = ["get"]
+  env_name    = var.env_name
 }
