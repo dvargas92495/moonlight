@@ -79,3 +79,15 @@ resource "aws_api_gateway_integration" "integration" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.lambda_function[var.methods[count.index]].invoke_arn
 }
+
+resource "aws_lambda_permission" "apigw_lambda" {
+  count         = length(var.methods)
+
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_function[var.methods[count.index]].function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  source_arn = "arn:aws:execute-api:us-east-1:643537615676:${var.rest_api_id}/*/${upper(var.methods[count.index])}${aws_api_gateway_resource.resource.path}"
+}
