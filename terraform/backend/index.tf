@@ -4,6 +4,15 @@ variable "env_name" {
 
 resource "aws_api_gateway_rest_api" "rest_api" {
   name        = var.env_name
+  
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+}
+
+resource "aws_api_gateway_deployment" "production" {
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  stage_name  = "production"
 }
 
 module "availability-resource" {
