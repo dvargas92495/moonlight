@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 
 type InputProps = {
   onChange: (e: string) => void;
@@ -7,10 +8,19 @@ type InputProps = {
   value: string;
 };
 
+const StyledInput = styled.input`
+  width: 180px;
+  margin-left: 5px;
+`;
+
 const Input = ({ onChange, type = "text", label, value }: InputProps) => (
   <div>
     {label && <span>{label}</span>}
-    <input onChange={e => onChange(e.target.value)} type={type} value={value} />
+    <StyledInput
+      onChange={e => onChange(e.target.value)}
+      type={type}
+      value={value}
+    />
   </div>
 );
 
