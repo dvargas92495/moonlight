@@ -29,8 +29,13 @@ import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
 import { createEvent, getEvents } from "../../awsClients/apiClient";
+import { map } from "lodash";
 
 type QuickInfoProps = {
+  elementType: string;
+};
+
+type QuickInfoTemplatesContentProps = QuickInfoProps & {
   StartTime: Date;
   EndTime: Date;
 };
@@ -51,36 +56,39 @@ type SchedulerProps = AvailabilityProps & {
  */
 const QuickInfoTemplatesContent: any = ({
   StartTime,
-  EndTime
-}: QuickInfoProps) => (
-  <>
-    <div>TYPE</div>
-    <DropDownListComponent
-      dataSource={[
-        { text: "Request Booking", value: "REQUEST_BOOKING" },
-        { text: "Other", value: "OTHER" }
-      ]}
-      name="Subject"
-      className="e-field"
-    />
-    <div className="e-date-time">
-      <div className="e-date-time-icon e-icons" />
-      <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
-        StartTime,
-        "HH:mm"
-      )} - ${format(EndTime, "HH:mm")})`}</div>
-    </div>
-  </>
-);
+  EndTime,
+  elementType
+}: QuickInfoTemplatesContentProps) =>
+  elementType === "cell" && (
+    <>
+      <div>TYPE</div>
+      <DropDownListComponent
+        dataSource={[
+          { text: "Request Booking", value: "REQUEST_BOOKING" },
+          { text: "Other", value: "OTHER" }
+        ]}
+        name="Subject"
+        className="e-field"
+      />
+      <div className="e-date-time">
+        <div className="e-date-time-icon e-icons" />
+        <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
+          StartTime,
+          "HH:mm"
+        )} - ${format(EndTime, "HH:mm")})`}</div>
+      </div>
+    </>
+  );
 
-const QuickInfoTemplatesFooter: any = () => (
-  <button
-    className="e-event-create e-text-ellipsis e-control e-btn e-lib e-flat e-primary"
-    title="Save"
-  >
-    Save
-  </button>
-);
+const QuickInfoTemplatesFooter: any = ({ elementType }: QuickInfoProps) =>
+  elementType === "cell" && (
+    <button
+      className="e-event-create e-text-ellipsis e-control e-btn e-lib e-flat e-primary"
+      title="Save"
+    >
+      Save
+    </button>
+  );
 
 const getScheduleBounds = (currentDate: Date, currentView: string) => {
   if (currentView === "Day") {
@@ -111,7 +119,7 @@ const Scheduler = ({
   workDays
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
-  const [dataSource, setDataSource] = useState([]);
+  const [dataSource, setDataSource] = useState<Object[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState("Week");
   const actionBegin = useCallback(
@@ -151,7 +159,9 @@ const Scheduler = ({
       viewUserId,
       startTime: startTime.toJSON(),
       endTime: endTime.toJSON()
-    }).then(events => setDataSource(events));
+    }).then(events =>
+      setDataSource(map(events, e => ({ ...e, IsReadonly: e.isReadonly })))
+    );
   }, [userId, viewUserId, currentDate, currentView, setDataSource]);
   return (
     <ScheduleComponent

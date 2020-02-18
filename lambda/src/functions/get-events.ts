@@ -28,13 +28,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       client.end();
       return okResponse(
         map(res.rows, r => {
-          const isReadonly =
+          const IsReadonly =
             r.user_id != viewUserId && r.created_by != viewUserId;
           return {
-            Subject: isReadonly ? "BUSY" : r.subject,
+            Subject: IsReadonly ? "BUSY" : r.subject,
             StartTime: r.start_time,
             EndTime: r.end_time,
-            isReadonly,
+            IsReadonly,
             Id: r.id
           };
         })
