@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
 import UserPage from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
-import { getAvailablity, getProfile } from "../awsClients/apiClient";
+import { getAvailablity, getProfile } from "../hooks/apiClient";
 import Input from "./syncfusion/Input";
 import Checkbox from "./syncfusion/Checkbox";
 import Form from "./syncfusion/Form";

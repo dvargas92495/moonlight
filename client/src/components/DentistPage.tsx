@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import UserPage from "./UserPage";
 import Scheduler, { AvailabilityProps } from "./syncfusion/Scheduler";
 import { map } from "lodash";
-import { getSpecialistViews } from "../awsClients/apiClient";
+import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
 
 type SpecialistOptionType = {

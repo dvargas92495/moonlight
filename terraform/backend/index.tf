@@ -15,6 +15,16 @@ resource "aws_api_gateway_deployment" "production" {
   stage_name  = "production"
 }
 
+module "accept-resource" {
+  source      = "./resource"
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path        = "accept"
+  methods      = ["post"]
+  env_name    = var.env_name
+}
+
 module "availability-resource" {
   source      = "./resource"
 
