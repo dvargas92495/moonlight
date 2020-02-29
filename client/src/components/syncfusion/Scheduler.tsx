@@ -135,16 +135,13 @@ const ActionEvent = ({
   return (
     <>
       <button
-        className="e-event-save e-text-ellipsis e-btn e-lib e-flat e-primary"
+        className="e-text-ellipsis e-btn e-lib e-flat e-primary"
         title="Accept"
         onClick={() => acceptEvent({ eventId })}
       >
         Accept
       </button>
-      <button
-        className="e-event-delete e-text-ellipsis e-btn e-lib e-flat"
-        title="Reject"
-      >
+      <button className="e-text-ellipsis e-btn e-lib e-flat" title="Reject">
         Reject
       </button>
       <RequestFeedback error={error} loading={loading} />
@@ -297,7 +294,7 @@ const Scheduler = ({
         workDays={workDays}
         startHour="06:00"
         endHour="21:00"
-        height="90%"
+        height="100%"
         timeScale={{ slotCount: 1 }}
         quickInfoTemplates={{
           header: QuickInfoTemplatesHeader,
