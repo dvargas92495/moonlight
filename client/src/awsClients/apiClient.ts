@@ -19,67 +19,19 @@ const apiGet = (url: string, queryParams: { [key: string]: any }) =>
     )}`
   ).then(handleResponse);
 
-const apiPost = (url: string, body: object) =>
+export const apiPost = (url: string, body: object) =>
   fetch(`${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`, {
     method: "POST",
     body: JSON.stringify(body)
   }).then(handleResponse);
 
-export const signIn = (username: string, password: string) =>
-  apiPost("signin", {
-    username,
-    password
-  });
-
-type SignUpRequest = {
-  username: string;
-  password: string;
-};
-
-export const signUp = (request: SignUpRequest) => apiPost("signup", request);
-
-export const confirmSignUp = (username: string, confirmationCode: string) =>
-  apiPost("confirm-signup", {
-    username,
-    confirmationCode
-  });
-
 export const getProfile = (userId: number) => apiGet("profile", { userId });
-
-type SaveProfileRequest = {
-  userId: number;
-  firstName: string;
-  lastName: string;
-};
-
-export const saveProfile = (request: SaveProfileRequest) =>
-  apiPost("profile", request);
 
 export const getAvailablity = (userId: number) =>
   apiGet("availability", { userId });
 
-type SaveAvailabilityRequest = {
-  userId: number;
-  workHoursStart: string;
-  workHoursEnd: string;
-  workDays: number[];
-};
-
-export const saveAvailability = (request: SaveAvailabilityRequest) =>
-  apiPost("availability", request);
-
 export const getSpecialistViews = (userId: number) =>
   apiGet("specialist-views", { userId });
-
-type CreateEventRequest = {
-  userId: number;
-  createdBy: number;
-  Subject: string;
-  StartTime: Date;
-  EndTime: Date;
-};
-export const createEvent = (request: CreateEventRequest) =>
-  apiPost("events", request);
 
 type GetEventsRequest = {
   userId: number;
