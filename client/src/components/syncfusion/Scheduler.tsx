@@ -8,6 +8,8 @@ import {
   startOfMonth,
   endOfMonth
 } from "date-fns";
+import { map } from "lodash";
+import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -28,17 +30,29 @@ import "@syncfusion/ej2-navigations/styles/material.css";
 import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
-import { createEvent, getEvents } from "../../awsClients/apiClient";
-import { map } from "lodash";
+import { apiPost, getEvents } from "../../awsClients/apiClient";
+import Input from "./Input";
 
 type QuickInfoProps = {
   elementType: string;
 };
 
-type QuickInfoTemplatesContentProps = QuickInfoProps & {
+type TimeRangeProps = {
   StartTime: Date;
   EndTime: Date;
 };
+
+type QuickInfoTemplatesHeaderProps = QuickInfoProps & {
+  IsReadonly: boolean;
+  Subject: string;
+};
+
+type QuickInfoTemplatesContentProps = QuickInfoProps &
+  TimeRangeProps & {
+    ActionNeeded: boolean;
+  };
+
+type QuickInfoTemplatesFooterProps = QuickInfoProps;
 
 export type AvailabilityProps = {
   userId: number;
@@ -54,41 +68,86 @@ type SchedulerProps = AvailabilityProps & {
 /**
  * Syncfusion has a weird issue with type casting and Quick info templates
  */
-const QuickInfoTemplatesContent: any = ({
+const QuickInfoTemplatesHeader: any = ({
+  elementType,
+  Subject,
+  IsReadonly
+}: QuickInfoTemplatesHeaderProps) => (
+  <>
+    <div className="e-header-icon-wrapper">
+      {!IsReadonly && elementType === "event" && (
+        <button className="e-delete" title="Delete" />
+      )}
+      <button className="e-close" title="Close" />
+    </div>
+    {elementType === "event" && (
+      <div className="e-subject-wrap">
+        <div className="e-subject e-text-ellipsis">{Subject}</div>
+      </div>
+    )}
+  </>
+);
+
+const QuickInfoTemplatesContent: any = (personal: boolean) => ({
   StartTime,
   EndTime,
+  ActionNeeded,
   elementType
-}: QuickInfoTemplatesContentProps) =>
-  elementType === "cell" && (
-    <>
-      <div>TYPE</div>
-      <DropDownListComponent
-        dataSource={[
-          { text: "Request Booking", value: "REQUEST_BOOKING" },
-          { text: "Other", value: "OTHER" }
-        ]}
-        name="Subject"
-        className="e-field"
-      />
-      <div className="e-date-time">
-        <div className="e-date-time-icon e-icons" />
-        <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
-          StartTime,
-          "HH:mm"
-        )} - ${format(EndTime, "HH:mm")})`}</div>
-      </div>
-    </>
-  );
+}: QuickInfoTemplatesContentProps) => (
+  <>
+    {elementType === "cell" &&
+      (personal ? (
+        <Input placeholder="Add Title" name="Subject" />
+      ) : (
+        <>
+          <div>TYPE</div>
+          <DropDownListComponent
+            dataSource={[{ text: "Request Booking", value: "REQUEST_BOOKING" }]}
+            name="Subject"
+            className="e-field"
+          />
+        </>
+      ))}
+    <div className="e-date-time">
+      <div className="e-date-time-icon e-icons" />
+      <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
+        StartTime,
+        "hh:mm a"
+      )} - ${format(EndTime, "hh:mm a")})`}</div>
+    </div>
+    {ActionNeeded && (
+      <>
+        <button
+          className="e-event-save e-text-ellipsis e-btn e-lib e-flat e-primary"
+          title="Accept"
+        >
+          Accept
+        </button>
+        <button
+          className="e-event-delete e-text-ellipsis e-btn e-lib e-flat"
+          title="Reject"
+        >
+          Reject
+        </button>
+      </>
+    )}
+  </>
+);
 
-const QuickInfoTemplatesFooter: any = ({ elementType }: QuickInfoProps) =>
-  elementType === "cell" && (
-    <button
-      className="e-event-create e-text-ellipsis e-control e-btn e-lib e-flat e-primary"
-      title="Save"
-    >
-      Save
-    </button>
-  );
+const QuickInfoTemplatesFooter: any = ({
+  elementType
+}: QuickInfoTemplatesFooterProps) => (
+  <>
+    {elementType === "cell" && (
+      <button
+        className="e-event-create e-text-ellipsis e-control e-btn e-lib e-flat e-primary"
+        title="Save"
+      >
+        Save
+      </button>
+    )}
+  </>
+);
 
 const getScheduleBounds = (currentDate: Date, currentView: string) => {
   if (currentView === "Day") {
@@ -128,7 +187,7 @@ const Scheduler = ({
         case "eventCreate":
           const { addedRecords } = rest;
           const { Subject, StartTime, EndTime } = addedRecords[0];
-          createEvent({
+          apiPost("events", {
             userId,
             createdBy: viewUserId,
             Subject,
@@ -160,7 +219,13 @@ const Scheduler = ({
       startTime: startTime.toJSON(),
       endTime: endTime.toJSON()
     }).then(events =>
-      setDataSource(map(events, e => ({ ...e, IsReadonly: e.isReadonly })))
+      setDataSource(
+        map(events, e => ({
+          ...e,
+          StartTime: new Date(e.StartTime),
+          EndTime: new Date(e.EndTime)
+        }))
+      )
     );
   }, [userId, viewUserId, currentDate, currentView, setDataSource]);
   return (
@@ -171,14 +236,11 @@ const Scheduler = ({
       endHour="21:00"
       height="100%"
       timeScale={{ slotCount: 1 }}
-      quickInfoTemplates={
-        personal
-          ? {}
-          : {
-              content: QuickInfoTemplatesContent,
-              footer: QuickInfoTemplatesFooter
-            }
-      }
+      quickInfoTemplates={{
+        header: QuickInfoTemplatesHeader,
+        content: QuickInfoTemplatesContent(personal),
+        footer: QuickInfoTemplatesFooter
+      }}
       actionBegin={actionBegin}
       navigating={navigating}
       eventSettings={{ dataSource }}

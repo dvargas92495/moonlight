@@ -36,9 +36,7 @@ Given("I type {string} into {word} input", (value, ordinal) => {
 });
 
 When("I type {string} into {string} input", (value, label) => {
-  cy.get(`span:contains("${label}")`)
-    .parent()
-    .find("input")
+  cy.get(`input[placeholder="${label}"]`)
     .clear()
     .type(value);
 });
