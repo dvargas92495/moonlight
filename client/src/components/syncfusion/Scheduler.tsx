@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+  RefObject
+} from "react";
 import {
   format,
   startOfDay,
@@ -8,8 +14,7 @@ import {
   startOfMonth,
   endOfMonth
 } from "date-fns";
-import { map } from "lodash";
-import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars";
+import { map, reject } from "lodash";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -30,8 +35,10 @@ import "@syncfusion/ej2-navigations/styles/material.css";
 import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-splitbuttons/styles/material.css";
 import "@syncfusion/ej2-react-schedule/styles/material.css";
-import { apiPost, getEvents } from "../../awsClients/apiClient";
+import { getEvents, useApiPost } from "../../hooks/apiClient";
 import Input from "./Input";
+import RequestFeedback from "../RequestFeedback";
+import styled from "styled-components";
 
 type QuickInfoProps = {
   elementType: string;
@@ -50,6 +57,7 @@ type QuickInfoTemplatesHeaderProps = QuickInfoProps & {
 type QuickInfoTemplatesContentProps = QuickInfoProps &
   TimeRangeProps & {
     ActionNeeded: boolean;
+    Id: number;
   };
 
 type QuickInfoTemplatesFooterProps = QuickInfoProps;
@@ -64,6 +72,23 @@ export type AvailabilityProps = {
 type SchedulerProps = AvailabilityProps & {
   viewUserId: number;
 };
+
+type EventResponse = {
+  Id: number;
+  StartTime: string;
+  EndTime: string;
+};
+
+const formatEvent = (e: EventResponse) => ({
+  ...e,
+  StartTime: new Date(e.StartTime),
+  EndTime: new Date(e.EndTime)
+});
+
+const ScheduleFeedback = styled(RequestFeedback)`
+  position: fixed;
+  bottom: 0px;
+`;
 
 /**
  * Syncfusion has a weird issue with type casting and Quick info templates
@@ -88,7 +113,54 @@ const QuickInfoTemplatesHeader: any = ({
   </>
 );
 
-const QuickInfoTemplatesContent: any = (personal: boolean) => ({
+const ActionEvent = ({
+  eventId,
+  closeQuickInfoPopup,
+  dataSource,
+  setDataSource
+}: {
+  eventId: number;
+  closeQuickInfoPopup: () => void;
+  dataSource: Object[];
+  setDataSource: (events: Object[]) => void;
+}) => {
+  const { error, loading, handleSubmit: acceptEvent } = useApiPost(
+    "accept",
+    (e: EventResponse) => {
+      const otherEvents = reject(dataSource, { Id: e.Id });
+      setDataSource([...otherEvents, formatEvent(e)]);
+      closeQuickInfoPopup();
+    }
+  );
+  return (
+    <>
+      <button
+        className="e-text-ellipsis e-btn e-lib e-flat e-primary"
+        title="Accept"
+        onClick={() => acceptEvent({ eventId })}
+      >
+        Accept
+      </button>
+      <button className="e-text-ellipsis e-btn e-lib e-flat" title="Reject">
+        Reject
+      </button>
+      <RequestFeedback error={error} loading={loading} />
+    </>
+  );
+};
+
+const QuickInfoTemplatesContent: any = ({
+  personal,
+  closeQuickInfoPopup,
+  dataSource,
+  setDataSource
+}: {
+  personal: boolean;
+  closeQuickInfoPopup: () => void;
+  dataSource: Object[];
+  setDataSource: (events: Object[]) => void;
+}) => ({
+  Id,
   StartTime,
   EndTime,
   ActionNeeded,
@@ -116,20 +188,12 @@ const QuickInfoTemplatesContent: any = (personal: boolean) => ({
       )} - ${format(EndTime, "hh:mm a")})`}</div>
     </div>
     {ActionNeeded && (
-      <>
-        <button
-          className="e-event-save e-text-ellipsis e-btn e-lib e-flat e-primary"
-          title="Accept"
-        >
-          Accept
-        </button>
-        <button
-          className="e-event-delete e-text-ellipsis e-btn e-lib e-flat"
-          title="Reject"
-        >
-          Reject
-        </button>
-      </>
+      <ActionEvent
+        eventId={Id}
+        closeQuickInfoPopup={closeQuickInfoPopup}
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+      />
     )}
   </>
 );
@@ -178,16 +242,18 @@ const Scheduler = ({
   workDays
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
+  const scheduleRef = useRef() as RefObject<ScheduleComponent>;
   const [dataSource, setDataSource] = useState<Object[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState("Week");
+  const { error, loading, handleSubmit: createEvent } = useApiPost("events");
   const actionBegin = useCallback(
     ({ requestType, ...rest }) => {
       switch (requestType) {
         case "eventCreate":
           const { addedRecords } = rest;
           const { Subject, StartTime, EndTime } = addedRecords[0];
-          apiPost("events", {
+          createEvent({
             userId,
             createdBy: viewUserId,
             Subject,
@@ -199,7 +265,7 @@ const Scheduler = ({
           console.log(requestType, rest);
       }
     },
-    [userId, viewUserId]
+    [userId, viewUserId, createEvent]
   );
   const navigating = useCallback(
     ({ action, currentDate, currentView }) => {
@@ -218,40 +284,42 @@ const Scheduler = ({
       viewUserId,
       startTime: startTime.toJSON(),
       endTime: endTime.toJSON()
-    }).then(events =>
-      setDataSource(
-        map(events, e => ({
-          ...e,
-          StartTime: new Date(e.StartTime),
-          EndTime: new Date(e.EndTime)
-        }))
-      )
-    );
+    }).then(events => setDataSource(map(events, formatEvent)));
   }, [userId, viewUserId, currentDate, currentView, setDataSource]);
   return (
-    <ScheduleComponent
-      workHours={{ start: workHoursStart, end: workHoursEnd }}
-      workDays={workDays}
-      startHour="06:00"
-      endHour="21:00"
-      height="100%"
-      timeScale={{ slotCount: 1 }}
-      quickInfoTemplates={{
-        header: QuickInfoTemplatesHeader,
-        content: QuickInfoTemplatesContent(personal),
-        footer: QuickInfoTemplatesFooter
-      }}
-      actionBegin={actionBegin}
-      navigating={navigating}
-      eventSettings={{ dataSource }}
-    >
-      <ViewsDirective>
-        {personal && <ViewDirective option="Day" />}
-        <ViewDirective option="Week" />
-        {personal && <ViewDirective option="Month" />}
-      </ViewsDirective>
-      <Inject services={personal ? [Day, Week, Month] : [Week]} />
-    </ScheduleComponent>
+    <>
+      <ScheduleComponent
+        ref={scheduleRef}
+        workHours={{ start: workHoursStart, end: workHoursEnd }}
+        workDays={workDays}
+        startHour="06:00"
+        endHour="21:00"
+        height="100%"
+        timeScale={{ slotCount: 1 }}
+        quickInfoTemplates={{
+          header: QuickInfoTemplatesHeader,
+          content: QuickInfoTemplatesContent({
+            personal,
+            closeQuickInfoPopup: () =>
+              scheduleRef.current?.closeQuickInfoPopup(),
+            dataSource,
+            setDataSource
+          }),
+          footer: QuickInfoTemplatesFooter
+        }}
+        actionBegin={actionBegin}
+        navigating={navigating}
+        eventSettings={{ dataSource }}
+      >
+        <ViewsDirective>
+          {personal && <ViewDirective option="Day" />}
+          <ViewDirective option="Week" />
+          {personal && <ViewDirective option="Month" />}
+        </ViewsDirective>
+        <Inject services={personal ? [Day, Week, Month] : [Week]} />
+      </ScheduleComponent>
+      <ScheduleFeedback error={error} loading={loading} />
+    </>
   );
 };
 

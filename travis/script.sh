@@ -29,6 +29,7 @@ update_function () {
 update_function post-signup
 update_function post-confirm-signup
 update_function post-signin
+update_function post-accept
 update_function get-availability
 update_function post-availability
 update_function get-profile
