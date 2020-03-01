@@ -9,6 +9,11 @@ export const okResponse = (body: object) => ({
   headers
 });
 
+export const emptyResponse = () => ({
+  statusCode: 204,
+  headers
+});
+
 export const userErrorResponse = (message: string) => ({
   statusCode: 400,
   body: JSON.stringify({ message }),

@@ -37,6 +37,7 @@ update_function post-profile
 update_function get-specialist-views
 update_function get-events
 update_function post-events
+update_function delete-events-by-id
 
 cd ../client
 npm test
