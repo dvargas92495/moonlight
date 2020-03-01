@@ -34,7 +34,7 @@ const SignUpWidget = ({
           path="signup"
           handleResponse={signupHandleResponse}
         >
-          <Input placeholder="Username" name="username" />
+          <Input placeholder="Email" name="username" />
           <Input placeholder="Confirmation Code" name="confirmationCode" />
         </Form>
       ) : (
@@ -43,7 +43,7 @@ const SignUpWidget = ({
           path="confirm-signup"
           handleResponse={confirmSignupHandleResponse}
         >
-          <Input placeholder="Username" name="username" />
+          <Input placeholder="Email" name="username" />
           <Input placeholder="Password" name="password" type="password" />
         </Form>
       )}

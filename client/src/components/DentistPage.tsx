@@ -41,13 +41,15 @@ const SpecialistViewContainer = styled.div`
 `;
 
 const SpecialistsContent = ({ userId }: DentistPageProps) => {
-  const [specialistViews, setSpecialistViews] = useState([]);
+  const [specialistViews, setSpecialistViews] = useState<SpecialistView[]>([]);
   const [
     selectedSchedule,
     setSelectedSchedule
   ] = useState<SelectedSchedule | null>(null);
   useEffect(() => {
-    getSpecialistViews(userId).then(s => setSpecialistViews(s));
+    getSpecialistViews(userId).then((s: SpecialistView[]) =>
+      setSpecialistViews(s)
+    );
   }, [userId, setSpecialistViews]);
   return (
     <>

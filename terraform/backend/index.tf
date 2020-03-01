@@ -36,23 +36,33 @@ module "availability-resource" {
 }
 
 module "confirm-signup-resource" {
-  source      = "./resource"
+  source           = "./resource"
 
-  rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
-  path        = "confirm-signup"
-  methods      = ["post"]
-  env_name    = var.env_name
+  rest_api_id      = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path             = "confirm-signup"
+  methods          = ["post"]
+  env_name         = var.env_name
 }
 
-module "events-resource" {
-  source      = "./resource"
+module "events_resource" {
+  source           = "./resource"
 
-  rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  root_resource_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
-  path        = "events"
-  methods      = ["get", "post"]
-  env_name    = var.env_name
+  rest_api_id      = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id = aws_api_gateway_rest_api.rest_api.root_resource_id
+  path             = "events"
+  methods          = ["get", "post"]
+  env_name         = var.env_name
+}
+
+module "event_by_id_resource" {
+  source           = "./resource"
+
+  rest_api_id      = aws_api_gateway_rest_api.rest_api.id
+  root_resource_id = module.events_resource.resource_id
+  path             = "events/{id}"
+  methods          = ["delete"]
+  env_name         = var.env_name
 }
 
 module "profile-resource" {

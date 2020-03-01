@@ -20,7 +20,7 @@ const LoginPage = ({ setUserId }: LoginPageProps) => {
   return (
     <Form handleResponse={handleResponse} label="log in" path="signin">
       <PageLink label="Home" path="/" />
-      <Input placeholder="Username" name="username" />
+      <Input placeholder="Email" name="username" />
       <Input placeholder="Password" type="password" name="password" />
     </Form>
   );
