@@ -15,7 +15,7 @@ locals {
     "profile/post",
     "signin/post",
     "signup/post",
-    "specialist-views/post"
+    "specialist-views/get"
   ]
 
   lambda_parts = {
