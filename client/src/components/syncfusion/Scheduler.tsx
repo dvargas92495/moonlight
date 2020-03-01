@@ -12,9 +12,11 @@ import {
   startOfWeek,
   endOfWeek,
   startOfMonth,
-  endOfMonth
+  endOfMonth,
+  isBefore,
+  isAfter
 } from "date-fns";
-import { map, reject } from "lodash";
+import { map, reject, includes } from "lodash";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -238,6 +240,41 @@ const QuickInfoTemplatesFooter: any = ({
   </>
 );
 
+const onPopupOpen = (
+  schedule: RefObject<ScheduleComponent>,
+  personal: boolean
+) => (args: any) => {
+  if (personal) {
+    return;
+  }
+  const {
+    data: { StartTime, EndTime, groupIndex }
+  } = args;
+  const available = schedule.current?.isSlotAvailable({
+    StartTime,
+    EndTime,
+    groupIndex
+  });
+  const isInWorkHours = (d: Date) => {
+    const startOfDay = new Date(d);
+    const endOfDay = new Date(d);
+    const start = schedule.current?.workHours?.start || "00:00";
+    const end = schedule.current?.workHours?.end || "23:00";
+    startOfDay.setHours(parseInt(start.substring(0, 2)));
+    startOfDay.setMinutes(parseInt(start.substring(3)));
+    endOfDay.setHours(parseInt(end.substring(0, 2)));
+    endOfDay.setMinutes(parseInt(end.substring(3)));
+    return !isBefore(d, startOfDay) && !isAfter(d, endOfDay);
+  };
+  const startAvailable =
+    includes(schedule.current?.workDays, StartTime.getDay()) &&
+    isInWorkHours(StartTime);
+  const endAvailable =
+    includes(schedule.current?.workDays, StartTime.getDay()) &&
+    isInWorkHours(EndTime);
+  args.cancel = !(available && startAvailable && endAvailable);
+};
+
 const getScheduleBounds = (currentDate: Date, currentView: string) => {
   if (currentView === "Day") {
     return {
@@ -334,6 +371,7 @@ const Scheduler = ({
         }),
         footer: QuickInfoTemplatesFooter
       }}
+      popupOpen={onPopupOpen(scheduleRef, personal)}
       actionBegin={actionBegin}
       navigating={navigating}
       eventSettings={{ dataSource }}
