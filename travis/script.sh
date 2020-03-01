@@ -26,18 +26,9 @@ update_function () {
     rm $1.zip
 }
 
-update_function post-signup
-update_function post-confirm-signup
-update_function post-signin
-update_function post-accept
-update_function get-availability
-update_function post-availability
-update_function get-profile
-update_function post-profile
-update_function get-specialist-views
-update_function get-events
-update_function post-events
-update_function delete-events-by-id
+for filename in build/*.js; do
+    update_function $(basename "$filename" .js)
+done
 
 cd ../client
 npm test
