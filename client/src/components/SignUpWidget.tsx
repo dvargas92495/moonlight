@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import styled from "styled-components";
 import Input from "./syncfusion/Input";
 import Form from "./syncfusion/Form";
 
@@ -6,6 +7,10 @@ type SignUpWidgetProps = {
   setUserId: (userId: number) => void;
   signUpToggleCallback: () => void;
 };
+
+const StyledForm = styled(Form)`
+  display: inline-block;
+`;
 
 const SignUpWidget = ({
   setUserId,
@@ -29,23 +34,23 @@ const SignUpWidget = ({
   return (
     <>
       {showConfirmationCode ? (
-        <Form
-          label="sign up"
-          path="signup"
-          handleResponse={signupHandleResponse}
-        >
-          <Input placeholder="Email" name="username" />
-          <Input placeholder="Confirmation Code" name="confirmationCode" />
-        </Form>
-      ) : (
-        <Form
+        <StyledForm
           label="confirm"
           path="confirm-signup"
           handleResponse={confirmSignupHandleResponse}
         >
           <Input placeholder="Email" name="username" />
+          <Input placeholder="Confirmation Code" name="confirmationCode" />
+        </StyledForm>
+      ) : (
+        <StyledForm
+          label="sign up"
+          path="signup"
+          handleResponse={signupHandleResponse}
+        >
+          <Input placeholder="Email" name="username" />
           <Input placeholder="Password" name="password" type="password" />
-        </Form>
+        </StyledForm>
       )}
     </>
   );
