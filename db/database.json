@@ -4,9 +4,11 @@
     "driver": "postgres",
     "user": "moonlight",
     "password": {
-      "ENV": "RDS_MASTER_USER_PASSWORD"
+      "ENV": "TF_VAR_RDS_MASTER_USER_PASSWORD"
     },
-    "host": "moonlight-health.c2sjnb5f4d57.us-east-1.rds.amazonaws.com",
+    "host": {
+      "ENV": "RDS_MASTER_HOST"
+    },
     "database": "moonlight",
     "port": 5432
   },
