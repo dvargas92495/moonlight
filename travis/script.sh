@@ -2,12 +2,17 @@
 
 ENV_NAME=$1
 DOMAIN=$2
+COGNITO_NAME=$3
 
 API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${ENV_NAME}'].id" --output text)
+REACT_APP_USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 20 --query "UserPools[?Name=='${COGNITO_NAME}'].Id" --output text)
+REACT_APP_USER_CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id $REACT_APP_USER_POOL_ID --query "UserPoolClients[?ClientName=='moonlight-client'].ClientId" --output text)
+REACT_APP_USER_CLIENT_SECRET=$(aws cognito-idp describe-user-pool-client --user-pool-id $REACT_APP_USER_POOL_ID --client-id $REACT_APP_USER_CLIENT_ID --query "UserPoolClient.ClientSecret" --output text)
 
-echo "
+echo "REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 REACT_APP_API_GATEWAY_INVOKE_URL=https://${API_GATEWAY_REST_API_ID}.execute-api.us-east-1.amazonaws.com/production/
-REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+REACT_APP_USER_POOL_ID=${REACT_APP_USER_POOL_ID}
+REACT_APP_USER_CLIENT_ID=${REACT_APP_USER_CLIENT_ID}
 REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
 REACT_APP_RDS_MASTER_USER_PASSWORD=${RDS_MASTER_USER_PASSWORD}
 " > client/.env.local
@@ -31,7 +36,7 @@ for filename in build/*.js; do
 done
 
 cd ../client
-npm test
+npm install
 npm run build
 aws s3 sync --delete build "s3://${ENV_NAME}"
 

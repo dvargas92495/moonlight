@@ -7,8 +7,11 @@ cd ..
 
 DOMAIN="env1.qa.moonlight-health.com"
 
-./travis/script.sh $TF_WORKSPACE $DOMAIN
+./travis/script.sh $TF_WORKSPACE $DOMAIN $TF_WORKSPACE
+
+cd client
+npm test
 
 export CYPRESS_BASE_URL="https://$DOMAIN"
-cd qa
+cd ../qa
 npm test

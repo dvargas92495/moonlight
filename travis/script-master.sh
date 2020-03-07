@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./travis/script.sh moonlight-health moonlight-health.com
+./travis/script.sh moonlight-health moonlight-health.com moonlight-users
 
 aws cloudfront create-invalidation --distribution-id E2E35W4UJ7YKON --paths "/*"
 

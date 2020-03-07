@@ -31,9 +31,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "pretest": "npm install",
     "test": "react-scripts test",
-    "test:local": "react-scripts test",
     "prettier": "prettier --write src/**/*"
   },
   "browserslist": {

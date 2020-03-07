@@ -198,6 +198,39 @@ resource "aws_route53_record" "AAAA" {
   }
 }
 
+resource "aws_cognito_user_pool" "pool" {
+  name                       = local.env_name
+  username_attributes        = ["email"]
+  auto_verified_attributes   = ["email"]
+  email_verification_subject = "Your Moonlight Health verification code"
+  email_verification_message = "Your Moonlight Health verification code is {####}."
+  
+  password_policy {
+    minimum_length                   = 8
+    require_lowercase                = true
+    require_numbers                  = true
+    require_symbols                  = true
+    require_uppercase                = true
+    temporary_password_validity_days = 7
+  }
+
+  tags                       = {
+    Application = "Moonlight"
+  }
+}
+
+resource "aws_cognito_user_pool_client" "client" {
+  name                = "moonlight-client"
+  user_pool_id        = aws_cognito_user_pool.pool.id
+  generate_secret     = true
+  explicit_auth_flows = [
+    "ALLOW_CUSTOM_AUTH", 
+    "ALLOW_USER_PASSWORD_AUTH", 
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+  refresh_token_validity = 30
+}
+
 module "backend" {
   source = "./backend"
 

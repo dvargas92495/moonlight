@@ -43,7 +43,7 @@ locals {
   ])
 
   subresources = distinct([
-    for lambda in local.lambdas: join("/", slice(local.lambda_parts[lambda], 0, 2))
+    for lambda in local.lambdas: join("/", slice(local.lambda_parts[lambda], 0, 2)) if local.lambda_levels[lambda] > 2
   ])
 
   allresources = concat(local.resources, local.subresources)
