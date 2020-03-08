@@ -285,7 +285,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
 
 resource "aws_route53_record" "www-A" {
   zone_id = data.aws_route53_zone.primary.zone_id
-  name    = local.domain
+  name    = "www.${local.domain}"
   type    = "A"
 
   alias {
@@ -297,7 +297,7 @@ resource "aws_route53_record" "www-A" {
 
 resource "aws_route53_record" "www-AAAA" {
   zone_id = data.aws_route53_zone.primary.zone_id
-  name    = local.domain
+  name    = "www.${local.domain}"
   type    = "AAAA"
 
   alias {
