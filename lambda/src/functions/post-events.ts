@@ -8,7 +8,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   );
   const client = new Client({
     host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: process.env.REACT_APP_RDS_MASTER_USER,
+    user: "moonlight",
     password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
     database: "moonlight",
     query_timeout: 10000
