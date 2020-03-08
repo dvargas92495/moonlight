@@ -1,9 +1,11 @@
 variable "ATLAS_WORKSPACE_NAME" {}
+variable "RDS_MASTER_USER_PASSWORD" {}
 
 locals {
-  env_name = replace(var.ATLAS_WORKSPACE_NAME, "terraform-", "")
-  domain = "${replace(replace(local.env_name, "moonlight-health", ""), "-", ".")}moonlight-health.com"
+  env_name     = replace(var.ATLAS_WORKSPACE_NAME, "terraform-", "")
+  domain       = "${replace(replace(local.env_name, "moonlight-health", ""), "-", ".")}moonlight-health.com"
   s3_origin_id = "S3-${local.env_name}"
+  is_prod      = local.env_name == "moonlight-health"
 }
 
 provider "aws" {
@@ -229,6 +231,23 @@ resource "aws_cognito_user_pool_client" "client" {
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
   refresh_token_validity = 30
+}
+
+resource "aws_db_instance" "default" {
+  allocated_storage     = 20
+  max_allocated_storage = 1000
+  storage_type          = "gp2"
+  engine                = "postgres"
+  engine_version        = "11.5"
+  identifier            = local.env_name
+  instance_class        = "db.t3.micro"
+  name                  = "moonlight"
+  username              = "moonlight"
+  password              = var.RDS_MASTER_USER_PASSWORD
+  parameter_group_name  = "default.postgres11"
+  port                  = 5432
+  publicly_accessible   = true
+  skip_final_snapshot   = true
 }
 
 module "backend" {
