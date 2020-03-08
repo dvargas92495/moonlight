@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export TF_VAR_RDS_MASTER_USER_PASSWORD=$QA_RDS_MASTER_USER_PASSWORD
+
 cd terraform
 ./terraform init
 ./terraform apply -auto-approve
