@@ -32,5 +32,6 @@ jobs:
     - env: TF_WORKSPACE=env1-qa-moonlight-health
       script: travis/script-branch.sh
       if: branch != master
-    - script: travis/script-master.sh
+    - env: TF_WORKSPACE=moonlight-health
+      script: travis/script-master.sh
       if: branch = master
