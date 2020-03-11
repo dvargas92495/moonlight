@@ -121,6 +121,7 @@ resource "aws_lambda_function" "lambda_function" {
   handler       = "${local.method_names[each.value]}.handler"
   filename      = data.archive_file.dummy.output_path
   runtime       = "nodejs10.x"
+  publish       = false
 
   environment {
     variables = {

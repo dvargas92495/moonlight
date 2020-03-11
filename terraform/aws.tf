@@ -151,6 +151,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = local.s3_origin_id
+    compress         = true
 
     forwarded_values {
       query_string = false
@@ -230,7 +231,11 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
       http_port    = "80"
       https_port   = "443"
       origin_protocol_policy = "http-only"
-      origin_ssl_protocols = ["TLSv1.2"]
+      origin_ssl_protocols = [
+        "TLSv1",
+        "TLSv1.1",
+        "TLSv1.2"
+      ]
     }
   }
 
@@ -362,6 +367,10 @@ resource "aws_db_instance" "default" {
   port                  = 5432
   publicly_accessible   = true
   skip_final_snapshot   = true
+  storage_encrypted     = local.is_prod
+  tags                  = {
+    Application = "Moonlight"
+  }
 }
 
 module "backend" {
