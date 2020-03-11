@@ -4,7 +4,7 @@ export TF_VAR_RDS_MASTER_USER_PASSWORD=$QA_RDS_MASTER_USER_PASSWORD
 
 DOMAIN="env1.qa.moonlight-health.com"
 
-./travis/script.sh $TF_WORKSPACE $DOMAIN $TF_WORKSPACE
+./travis/script.sh $TF_WORKSPACE $DOMAIN
 
 cd client
 npm test
