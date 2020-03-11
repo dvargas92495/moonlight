@@ -353,22 +353,24 @@ resource "aws_cognito_user_pool_client" "client" {
 }
 
 resource "aws_db_instance" "default" {
-  allocated_storage     = 20
-  max_allocated_storage = 1000
-  storage_type          = "gp2"
-  engine                = "postgres"
-  engine_version        = "11.5"
-  identifier            = local.env_name
-  instance_class        = "db.t3.micro"
-  name                  = "moonlight"
-  username              = "moonlight"
-  password              = var.RDS_MASTER_USER_PASSWORD
-  parameter_group_name  = "default.postgres11"
-  port                  = 5432
-  publicly_accessible   = true
-  skip_final_snapshot   = true
-  storage_encrypted     = local.is_prod
-  tags                  = {
+  allocated_storage            = 20
+  max_allocated_storage        = 1000
+  storage_type                 = "gp2"
+  engine                       = "postgres"
+  engine_version               = "11.5"
+  identifier                   = local.env_name
+  instance_class               = "db.t3.micro"
+  name                         = "moonlight"
+  username                     = "moonlight"
+  password                     = var.RDS_MASTER_USER_PASSWORD
+  parameter_group_name         = "default.postgres11"
+  port                         = 5432
+  publicly_accessible          = true
+  skip_final_snapshot          = true
+  storage_encrypted            = local.is_prod
+  deletion_protection          = local.is_prod
+  performance_insights_enabled = local.is_prod
+  tags                         = {
     Application = "Moonlight"
   }
 }
