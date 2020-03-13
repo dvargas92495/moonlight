@@ -16,10 +16,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   client.connect();
   return client
     .query(
-      `INSERT INTO events(user_id, created_by, subject, start_time, end_time)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO events(user_id, created_by, subject, start_time, end_time, is_pending)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, createdBy, Subject, StartTime, EndTime]
+      [userId, createdBy, Subject, StartTime, EndTime, userId != createdBy]
     )
     .then(res => {
       client.end();
@@ -28,14 +28,16 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         created_by,
         subject,
         start_time,
-        end_time
+        end_time,
+        is_pending
       } = res.rows[0];
       return okResponse({
         userId: user_id,
         createdBy: created_by,
         Subject: subject,
         StartTime: start_time,
-        EndTime: end_time
+        EndTime: end_time,
+        IsPending: is_pending
       });
     })
     .catch(e => userErrorResponse(e.message));

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Layers of Dependencies",
   "scripts": {
-    "build": "webpack"
+    "build": "rm -Rf build/ && webpack"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.40",

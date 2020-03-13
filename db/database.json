@@ -1,21 +1,15 @@
 {
-  "defaultEnv": "dev",
-  "production": {
+  "defaultEnv": "aws",
+  "aws": {
     "driver": "postgres",
     "user": "moonlight",
+    "database": "moonlight",
+    "port": 5432,
     "password": {
       "ENV": "TF_VAR_RDS_MASTER_USER_PASSWORD"
     },
     "host": {
       "ENV": "RDS_MASTER_HOST"
-    },
-    "database": "moonlight",
-    "port": 5432
-  },
-  "qa": {
-    "driver": "postgres"
-  },
-  "dev": {
-    "driver": "progress"
+    }
   }
 }

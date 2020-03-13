@@ -23,8 +23,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   return client
     .query(
       `SELECT * FROM events
-       WHERE user_id=$1 AND start_time >= $2 AND start_time < $3`,
-      [userIdInt, startTime, endTime]
+       WHERE user_id=$1 AND start_time >= $2 AND start_time < $3 AND (NOT is_pending OR created_by=$4 OR user_id=$4)`,
+      [userIdInt, startTime, endTime, viewUserIdInt]
     )
     .then(res => {
       client.end();
@@ -38,10 +38,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             EndTime: r.end_time,
             IsReadonly,
             Id: r.id,
-            ActionNeeded:
-              r.subject === "Request Booking" &&
-              viewUserIdInt === r.user_id &&
-              r.created_by != r.user_id
+            IsPending: r.is_pending
           };
         })
       );

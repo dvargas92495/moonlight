@@ -78,7 +78,7 @@ type EventResponse = {
   StartTime: string;
   EndTime: string;
   IsReadonly: boolean;
-  ActionNeeded: boolean;
+  IsPending: boolean;
 };
 
 type EventObject = {
@@ -89,7 +89,7 @@ type EventObject = {
   StartTime: Date;
   EndTime: Date;
   IsReadonly: boolean;
-  ActionNeeded: boolean;
+  IsPending: boolean;
 };
 
 type QuickInfoProps = EventObject & {
@@ -184,13 +184,7 @@ const QuickInfoTemplatesContent: any = ({
   setDataSource
 }: QuickInfoExtraProps & {
   personal: boolean;
-}) => ({
-  Id,
-  StartTime,
-  EndTime,
-  ActionNeeded,
-  elementType
-}: QuickInfoProps) => (
+}) => ({ Id, StartTime, EndTime, IsPending, elementType }: QuickInfoProps) => (
   <>
     {elementType === "cell" &&
       (personal ? (
@@ -212,7 +206,7 @@ const QuickInfoTemplatesContent: any = ({
         "hh:mm a"
       )} - ${format(EndTime, "hh:mm a")})`}</div>
     </div>
-    {ActionNeeded && (
+    {IsPending && personal && (
       <ActionEvent
         eventId={Id}
         closeQuickInfoPopup={closeQuickInfoPopup}
@@ -248,8 +242,11 @@ const onPopupOpen = (
     return;
   }
   const {
-    data: { StartTime, EndTime, groupIndex }
+    data: { Subject, StartTime, EndTime, groupIndex }
   } = args;
+  if (Subject) {
+    return;
+  }
   const available = schedule.current?.isSlotAvailable({
     StartTime,
     EndTime,
