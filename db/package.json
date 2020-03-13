@@ -4,7 +4,7 @@
   "description": "Managing Moonlight Data",
   "scripts": {
     "create": "db-migrate create",
-    "migrate": "db-migrate up -e aws",
+    "migrate": "db-migrate up",
     "rollback": "db-migrate down -c 1"
   },
   "dependencies": {
