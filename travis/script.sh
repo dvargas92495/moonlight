@@ -31,14 +31,8 @@ cd ../lambda
 npm install
 npm run build
 
-update_function () {
-    zip -jq $1.zip ./build/$1.js
-    aws lambda update-function-code --function-name "${ENV_NAME}-${1}" --publish --zip-file "fileb://${1}.zip"
-    rm $1.zip
-}
-
 for filename in build/*.js; do
-    update_function $(basename "$filename" .js)
+    ./deploy.sh $(basename "$filename" .js)
 done
 
 cd ../client
