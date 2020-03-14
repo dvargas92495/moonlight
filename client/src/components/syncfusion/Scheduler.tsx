@@ -44,6 +44,7 @@ import api, {
 } from "../../hooks/apiClient";
 import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
+import Dialog from "./Dialog";
 
 type QuickInfoExtraProps = {
   closeQuickInfoPopup: () => void;
@@ -213,6 +214,14 @@ const QuickInfoTemplatesContent: any = ({
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
+    )}
+    {!IsPending && !personal && Id && (
+      <Dialog
+        // eventId={Id}
+        openText={"Add Patient"}
+      >
+        Enter Patient Information
+      </Dialog>
     )}
   </>
 );
