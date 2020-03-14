@@ -15,7 +15,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   return client
     .query(
       `UPDATE events
-       SET subject='Appointment Booked'
+       SET subject='Appointment Booked', is_pending=false
        WHERE id=$1
        RETURNING *`,
       [eventId]
@@ -28,7 +28,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         created_by,
         subject,
         start_time,
-        end_time
+        end_time,
+        is_pending
       } = res.rows[0];
       return okResponse({
         userId: user_id,
@@ -36,7 +37,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         Subject: subject,
         StartTime: start_time,
         EndTime: end_time,
-        Id: id
+        Id: id,
+        IsPending: is_pending
       });
     })
     .catch(e => userErrorResponse(e.message));
