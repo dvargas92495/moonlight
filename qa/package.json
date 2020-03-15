@@ -19,6 +19,7 @@
     "cypress": "cypress open"
   },
   "dependencies": {
+    "minimist": "1.2.5",
     "typescript": "3.7.4"
   },
   "cypress-cucumber-preprocessor": {

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "db-migrate": "0.11.6",
-    "db-migrate-pg": "1.0.0"
+    "db-migrate-pg": "1.0.0",
+    "minimist": "1.2.5"
   }
 }
