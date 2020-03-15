@@ -85,7 +85,7 @@ type EventResponse = {
 type EventObject = {
   Id: number;
   userId: number;
-  createdBy: number;
+  CreatedBy: number;
   Subject: string;
   StartTime: Date;
   EndTime: Date;
@@ -182,49 +182,56 @@ const QuickInfoTemplatesContent: any = ({
   personal,
   closeQuickInfoPopup,
   dataSource,
+  viewUserId,
   setDataSource
 }: QuickInfoExtraProps & {
   personal: boolean;
-}) => ({ Id, StartTime, EndTime, IsPending, elementType }: QuickInfoProps) => (
-  <>
-    {elementType === "cell" &&
-      (personal ? (
-        <Input placeholder="Add Title" name="Subject" />
-      ) : (
-        <>
-          <div>TYPE</div>
-          <DropDownListComponent
-            dataSource={[{ text: "Request Booking", value: "REQUEST_BOOKING" }]}
-            name="Subject"
-            className="e-field"
-          />
-        </>
-      ))}
-    <div className="e-date-time">
-      <div className="e-date-time-icon e-icons" />
-      <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
-        StartTime,
-        "hh:mm a"
-      )} - ${format(EndTime, "hh:mm a")})`}</div>
-    </div>
-    {IsPending && personal && (
-      <ActionEvent
-        eventId={Id}
-        closeQuickInfoPopup={closeQuickInfoPopup}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-      />
-    )}
-    {!IsPending && !personal && Id && (
-      <Dialog
-        // eventId={Id}
-        openText={"Add Patient"}
-      >
-        Enter Patient Information
-      </Dialog>
-    )}
-  </>
-);
+  viewUserId: number;
+}) => (args: QuickInfoProps) => {
+  const { Id, StartTime, EndTime, IsPending, CreatedBy, elementType } = args;
+  return (
+    <>
+      {elementType === "cell" &&
+        (personal ? (
+          <Input placeholder="Add Title" name="Subject" />
+        ) : (
+          <>
+            <div>TYPE</div>
+            <DropDownListComponent
+              dataSource={[
+                { text: "Request Booking", value: "REQUEST_BOOKING" }
+              ]}
+              name="Subject"
+              className="e-field"
+            />
+          </>
+        ))}
+      <div className="e-date-time">
+        <div className="e-date-time-icon e-icons" />
+        <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
+          StartTime,
+          "hh:mm a"
+        )} - ${format(EndTime, "hh:mm a")})`}</div>
+      </div>
+      {IsPending && personal && (
+        <ActionEvent
+          eventId={Id}
+          closeQuickInfoPopup={closeQuickInfoPopup}
+          dataSource={dataSource}
+          setDataSource={setDataSource}
+        />
+      )}
+      {!IsPending && viewUserId === CreatedBy && Id && (
+        <Dialog
+          // eventId={Id}
+          openText={"Add Patient"}
+        >
+          Enter Patient Information
+        </Dialog>
+      )}
+    </>
+  );
+};
 
 const QuickInfoTemplatesFooter: any = ({
   elementType
@@ -371,6 +378,7 @@ const Scheduler = ({
         header: QuickInfoTemplatesHeader,
         content: QuickInfoTemplatesContent({
           personal,
+          viewUserId,
           closeQuickInfoPopup: () => scheduleRef.current?.closeQuickInfoPopup(),
           dataSource,
           setDataSource

@@ -38,7 +38,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             EndTime: r.end_time,
             IsReadonly,
             Id: r.id,
-            IsPending: r.is_pending
+            IsPending: r.is_pending,
+            CreatedBy: r.created_by
           };
         })
       );
