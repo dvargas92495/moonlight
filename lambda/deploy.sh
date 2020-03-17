@@ -13,5 +13,6 @@ then
 fi
 
 zip -jq $1.zip ./build/$1.js
-aws lambda update-function-code --function-name "${TF_WORKSPACE}-${1}" --publish --zip-file "fileb://${1}.zip"
+MODIFIED=$(aws lambda update-function-code --function-name "${TF_WORKSPACE}-${1}" --publish --zip-file "fileb://${1}.zip" --query "LastModified" --output text)
 rm $1.zip
+echo "Function $1 successfully updated at $MODIFIED"
