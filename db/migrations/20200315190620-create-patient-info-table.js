@@ -18,7 +18,6 @@ exports.up = function(db) {
   return db.createTable("patient_identifiers", {
     patient_id: {
       type: "int",
-      primaryKey: true,
       notNull: true,
       foreignKey: {
         name: "fk_patient_identifiers_patient_id_patients_id",

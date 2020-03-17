@@ -1,6 +1,12 @@
+import { findKey, split, map, join } from "lodash";
+
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE"
+};
+
+type dbEnum = {
+  [key: string]: number;
 };
 
 export const okResponse = (body: object) => ({
@@ -19,3 +25,14 @@ export const userErrorResponse = (message: string) => ({
   body: JSON.stringify({ message }),
   headers
 });
+
+export const getFieldByValue = (e: dbEnum, v: number) => {
+  const key = findKey(e, val => val === v);
+  const keyParts = split(key, "_");
+  const keyCamelParts = map(keyParts, (k, i) =>
+    i === 0
+      ? k.toLowerCase()
+      : `${k.substring(0, 1)}${k.substring(1).toLowerCase()}`
+  );
+  return join(keyCamelParts, "");
+};

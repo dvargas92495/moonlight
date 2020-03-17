@@ -6,7 +6,7 @@ const Dialog = ({
   children
 }: {
   openText: string;
-  children: ReactNode;
+  children: (close: () => void) => ReactNode;
 }) => {
   const [visible, setVisible] = useState(false);
   const close = useCallback(() => setVisible(false), [setVisible]);
@@ -16,13 +16,13 @@ const Dialog = ({
         {openText}
       </button>
       <DialogComponent
-        width="250px"
+        width="400px"
         visible={visible}
         close={close}
         overlayClick={close}
         isModal={true}
       >
-        {children}
+        {children(close)}
       </DialogComponent>
     </div>
   );

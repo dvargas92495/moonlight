@@ -1,7 +1,8 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
-import { map } from "lodash";
-import { okResponse, userErrorResponse } from "../layers/util";
+import { map, uniqBy, keyBy } from "lodash";
+import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
+import { patientIdentifiers } from "../layers/enums";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const {
@@ -22,27 +23,42 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   client.connect();
   return client
     .query(
-      `SELECT * FROM events
-       WHERE user_id=$1 AND start_time >= $2 AND start_time < $3 AND (NOT is_pending OR created_by=$4 OR user_id=$4)`,
+      `SELECT e.*, p.date_of_birth, i.* FROM events e 
+       LEFT JOIN patient_event_links l ON e.id = l.event_id 
+       LEFT JOIN patients p ON l.patient_id = p.id 
+       LEFT JOIN patient_identifiers i ON i.patient_id = p.id
+       WHERE e.user_id=$1 AND e.start_time >= $2 AND e.start_time < $3 AND (NOT e.is_pending OR e.created_by=$4 OR e.user_id=$4)`,
       [userIdInt, startTime, endTime, viewUserIdInt]
     )
     .then(res => {
       client.end();
-      return okResponse(
-        map(res.rows, r => {
-          const IsReadonly =
-            r.user_id != viewUserIdInt && r.created_by != viewUserIdInt;
-          return {
-            Subject: IsReadonly ? "BUSY" : r.subject,
-            StartTime: r.start_time,
-            EndTime: r.end_time,
-            IsReadonly,
-            Id: r.id,
-            IsPending: r.is_pending,
-            CreatedBy: r.created_by
-          };
-        })
-      );
+      const events = map(uniqBy(res.rows, "id"), e => {
+        const IsReadonly =
+          e.user_id != viewUserIdInt && e.created_by != viewUserIdInt;
+        return {
+          Subject: IsReadonly ? "BUSY" : e.subject,
+          StartTime: e.start_time,
+          EndTime: e.end_time,
+          IsReadonly,
+          Id: e.id,
+          IsPending: e.is_pending,
+          CreatedBy: e.created_by,
+          Patients: {} as { [id: number]: { [key: string]: string } }
+        };
+      });
+      const eventsById = keyBy(events, "Id");
+      res.rows.forEach(r => {
+        if (!r.patient_id) {
+          return;
+        }
+        const event = eventsById[r.id];
+        const key = getFieldByValue(patientIdentifiers, parseInt(r.type));
+        if (!event.Patients[r.patient_id]) {
+          event.Patients[r.patient_id] = { dateOfBirth: r.date_of_birth };
+        }
+        event.Patients[r.patient_id][key] = r.value;
+      });
+      return okResponse(events);
     })
     .catch(e => userErrorResponse(e.message));
 };
