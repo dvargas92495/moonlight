@@ -1,11 +1,21 @@
 #!/bin/bash
 
+check() {
+    exit_code=$?
+    if [ $exit_code -ne 0 ]
+    then
+        echo "Command '$1' failed"
+        exit $exit_code
+    fi
+}
+
 ENV_NAME=$1
 DOMAIN=$2
 
 cd terraform
 ./terraform init
 ./terraform apply -auto-approve
+check
 cd ..
 
 API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${ENV_NAME}'].id" --output text)
@@ -26,10 +36,12 @@ REACT_APP_RDS_MASTER_HOST=${RDS_MASTER_HOST}
 cd db
 npm install
 npm run migrate
+check
 
 cd ../lambda
 npm install
 npm run build
+check
 
 for filename in build/*.js; do
     ./deploy.sh $(basename "$filename" .js)
@@ -38,6 +50,7 @@ done
 cd ../client
 npm install
 npm run build
+check
 aws s3 sync --delete build "s3://${ENV_NAME}"
 
 CLOUDFRONT_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{Alias:Aliases.Items[0],Id:Id}[?Alias=='${DOMAIN}'].Id" --output text)

@@ -13,7 +13,7 @@ type FormProps = {
   label?: string;
   children: React.ReactNode;
   path: string;
-  handleResponse: (response: Object) => void;
+  handleResponse: (response: any) => void;
   className?: string;
   extraProps?: object;
 };

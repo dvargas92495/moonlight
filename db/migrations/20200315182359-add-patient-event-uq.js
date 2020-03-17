@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.addIndex(
-    "patient-event-links",
+    "patient_event_links",
     "UQ_patient_event_links_patient_id_event_id",
     ["patient_id", "event_id"],
     true
@@ -25,7 +25,7 @@ exports.up = function(db) {
 
 exports.down = function(db) {
   return db.removeIndex(
-    "patient-event-links",
+    "patient_event_links",
     "UQ_patient_event_links_patient_id_event_id"
   );
 };

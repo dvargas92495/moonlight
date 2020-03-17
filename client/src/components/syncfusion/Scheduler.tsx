@@ -16,7 +16,8 @@ import {
   isBefore,
   isAfter
 } from "date-fns";
-import { map, reject, includes } from "lodash";
+import { map, reject, includes, keys, find } from "lodash";
+import { DatePickerComponent } from "@syncfusion/ej2-react-calendars";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -45,12 +46,7 @@ import api, {
 import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
 import Dialog from "./Dialog";
-
-type QuickInfoExtraProps = {
-  closeQuickInfoPopup: () => void;
-  dataSource: Object[];
-  setDataSource: (events: Object[]) => void;
-};
+import Form from "./Form";
 
 export type AvailabilityProps = {
   userId: number;
@@ -74,12 +70,13 @@ type EventRequest = {
 type EventResponse = {
   Id: number;
   userId: number;
-  createdBy: number;
+  CreatedBy: number;
   Subject: string;
   StartTime: string;
   EndTime: string;
   IsReadonly: boolean;
   IsPending: boolean;
+  Patients: { [id: number]: { [key: string]: string } };
 };
 
 type EventObject = {
@@ -91,6 +88,13 @@ type EventObject = {
   EndTime: Date;
   IsReadonly: boolean;
   IsPending: boolean;
+  Patients: { [id: number]: { [key: string]: string } };
+};
+
+type QuickInfoExtraProps = {
+  closeQuickInfoPopup: () => void;
+  dataSource: EventObject[];
+  setDataSource: (events: EventObject[]) => void;
 };
 
 type QuickInfoProps = EventObject & {
@@ -178,6 +182,62 @@ const ActionEvent = ({
   );
 };
 
+const PatientDialog = ({
+  Id,
+  dataSource,
+  setDataSource,
+  closeQuickInfoPopup
+}: QuickInfoExtraProps & {
+  Id: number;
+}) => {
+  const handleResponse = useCallback(
+    close => ({
+      patientId,
+      firstName,
+      lastName,
+      dateOfBirth
+    }: {
+      patientId: number;
+      firstName: string;
+      lastName: string;
+      dateOfBirth: string;
+    }) => {
+      const event = find(dataSource, { Id });
+      if (event) {
+        event.Patients[patientId] = {
+          firstName,
+          lastName,
+          dateOfBirth
+        };
+        // spreading to force a rerender
+        setDataSource([...dataSource]);
+      }
+      close();
+      closeQuickInfoPopup();
+    },
+    [Id, dataSource, setDataSource, closeQuickInfoPopup]
+  );
+  return (
+    <Dialog openText={"Add Patient"}>
+      {close => (
+        <Form
+          path={`events/${Id}/patient`}
+          handleResponse={handleResponse(close)}
+        >
+          <h3>Enter Patient Information</h3>
+          <Input placeholder="First Name" name="firstName" />
+          <Input placeholder="Last Name" name="lastName" />
+          <DatePickerComponent
+            placeholder="yyyy/mm/dd"
+            format="yyyy/MM/dd"
+            name="dateOfBirth"
+          />
+        </Form>
+      )}
+    </Dialog>
+  );
+};
+
 const QuickInfoTemplatesContent: any = ({
   personal,
   closeQuickInfoPopup,
@@ -193,6 +253,7 @@ const QuickInfoTemplatesContent: any = ({
   EndTime,
   IsPending,
   CreatedBy,
+  Patients,
   elementType
 }: QuickInfoProps) => (
   <>
@@ -224,13 +285,21 @@ const QuickInfoTemplatesContent: any = ({
         setDataSource={setDataSource}
       />
     )}
+    {map(keys(Patients), (p: number) => (
+      <div key={p}>
+        {`${Patients[p].firstName} ${Patients[p].lastName} - ${format(
+          new Date(Patients[p].dateOfBirth),
+          "yyyy/MM/dd"
+        )}`}
+      </div>
+    ))}
     {!IsPending && viewUserId === CreatedBy && Id && (
-      <Dialog
-        // eventId={Id}
-        openText={"Add Patient"}
-      >
-        Enter Patient Information
-      </Dialog>
+      <PatientDialog
+        Id={Id}
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+        closeQuickInfoPopup={closeQuickInfoPopup}
+      />
     )}
   </>
 );
@@ -320,7 +389,7 @@ const Scheduler = ({
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
   const scheduleRef = useRef() as RefObject<ScheduleComponent>;
-  const [dataSource, setDataSource] = useState<Object[]>([]);
+  const [dataSource, setDataSource] = useState<EventObject[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState("Week");
   const actionBegin = useCallback(
