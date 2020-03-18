@@ -4,13 +4,12 @@ check() {
     exit_code=$?
     if [ $exit_code -ne 0 ]
     then
-        echo "Command '$1' failed"
+        echo "Previous command failed"
         exit $exit_code
     fi
 }
 
-ENV_NAME=$1
-DOMAIN=$2
+DOMAIN=$1
 
 cd terraform
 ./terraform init
@@ -18,11 +17,11 @@ cd terraform
 check
 cd ..
 
-API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${ENV_NAME}'].id" --output text)
-REACT_APP_USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 20 --query "UserPools[?Name=='${ENV_NAME}'].Id" --output text)
+API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${TF_WORKSPACE}'].id" --output text)
+REACT_APP_USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 20 --query "UserPools[?Name=='${TF_WORKSPACE}'].Id" --output text)
 REACT_APP_USER_CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id $REACT_APP_USER_POOL_ID --query "UserPoolClients[?ClientName=='moonlight-client'].ClientId" --output text)
 REACT_APP_USER_CLIENT_SECRET=$(aws cognito-idp describe-user-pool-client --user-pool-id $REACT_APP_USER_POOL_ID --client-id $REACT_APP_USER_CLIENT_ID --query "UserPoolClient.ClientSecret" --output text)
-export RDS_MASTER_HOST=$(aws rds describe-db-instances --db-instance-identifier ${ENV_NAME} --query "DBInstances[0].Endpoint.Address" --output text)
+export RDS_MASTER_HOST=$(aws rds describe-db-instances --db-instance-identifier ${TF_WORKSPACE} --query "DBInstances[0].Endpoint.Address" --output text)
 
 echo "REACT_APP_AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 REACT_APP_API_GATEWAY_INVOKE_URL=https://${API_GATEWAY_REST_API_ID}.execute-api.us-east-1.amazonaws.com/production/
@@ -51,7 +50,7 @@ cd ../client
 npm install
 npm run build
 check
-aws s3 sync --delete build "s3://${ENV_NAME}"
+aws s3 sync --delete build "s3://${TF_WORKSPACE}"
 
 CLOUDFRONT_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{Alias:Aliases.Items[0],Id:Id}[?Alias=='${DOMAIN}'].Id" --output text)
 aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
