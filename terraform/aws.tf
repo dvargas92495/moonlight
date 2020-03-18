@@ -375,6 +375,31 @@ resource "aws_db_instance" "default" {
   }
 }
 
+resource "aws_s3_bucket" "patient_forms" {
+  bucket = "${local.env_name}-patient-forms"
+  acl    = "private"
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RestrictedActions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::643537615676:user/moonlight-health-admin"
+      },
+      "Action": ["s3:PutObject", "s3:DeleteObject", "s3:GetObject"],
+      "Resource": "arn:aws:s3:::${local.env_name}-patient-forms/*"
+    }
+  ]
+}
+POLICY
+
+  tags = {
+    Application = "Moonlight"
+  }
+}
+
 module "backend" {
   source = "./backend"
 
