@@ -1,7 +1,7 @@
 # https://docs.travis-ci.com/user/job-lifecycle/
 
 language: node_js
-node_js: 10.15.3
+node_js: 12.6.1
 env:
   global:
     - AWS_ACCESS_KEY_ID=AKIAZLVOUXM6HAHWSANH
