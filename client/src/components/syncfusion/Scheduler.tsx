@@ -270,9 +270,13 @@ const QuickInfoTemplatesContent: any = ({
           />
         </>
       ))}
-    <div>
-      <h3>Created by {fullName}</h3>
-    </div>
+    {!Id ? (
+      <div></div>
+    ) : (
+      <div>
+        <h3>Created by {fullName}</h3>
+      </div>
+    )}
     <div className="e-date-time">
       <div className="e-date-time-icon e-icons" />
       <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
@@ -295,7 +299,7 @@ const QuickInfoTemplatesContent: any = ({
             new Date(Patients[p].dateOfBirth),
             "yyyy/MM/dd"
           )}`}
-          <FileInput 
+          <FileInput
             browseButtonText={"Add Patient Form..."}
             url={`patients/${p}/form`}
           />
