@@ -77,6 +77,7 @@ type EventResponse = {
   IsReadonly: boolean;
   IsPending: boolean;
   Patients: { [id: number]: { [key: string]: string } };
+  fullName: string;
 };
 
 type EventObject = {
@@ -89,6 +90,7 @@ type EventObject = {
   IsReadonly: boolean;
   IsPending: boolean;
   Patients: { [id: number]: { [key: string]: string } };
+  fullName: string;
 };
 
 type QuickInfoExtraProps = {
@@ -114,10 +116,8 @@ const QuickInfoTemplatesHeader: any = ({
   elementType,
   Subject,
   IsReadonly
-}: {
+}: EventObject & {
   elementType: string;
-  Subject: string;
-  IsReadonly: boolean;
 }) => (
   <>
     <div className="e-header-icon-wrapper">
@@ -254,7 +254,8 @@ const QuickInfoTemplatesContent: any = ({
   IsPending,
   CreatedBy,
   Patients,
-  elementType
+  elementType,
+  fullName
 }: QuickInfoProps) => (
   <>
     {elementType === "cell" &&
@@ -270,6 +271,9 @@ const QuickInfoTemplatesContent: any = ({
           />
         </>
       ))}
+    <div>
+      <h3>Created by {fullName}</h3>
+    </div>
     <div className="e-date-time">
       <div className="e-date-time-icon e-icons" />
       <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
