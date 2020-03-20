@@ -270,9 +270,7 @@ const QuickInfoTemplatesContent: any = ({
           />
         </>
       ))}
-    {!Id ? (
-      <div></div>
-    ) : (
+    {Id && (
       <div>
         <h3>Created by {fullName}</h3>
       </div>
