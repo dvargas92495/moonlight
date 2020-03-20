@@ -118,8 +118,6 @@ const QuickInfoTemplatesHeader: any = ({
   IsReadonly
 }: EventObject & {
   elementType: string;
-  Subject: string;
-  IsReadonly: boolean;
 }) => (
   <>
     <div className="e-header-icon-wrapper">
@@ -274,7 +272,6 @@ const QuickInfoTemplatesContent: any = ({
         </>
       ))}
     <div>
-      {" "}
       <h3>Created by {fullName}</h3>
     </div>
     <div className="e-date-time">
