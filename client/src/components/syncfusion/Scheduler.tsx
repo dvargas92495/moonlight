@@ -47,6 +47,8 @@ import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
 import Dialog from "./Dialog";
 import Form from "./Form";
+import FileInput from "./FileInput";
+import styled from "styled-components";
 
 export type AvailabilityProps = {
   userId: number;
@@ -57,14 +59,6 @@ export type AvailabilityProps = {
 
 type SchedulerProps = AvailabilityProps & {
   viewUserId: number;
-};
-
-type EventRequest = {
-  userId: number;
-  createdBy: number;
-  Subject: string;
-  StartTime: Date;
-  EndTime: Date;
 };
 
 type EventResponse = {
@@ -108,6 +102,10 @@ const formatEvent = (e: EventResponse) => ({
   StartTime: new Date(e.StartTime),
   EndTime: new Date(e.EndTime)
 });
+
+const PatientSummary = styled.div`
+  padding-top: 16px;
+`;
 
 /**
  * Syncfusion has a weird issue with type casting and Quick info templates
@@ -223,12 +221,13 @@ const PatientDialog = ({
         <Form
           path={`events/${Id}/patient`}
           handleResponse={handleResponse(close)}
+          width={320}
         >
           <h3>Enter Patient Information</h3>
           <Input placeholder="First Name" name="firstName" />
           <Input placeholder="Last Name" name="lastName" />
           <DatePickerComponent
-            placeholder="yyyy/mm/dd"
+            placeholder="Date of Birth (yyyy/mm/dd)"
             format="yyyy/MM/dd"
             name="dateOfBirth"
           />
@@ -289,14 +288,20 @@ const QuickInfoTemplatesContent: any = ({
         setDataSource={setDataSource}
       />
     )}
-    {map(keys(Patients), (p: number) => (
-      <div key={p}>
-        {`${Patients[p].firstName} ${Patients[p].lastName} - ${format(
-          new Date(Patients[p].dateOfBirth),
-          "yyyy/MM/dd"
-        )}`}
-      </div>
-    ))}
+    <PatientSummary>
+      {map(keys(Patients), (p: number) => (
+        <div key={p}>
+          {`${Patients[p].firstName} ${Patients[p].lastName} - ${format(
+            new Date(Patients[p].dateOfBirth),
+            "yyyy/MM/dd"
+          )}`}
+          <FileInput 
+            browseButtonText={"Add Patient Form..."}
+            url={`patients/${p}/form`}
+          />
+        </div>
+      ))}
+    </PatientSummary>
     {!IsPending && viewUserId === CreatedBy && Id && (
       <PatientDialog
         Id={Id}

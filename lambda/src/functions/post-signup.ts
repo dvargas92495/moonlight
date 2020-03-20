@@ -1,7 +1,7 @@
 import {
   createSecretHashObj,
   cognitoIdentityServiceProvider
-} from "../layers/cognito";
+} from "../layers/aws";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
 import { okResponse, userErrorResponse } from "../layers/util";

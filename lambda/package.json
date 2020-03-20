@@ -8,6 +8,7 @@
   "devDependencies": {
     "@types/aws-lambda": "8.10.40",
     "@types/axios": "0.14.0",
+    "@types/busboy": "0.2.3",
     "@types/jsonwebtoken": "8.3.7",
     "@types/jwk-to-pem": "2.0.0",
     "@types/lodash": "4.14.149",
@@ -22,6 +23,7 @@
   "dependencies": {
     "aws-sdk": "2.610.0",
     "axios": "0.19.2",
+    "busboy": "0.3.1",
     "jsonwebtoken": "8.5.1",
     "jwk-to-pem": "2.0.3",
     "lodash": "4.17.15",

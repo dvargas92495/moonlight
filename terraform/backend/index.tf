@@ -12,6 +12,7 @@ locals {
     "events/post",
     "events/{id}/delete",
     "events/{id}/patient/post",
+    "patients/{id}/form/post",
     "profile/get",
     "profile/post",
     "signin/post",
@@ -87,6 +88,10 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  binary_media_types = [
+    "multipart/form-data"
+  ]
 }
 
 # lambda resource requires either filename or s3... wow
@@ -156,6 +161,11 @@ resource "aws_api_gateway_method" "method" {
   resource_id   = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id
   http_method   = upper(local.methods[each.value])
   authorization = "NONE"
+
+  request_parameters = {
+    "method.request.header.Accept" = true
+    "method.request.header.Content-Type" = true
+  }
 }
 
 resource "aws_api_gateway_integration" "integration" {

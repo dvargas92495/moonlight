@@ -4,8 +4,12 @@ import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { useApiFormPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 
-const StyledForm = styled.form`
-  width: 240px;
+interface StyledFormExtendProps {
+  readonly width: number;
+}
+
+const StyledForm = styled.form<StyledFormExtendProps>`
+  width: ${props => props.width}px;
   margin: 16px;
 `;
 
@@ -16,6 +20,7 @@ type FormProps = {
   handleResponse: (response: any) => void;
   className?: string;
   extraProps?: object;
+  width?: number;
 };
 
 const Form = ({
@@ -24,7 +29,8 @@ const Form = ({
   path,
   handleResponse,
   className,
-  extraProps = {}
+  extraProps = {},
+  width = 240,
 }: FormProps) => {
   const { error, loading, handleSubmit } = useApiFormPost(
     path,
@@ -32,7 +38,7 @@ const Form = ({
     handleResponse
   );
   return (
-    <StyledForm onSubmit={handleSubmit} className={className}>
+    <StyledForm onSubmit={handleSubmit} className={className} width={width}>
       {children}
       <ButtonComponent isPrimary>{label.toUpperCase()}</ButtonComponent>
       <RequestFeedback error={error} loading={loading} />

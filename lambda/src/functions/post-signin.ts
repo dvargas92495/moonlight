@@ -8,7 +8,7 @@ import {
   createSecretHashObj,
   cognitoIdentityServiceProvider,
   region
-} from "../layers/cognito";
+} from "../layers/aws";
 import { okResponse, userErrorResponse } from "../layers/util";
 
 type JwtPayload = {

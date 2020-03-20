@@ -2,6 +2,8 @@ This directory is responsible for managing Database migrations
 
 ## Getting Started
 
+1. Install `psql`
+   1. https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 1. Run `npm install`
 1. Set the db host
    1. Copy the value of `REACT_APP_RDS_MASTER_HOST` from `client/.env.local`
