@@ -297,10 +297,12 @@ const QuickInfoTemplatesContent: any = ({
             new Date(Patients[p].dateOfBirth),
             "yyyy/MM/dd"
           )}`}
-          <FileInput
-            browseButtonText={"Add Patient Form..."}
-            url={`patients/${p}/form`}
-          />
+          {viewUserId === CreatedBy && (
+            <FileInput
+              browseButtonText={"Add Patient Form..."}
+              url={`patients/${p}/form`}
+            />
+          )}
         </div>
       ))}
     </PatientSummary>
