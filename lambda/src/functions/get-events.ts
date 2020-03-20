@@ -23,10 +23,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   client.connect();
   return client
     .query(
-      `SELECT e.*, p.date_of_birth, i.* FROM events e 
+      `SELECT e.*, p.date_of_birth, i.*, pr.first_name, pr.last_name FROM events e
        LEFT JOIN patient_event_links l ON e.id = l.event_id 
        LEFT JOIN patients p ON l.patient_id = p.id 
        LEFT JOIN patient_identifiers i ON i.patient_id = p.id
+       LEFT JOIN profile pr ON pr.user_id = e.created_by
        WHERE e.user_id=$1 AND e.start_time >= $2 AND e.start_time < $3 AND (NOT e.is_pending OR e.created_by=$4 OR e.user_id=$4)`,
       [userIdInt, startTime, endTime, viewUserIdInt]
     )
@@ -43,7 +44,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           Id: e.id,
           IsPending: e.is_pending,
           CreatedBy: e.created_by,
-          Patients: {} as { [id: number]: { [key: string]: string } }
+          Patients: {} as { [id: number]: { [key: string]: string } },
+          fullName: e.first_name + " " + e.last_name
         };
       });
       const eventsById = keyBy(events, "Id");
