@@ -12,8 +12,7 @@ A health service platform connecting specialists with generalists, in an effort 
    1. `cd client`
    1. `npm install`
 1. Install aws cli
-   1. `pip install awscli --upgrade --user`
-   1. Copy `AWS_ACCESS_KEY_ID` from
+   1. `pip3 install awscli --upgrade --user`
 1. If using windows, Install GNU on Windows
    1. Download installer from https://github.com/bmatzelle/gow/releases/tag/v0.8.0
    2. We need this for `zip`
