@@ -309,7 +309,6 @@ const QuickInfoTemplatesContent: any = ({
           {viewUserId === CreatedBy && (
             <FileInput
               browseButtonText={"Add Patient Form..."}
-              files={Patients[p].forms}
               url={`patients/${p}/form`}
             />
           )}

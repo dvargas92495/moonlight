@@ -9,7 +9,6 @@ const FileInput = ({
     url
 } : {
     browseButtonText: string,
-    files: string[],
     url: string
 }) => {
   const wrappedUrl = `${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`
