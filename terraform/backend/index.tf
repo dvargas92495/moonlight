@@ -13,6 +13,7 @@ locals {
     "events/{id}/delete",
     "events/{id}/patient/post",
     "patients/{id}/form/post",
+    "patient-forms/{id}/{name}/get",
     "profile/get",
     "profile/post",
     "signin/post",
@@ -90,7 +91,8 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   }
 
   binary_media_types = [
-    "multipart/form-data"
+    "multipart/form-data",
+    "application/octet-stream"
   ]
 }
 
@@ -255,6 +257,12 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
+  stage_description = "2020.80.1"
 
-  depends_on  = [aws_api_gateway_integration.integration, aws_api_gateway_integration.mock] 
+  depends_on  = [aws_api_gateway_integration.integration, aws_api_gateway_integration.mock]
+
+  
+  lifecycle {
+      create_before_destroy = true
+  }
 }

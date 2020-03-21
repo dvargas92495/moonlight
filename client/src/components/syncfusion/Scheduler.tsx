@@ -49,6 +49,7 @@ import Dialog from "./Dialog";
 import Form from "./Form";
 import FileInput from "./FileInput";
 import styled from "styled-components";
+import DownloadLink from "./DownloadLink";
 
 export type AvailabilityProps = {
   userId: number;
@@ -70,7 +71,7 @@ type EventResponse = {
   EndTime: string;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: { [id: number]: { [key: string]: string } };
+  Patients: { [id: number]: {forms: string[]; identifiers: { [key: string]: string }, dateOfBirth: string; }};
   fullName: string;
 };
 
@@ -83,7 +84,7 @@ type EventObject = {
   EndTime: Date;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: { [id: number]: { [key: string]: string } };
+  Patients: { [id: number]: {forms: string[]; identifiers: { [key: string]: string }, dateOfBirth: string; }};
   fullName: string;
 };
 
@@ -105,6 +106,10 @@ const formatEvent = (e: EventResponse) => ({
 
 const PatientSummary = styled.div`
   padding-top: 16px;
+`;
+
+const FormContainer = styled.div`
+  padding-left: 16px;
 `;
 
 /**
@@ -203,9 +208,12 @@ const PatientDialog = ({
       const event = find(dataSource, { Id });
       if (event) {
         event.Patients[patientId] = {
-          firstName,
-          lastName,
-          dateOfBirth
+          identifiers: {
+            firstName,
+            lastName,
+          },
+          dateOfBirth,
+          forms: [],
         };
         // spreading to force a rerender
         setDataSource([...dataSource]);
@@ -253,6 +261,7 @@ const QuickInfoTemplatesContent: any = ({
   IsPending,
   CreatedBy,
   Patients,
+  IsReadonly,
   elementType,
   fullName
 }: QuickInfoProps) => (
@@ -270,7 +279,7 @@ const QuickInfoTemplatesContent: any = ({
           />
         </>
       ))}
-    {Id && (
+    {Id && !IsReadonly && (
       <div>
         <h3>Created by {fullName}</h3>
       </div>
@@ -293,15 +302,22 @@ const QuickInfoTemplatesContent: any = ({
     <PatientSummary>
       {map(keys(Patients), (p: number) => (
         <div key={p}>
-          {`${Patients[p].firstName} ${Patients[p].lastName} - ${format(
+          {`${Patients[p].identifiers.firstName} ${Patients[p].identifiers.lastName} - ${format(
             new Date(Patients[p].dateOfBirth),
             "yyyy/MM/dd"
           )}`}
-          {viewUserId === CreatedBy && (
+          {viewUserId === CreatedBy ? (
             <FileInput
               browseButtonText={"Add Patient Form..."}
+              files={Patients[p].forms}
               url={`patients/${p}/form`}
             />
+          ) : (
+            <FormContainer>
+              {map(Patients[p].forms, f => (
+                <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>{f}</DownloadLink>
+              ))}
+            </FormContainer>
           )}
         </div>
       ))}

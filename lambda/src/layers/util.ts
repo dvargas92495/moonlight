@@ -1,6 +1,6 @@
 import { findKey, split, map, join } from "lodash";
 
-const headers = {
+export const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE"
 };
@@ -22,6 +22,12 @@ export const emptyResponse = () => ({
 
 export const userErrorResponse = (message: string) => ({
   statusCode: 400,
+  body: JSON.stringify({ message }),
+  headers
+});
+
+export const serverErrorResponse = (message: string) => ({
+  statusCode: 500,
   body: JSON.stringify({ message }),
   headers
 });
