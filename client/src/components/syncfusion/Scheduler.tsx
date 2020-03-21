@@ -306,19 +306,18 @@ const QuickInfoTemplatesContent: any = ({
             new Date(Patients[p].dateOfBirth),
             "yyyy/MM/dd"
           )}`}
-          {viewUserId === CreatedBy ? (
+          {viewUserId === CreatedBy && (
             <FileInput
               browseButtonText={"Add Patient Form..."}
               files={Patients[p].forms}
               url={`patients/${p}/form`}
             />
-          ) : (
-            <FormContainer>
-              {map(Patients[p].forms, f => (
-                <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>{f}</DownloadLink>
-              ))}
-            </FormContainer>
           )}
+          <FormContainer>
+            {map(Patients[p].forms, f => (
+              <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>{f}</DownloadLink>
+            ))}
+          </FormContainer>
         </div>
       ))}
     </PatientSummary>

@@ -3,11 +3,9 @@ import { UploaderComponent } from '@syncfusion/ej2-react-inputs';
 import "@syncfusion/ej2-base/styles/material.css";
 import "@syncfusion/ej2-buttons/styles/material.css";
 import "@syncfusion/ej2-react-inputs/styles/material.css";
-import { map } from 'lodash';
 
 const FileInput = ({
     browseButtonText,
-    files,
     url
 } : {
     browseButtonText: string,
@@ -22,7 +20,6 @@ const FileInput = ({
         saveUrl: wrappedUrl,
       }}
       buttons={{ browse: browseButtonText }}
-      files={map(files, name => ({ name, size: 0 }))} 
     />
 );
 }
