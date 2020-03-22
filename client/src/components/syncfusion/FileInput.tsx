@@ -18,7 +18,7 @@ const FileInput = ({
         removeUrl: wrappedUrl,
         saveUrl: wrappedUrl,
       }}
-      buttons={{ browse: browseButtonText }} 
+      buttons={{ browse: browseButtonText }}
     />
 );
 }
