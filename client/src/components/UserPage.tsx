@@ -1,16 +1,13 @@
-import React, { useState, ReactElement } from "react";
+import React, { useState, ReactElement, useCallback } from "react";
 import { Redirect } from "react-router-dom";
-import PageLink from "./PageLink";
 import styled from "styled-components";
 import { keys, map } from "lodash";
+import AppHeader from "./AppHeader";
+import Button from "./syncfusion/Button";
 
-type UserPageProps = {
+export type UserPageProps = {
   userId: number;
-  initialTab: string;
-  tabContent: {
-    [tab: string]: ReactElement;
-  };
-  header: string;
+  setUserId: (userId: number) => void;
 };
 
 const StyledHeader = styled.header`
@@ -48,15 +45,25 @@ const UserPage = ({
   userId,
   initialTab,
   tabContent,
-  header
-}: UserPageProps) => {
+  header,
+  setUserId,
+}: {
+  initialTab: string;
+  tabContent: {
+    [tab: string]: ReactElement;
+  };
+  header: string;
+} & UserPageProps) => {
   const [tab, setTab] = useState(initialTab);
+  const logoutCallback = useCallback(() => setUserId(0), [setUserId]);
   return userId === 0 ? (
     <Redirect to={"/login"} />
   ) : (
     <>
+      <AppHeader>
+        <Button isPrimary onClick={logoutCallback}>LOG OUT</Button>
+      </AppHeader>
       <Sidebar>
-        <PageLink label="Home" path="/" />
         <StyledHeader>{header}</StyledHeader>
         {map(keys(tabContent), (t, i) => (
           <SidebarTab key={i} onClick={() => setTab(t)}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
-import UserPage from "./UserPage";
+import UserPage, { UserPageProps } from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
 import { getAvailablity, getProfile } from "../hooks/apiClient";
 import Input from "./syncfusion/Input";
@@ -90,7 +90,7 @@ const SettingsContent = ({ userId }: UserProps) => {
   );
 };
 
-const SchedulerContent = ({ userId }: UserProps) => {
+const SchedulerContent = ({ userId }: { userId: number}) => {
   const [availability, setAvailability] = useState(null);
   useEffect(() => {
     getAvailablity(userId).then(a => setAvailability(a));
@@ -98,9 +98,10 @@ const SchedulerContent = ({ userId }: UserProps) => {
   return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
 };
 
-const SpecialistPage = ({ userId }: UserProps) => (
+const SpecialistPage = ({ userId, setUserId }: UserPageProps) => (
   <UserPage
     userId={userId}
+    setUserId={setUserId}
     header={"Your Specialist Dashboard"}
     initialTab={"schedule"}
     tabContent={{
