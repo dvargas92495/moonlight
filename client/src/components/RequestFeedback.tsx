@@ -1,8 +1,9 @@
 import React, { HTMLAttributes } from "react";
 import styled from "styled-components";
+import { CONTENT_COLOR } from "../styles/colors";
 
 const LoadingSpan = styled.span`
-  color: gray;
+  color: ${CONTENT_COLOR};
 `;
 
 const ErrorSpan = styled.span`

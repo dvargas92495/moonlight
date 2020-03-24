@@ -23,6 +23,10 @@ const GlobalStyle = createGlobalStyle`
      font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
   }
+
+  html, body, #root {
+    height: 100%;
+  }
 `;
 
 const App: React.FC = () => {
@@ -34,10 +38,10 @@ const App: React.FC = () => {
         <Route exact path="/">
           <HomePage />
         </Route>
-        <Route path="/dentists">
+        <Route path="/dentist">
           <DentistPage userId={userId} setUserId={setUserId}/>
         </Route>
-        <Route path="/specialists">
+        <Route path="/specialist">
           <SpecialistPage userId={userId} setUserId={setUserId}/>
         </Route>
         <Route path="/login">

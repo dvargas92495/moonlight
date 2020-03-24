@@ -7,6 +7,9 @@ const Container = styled.header`
   font-size: calc(10px + 2vmin);
   background: ${PRIMARY_BACKGROUND_COLOR};
   border-bottom: 1px solid ${CONTENT_COLOR}${QUARTER_OPAQUE};
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 `;
 
 const SubContainer = styled.div`

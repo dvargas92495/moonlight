@@ -9,7 +9,8 @@ import {
   cognitoIdentityServiceProvider,
   region
 } from "../layers/aws";
-import { okResponse, userErrorResponse } from "../layers/util";
+import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
+import { userType } from "../layers/enums";
 
 type JwtPayload = {
   sub: string;
@@ -100,14 +101,15 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           client.connect();
           return client
             .query(
-              `SELECT id FROM users
-             WHERE uuid=($1)`,
+              `SELECT id, type FROM users
+               WHERE uuid=($1)`,
               [sub]
             )
             .then(res => {
               client.end();
-              const { id } = res.rows[0];
-              return okResponse({ id });
+              const { id, type } = res.rows[0];
+              const uType = getFieldByValue(userType, type);
+              return okResponse({ id, type: uType });
             });
         });
       }

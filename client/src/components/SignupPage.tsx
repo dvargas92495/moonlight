@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Input from "./syncfusion/Input";
 import Form from "./syncfusion/Form";
 import { PRIMARY_COLOR } from "../styles/colors";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import PublicPage from "./PublicPage";
 
 const Container = styled.div`
@@ -24,6 +24,7 @@ const FormContainer = styled.div`
 
 const Header = styled.h2`
   color: ${PRIMARY_COLOR};
+  text-transform: uppercase;
 `;
 
 const SignupPage = ({
@@ -33,25 +34,27 @@ const SignupPage = ({
 }) => {
   const [username, setUsername] = useState("");
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
-  const [uuid, setUuid] = useState(0);
+  const [signupUserId, setSignupUserId] = useState(0);
+  
+  const { type } = useParams();
+  const history = useHistory();
 
   const signupHandleResponse = useCallback(
-    ({ id }) => {
+    ({ id, username }) => {
       setShowConfirmationCode(true);
-      setUuid(id);
-      setUsername("");
+      setSignupUserId(id);
+      setUsername(username);
     },
-    [setShowConfirmationCode, setUuid, setUsername]
+    [setShowConfirmationCode, setSignupUserId, setUsername]
   );
-
   const confirmSignupHandleResponse = useCallback(() => {
-    setUserId(uuid);
-  }, [setUserId, uuid]);
-  const { type } = useParams();
+    setUserId(signupUserId);
+    history.push(`/${type}`);
+  }, [setUserId, signupUserId, type, history]);
   return (
     <PublicPage>
       <Container>
-        <Header>{`Sign up as ${type}`}</Header>
+        <Header>{showConfirmationCode ? `Enter confirmation code from email`: `Sign up as ${type}`}</Header>
         <FormContainer>
           {showConfirmationCode ? (
             <Form
@@ -67,6 +70,7 @@ const SignupPage = ({
               label="sign up"
               path="signup"
               handleResponse={signupHandleResponse}
+              extraProps={{ type }}
             >
               <Input placeholder="First Name" name="firstName" />
               <Input placeholder="Last Name" name="lastName" />

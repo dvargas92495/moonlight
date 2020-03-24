@@ -5,6 +5,7 @@ import PublicPage from "./PublicPage";
 
 const MainHeader = styled.h1`
   color: ${PRIMARY_COLOR};
+  text-align: center;
 `;
 
 const HomePage = () => (
