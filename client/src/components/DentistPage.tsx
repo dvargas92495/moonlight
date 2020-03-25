@@ -1,46 +1,51 @@
 import React, { useState, useEffect } from "react";
-import UserPage from "./UserPage";
+import UserPage, { UserPageProps } from "./UserPage";
 import Scheduler, { AvailabilityProps } from "./syncfusion/Scheduler";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
+import ProfileContent from "./ProfileContent";
+import { CONTENT_COLOR, SECONDARY_COLOR, SECONDARY_BACKGROUND_COLOR, QUARTER_OPAQUE } from "../styles/colors";
+import Button from "./syncfusion/Button";
 
 type SpecialistOptionType = {
   selected: boolean;
 };
 
-type DentistPageProps = {
-  userId: number;
-};
-
-type SelectedSchedule = DentistPageProps & AvailabilityProps;
+type SelectedSchedule = { userId: number } & AvailabilityProps;
 
 type SpecialistView = SelectedSchedule & {
   fullName: string;
 };
 
+const Content = styled.div`
+  display: flex;
+`;
+
 const SpecialistOptionsContainer = styled.div`
-  width: 30%;
-  display: inline-block;
+  min-width: 144px;
+  max-width: 144px;
+  display: inline-flex;
+  flex-direction: column;
   vertical-align: top;
   height: 100%;
+  border-right: solid ${CONTENT_COLOR}${QUARTER_OPAQUE} 2px;
 `;
 
 const SpecialistOption = styled.div`
   padding: 5px;
-  border: solid black 2px;
+  border-bottom: solid ${CONTENT_COLOR}${QUARTER_OPAQUE} 2px;
   background-color: ${(props: SpecialistOptionType) =>
-    props.selected ? "yellow" : "white"};
+    props.selected ? SECONDARY_COLOR : SECONDARY_BACKGROUND_COLOR};
+  color: ${CONTENT_COLOR};
 `;
 
 const SpecialistViewContainer = styled.div`
-  width: 70%;
-  display: inline-block;
-  overflow-y: scroll;
+  display: inline-flex;
   height: 100%;
 `;
 
-const SpecialistsContent = ({ userId }: DentistPageProps) => {
+const SpecialistsContent = ({ userId }: { userId: number }) => {
   const [specialistViews, setSpecialistViews] = useState<SpecialistView[]>([]);
   const [
     selectedSchedule,
@@ -52,7 +57,7 @@ const SpecialistsContent = ({ userId }: DentistPageProps) => {
     );
   }, [userId, setSpecialistViews]);
   return (
-    <>
+    <Content>
       <SpecialistOptionsContainer>
         {map(specialistViews, (v: SpecialistView) => (
           <SpecialistOption
@@ -60,9 +65,9 @@ const SpecialistsContent = ({ userId }: DentistPageProps) => {
             key={v.userId}
           >
             <div>{v.fullName}</div>
-            <button onClick={() => setSelectedSchedule(v)}>
+            <Button isPrimary onClick={() => setSelectedSchedule(v)}>
               SEE AVAILABILITY
-            </button>
+            </Button>
           </SpecialistOption>
         ))}
       </SpecialistOptionsContainer>
@@ -71,17 +76,19 @@ const SpecialistsContent = ({ userId }: DentistPageProps) => {
           <Scheduler {...selectedSchedule} viewUserId={userId} />
         </SpecialistViewContainer>
       )}
-    </>
+    </Content>
   );
 };
 
-const DentistPage = ({ userId }: DentistPageProps) => (
+const DentistPage = ({ userId, setUserId }: UserPageProps) => (
   <>
     <UserPage
       userId={userId}
+      setUserId={setUserId}
       header="Your Dentist Dashboard"
       initialTab="specialists"
       tabContent={{
+        profile: <ProfileContent userId={userId} />,
         specialists: <SpecialistsContent userId={userId} />
       }}
     />

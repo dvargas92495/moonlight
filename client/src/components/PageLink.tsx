@@ -1,29 +1,31 @@
 import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-
-type HomeButtonProps = {
-  label: string;
-  path: string;
-};
+import { PRIMARY_COLOR, CONTENT_COLOR } from "../styles/colors";
 
 const StyledContainer = styled.div`
-  background-color: Navy;
+  background-color: transparent;
   display: inline-block;
-  margin: 5px;
-  padding: 10px 0px;
-  width: 120px;
+  padding: 10px;
   text-align: center;
 `;
 
 const StyledLink = styled(Link)`
-  color: red;
+  color: ${CONTENT_COLOR};
   text-decoration: none;
   font-weight: 500;
+
+  &:hover {
+    color: ${PRIMARY_COLOR};
+  }
 `;
 
-const PageLink = ({ label = "", path = "/" }: HomeButtonProps) => (
-  <StyledContainer>
+const PageLink = ({ label = "", path = "/", className }: {
+  label: string;
+  path: string;
+  className?: string;
+}) => (
+  <StyledContainer className={className}>
     <StyledLink to={path}>{label.toUpperCase()}</StyledLink>
   </StyledContainer>
 );

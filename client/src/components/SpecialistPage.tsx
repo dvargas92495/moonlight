@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
-import UserPage from "./UserPage";
+import UserPage, { UserPageProps } from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
-import { getAvailablity, getProfile } from "../hooks/apiClient";
+import { getAvailablity } from "../hooks/apiClient";
 import Input from "./syncfusion/Input";
 import Checkbox from "./syncfusion/Checkbox";
 import Form from "./syncfusion/Form";
+import ProfileContent from "./ProfileContent";
 
 type UserProps = {
   userId: number;
@@ -14,35 +15,6 @@ type UserProps = {
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
 const initialWorkDays = map(range7, () => false);
-
-const ProfileContent = ({ userId }: UserProps) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const handleProfileCallback = useCallback(
-    ({ firstName, lastName }) => {
-      setFirstName(firstName);
-      setLastName(lastName);
-    },
-    [setFirstName, setLastName]
-  );
-  useEffect(() => {
-    getProfile(userId).then(handleProfileCallback);
-  }, [userId, handleProfileCallback]);
-  return (
-    <Form
-      handleResponse={handleProfileCallback}
-      path="profile"
-      extraProps={{ userId }}
-    >
-      <Input
-        defaultValue={firstName}
-        placeholder="First Name"
-        name="firstName"
-      />
-      <Input defaultValue={lastName} placeholder="Last Name" name="lastName" />
-    </Form>
-  );
-};
 
 const SettingsContent = ({ userId }: UserProps) => {
   const [workHoursStart, setWorkHoursStart] = useState("");
@@ -57,7 +29,9 @@ const SettingsContent = ({ userId }: UserProps) => {
     [setWorkHoursStart, setWorkHoursEnd, setWorkDays]
   );
   useEffect(() => {
-    getAvailablity(userId).then(handleAvailabilityCallback);
+    getAvailablity(userId).then(handleAvailabilityCallback).catch(e => {
+      console.log(`TODO - Display error somewhere: ${e.message}`);
+    });
   }, [userId, handleAvailabilityCallback]);
   return (
     <Form
@@ -90,7 +64,7 @@ const SettingsContent = ({ userId }: UserProps) => {
   );
 };
 
-const SchedulerContent = ({ userId }: UserProps) => {
+const SchedulerContent = ({ userId }: { userId: number}) => {
   const [availability, setAvailability] = useState(null);
   useEffect(() => {
     getAvailablity(userId).then(a => setAvailability(a));
@@ -98,9 +72,10 @@ const SchedulerContent = ({ userId }: UserProps) => {
   return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
 };
 
-const SpecialistPage = ({ userId }: UserProps) => (
+const SpecialistPage = ({ userId, setUserId }: UserPageProps) => (
   <UserPage
     userId={userId}
+    setUserId={setUserId}
     header={"Your Specialist Dashboard"}
     initialTab={"schedule"}
     tabContent={{

@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
-import { ButtonComponent } from "@syncfusion/ej2-react-buttons";
 import { useApiFormPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
+import Button from './Button';
 
 interface StyledFormExtendProps {
   readonly width: number;
@@ -40,7 +40,7 @@ const Form = ({
   return (
     <StyledForm onSubmit={handleSubmit} className={className} width={width}>
       {children}
-      <ButtonComponent isPrimary>{label.toUpperCase()}</ButtonComponent>
+      <Button isPrimary>{label.toUpperCase()}</Button>
       <RequestFeedback error={error} loading={loading} />
     </StyledForm>
   );
