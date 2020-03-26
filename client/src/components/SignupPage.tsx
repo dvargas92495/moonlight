@@ -27,14 +27,10 @@ const Header = styled.h2`
   text-transform: uppercase;
 `;
 
-const SignupPage = ({
-  setUserId,
-}: {
-  setUserId: (userId: number) => void;
-}) => {
+const SignupPage = () => {
   const [username, setUsername] = useState("");
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
-  const [signupUserId, setSignupUserId] = useState(0);
+  const [userId, setUserId] = useState(0);
   
   const { type } = useParams();
   const history = useHistory();
@@ -42,15 +38,14 @@ const SignupPage = ({
   const signupHandleResponse = useCallback(
     ({ id, username }) => {
       setShowConfirmationCode(true);
-      setSignupUserId(id);
+      setUserId(id);
       setUsername(username);
     },
-    [setShowConfirmationCode, setSignupUserId, setUsername]
+    [setShowConfirmationCode, setUserId, setUsername]
   );
   const confirmSignupHandleResponse = useCallback(() => {
-    setUserId(signupUserId);
-    history.push(`/${type}`);
-  }, [setUserId, signupUserId, type, history]);
+    history.push(`/${type}`, { userId, type });
+  }, [userId, type, history]);
   return (
     <PublicPage>
       <Container>

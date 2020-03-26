@@ -27,14 +27,16 @@ const Header = styled.h2`
   text-transform: uppercase;
 `;
 
-const LoginPage = ({ setUserId }: {setUserId: (userId: number) => void}) => {
+const LoginPage = () => {
   const history = useHistory();
   const handleResponse = useCallback(
     ({ id, type }) => {
-      setUserId(id);
-      history.push(`/${type}`);
+      history.push(`/${type}`, {
+        userId: id,
+        type,
+      });
     },
-    [history, setUserId]
+    [history]
   );
   return (
     <PublicPage>
