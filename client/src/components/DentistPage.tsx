@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import UserPage, { UserPageProps } from "./UserPage";
+import UserPage from "./UserPage";
 import Scheduler, { AvailabilityProps } from "./syncfusion/Scheduler";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
@@ -7,6 +7,7 @@ import styled from "styled-components";
 import ProfileContent from "./ProfileContent";
 import { CONTENT_COLOR, SECONDARY_COLOR, SECONDARY_BACKGROUND_COLOR, QUARTER_OPAQUE } from "../styles/colors";
 import Button from "./syncfusion/Button";
+import { useUserId } from "../hooks/router";
 
 type SpecialistOptionType = {
   selected: boolean;
@@ -45,7 +46,8 @@ const SpecialistViewContainer = styled.div`
   height: 100%;
 `;
 
-const SpecialistsContent = ({ userId }: { userId: number }) => {
+const SpecialistsContent = () => {
+  const userId = useUserId();
   const [specialistViews, setSpecialistViews] = useState<SpecialistView[]>([]);
   const [
     selectedSchedule,
@@ -80,16 +82,14 @@ const SpecialistsContent = ({ userId }: { userId: number }) => {
   );
 };
 
-const DentistPage = ({ userId, setUserId }: UserPageProps) => (
+const DentistPage = () => (
   <>
     <UserPage
-      userId={userId}
-      setUserId={setUserId}
       header="Your Dentist Dashboard"
       initialTab="specialists"
       tabContent={{
-        profile: <ProfileContent userId={userId} />,
-        specialists: <SpecialistsContent userId={userId} />
+        profile: <ProfileContent />,
+        specialists: <SpecialistsContent />
       }}
     />
   </>

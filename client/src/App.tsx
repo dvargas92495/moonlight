@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
 import HomePage from "./components/HomePage";
@@ -29,30 +29,17 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const App: React.FC = () => {
-  const [userId, setUserId] = useState(0);
-  return (
-    <BrowserRouter>
-      <GlobalStyle />
-      <Switch>
-        <Route exact path="/">
-          <HomePage />
-        </Route>
-        <Route path="/dentist">
-          <DentistPage userId={userId} setUserId={setUserId}/>
-        </Route>
-        <Route path="/specialist">
-          <SpecialistPage userId={userId} setUserId={setUserId}/>
-        </Route>
-        <Route path="/login">
-          <LoginPage setUserId={setUserId} />
-        </Route>
-        <Route path="/signup/:type">
-          <SignupPage setUserId={setUserId} />
-        </Route>
-      </Switch>
-    </BrowserRouter>
-  );
-};
+const App: React.FC = () => (
+  <BrowserRouter>
+    <GlobalStyle />
+    <Switch>
+      <Route exact path="/" component={HomePage} />
+      <Route path="/dentist" component={DentistPage} />
+      <Route path="/specialist" component={SpecialistPage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/signup/:type" component={SignupPage} />
+    </Switch>
+  </BrowserRouter>
+);
 
 export default App;

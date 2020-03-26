@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
-import UserPage, { UserPageProps } from "./UserPage";
+import UserPage from "./UserPage";
 import Scheduler from "./syncfusion/Scheduler";
 import { getAvailablity } from "../hooks/apiClient";
 import Input from "./syncfusion/Input";
 import Checkbox from "./syncfusion/Checkbox";
 import Form from "./syncfusion/Form";
 import ProfileContent from "./ProfileContent";
-
-type UserProps = {
-  userId: number;
-};
+import { useUserId } from "../hooks/router";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
 const initialWorkDays = map(range7, () => false);
 
-const SettingsContent = ({ userId }: UserProps) => {
+const SettingsContent = () => {
+  const userId = useUserId();
   const [workHoursStart, setWorkHoursStart] = useState("");
   const [workHoursEnd, setWorkHoursEnd] = useState("");
   const [workDays, setWorkDays] = useState(initialWorkDays);
@@ -64,7 +62,8 @@ const SettingsContent = ({ userId }: UserProps) => {
   );
 };
 
-const SchedulerContent = ({ userId }: { userId: number}) => {
+const SchedulerContent = () => {
+  const userId = useUserId();
   const [availability, setAvailability] = useState(null);
   useEffect(() => {
     getAvailablity(userId).then(a => setAvailability(a));
@@ -72,16 +71,14 @@ const SchedulerContent = ({ userId }: { userId: number}) => {
   return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
 };
 
-const SpecialistPage = ({ userId, setUserId }: UserPageProps) => (
+const SpecialistPage = () => (
   <UserPage
-    userId={userId}
-    setUserId={setUserId}
     header={"Your Specialist Dashboard"}
     initialTab={"schedule"}
     tabContent={{
-      profile: <ProfileContent userId={userId} />,
-      settings: <SettingsContent userId={userId} />,
-      schedule: <SchedulerContent userId={userId} />
+      profile: <ProfileContent />,
+      settings: <SettingsContent />,
+      schedule: <SchedulerContent />
     }}
   />
 );

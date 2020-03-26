@@ -2,8 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { getProfile } from '../hooks/apiClient';
 import Form from './syncfusion/Form';
 import Input from './syncfusion/Input';
+import { useUserId } from '../hooks/router';
 
-const ProfileContent = ({ userId }: { userId: number }) => {
+const ProfileContent = () => {
+    const userId = useUserId();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const handleProfileCallback = useCallback(

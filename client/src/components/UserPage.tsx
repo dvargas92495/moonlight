@@ -1,26 +1,8 @@
-import React, { useState, ReactElement, useCallback } from "react";
-import { Redirect, useHistory } from "react-router-dom";
+import React, { useState, ReactElement } from "react";
 import styled from "styled-components";
 import { keys, map } from "lodash";
-import AppHeader from "./AppHeader";
-import Button from "./syncfusion/Button";
 import { PRIMARY_BACKGROUND_COLOR, SECONDARY_BACKGROUND_COLOR, CONTENT_COLOR, PRIMARY_COLOR } from "../styles/colors";
-
-export type UserPageProps = {
-  userId: number;
-  setUserId: (userId: number) => void;
-};
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-`;
-
-const AppContent = styled.div`
-  display: flex;
-  height: 100%;
-`;
+import PrivatePage from "./PrivatePage";
 
 const StyledHeader = styled.h3`
   color: ${PRIMARY_COLOR};
@@ -51,43 +33,29 @@ const ContentContainer = styled.div`
 `;
 
 const UserPage = ({
-  userId,
   initialTab,
   tabContent,
   header,
-  setUserId,
 }: {
   initialTab: string;
   tabContent: {
     [tab: string]: ReactElement;
   };
   header: string;
-} & UserPageProps) => {
-  const history = useHistory();
+}) => {
   const [tab, setTab] = useState(initialTab);
-  const logoutCallback = useCallback(() => {
-    setUserId(0);
-    history.push("/");
-  }, [setUserId, history]);
-  return userId === 0 ? (
-    <Redirect to={"/login"} />
-  ) : (
-    <PageContainer>
-      <AppHeader>
-        <Button isPrimary onClick={logoutCallback}>LOG OUT</Button>
-      </AppHeader>
-      <AppContent>
-        <Sidebar>
-          <StyledHeader>{header}</StyledHeader>
-          {map(keys(tabContent), (t, i) => (
-            <SidebarTab key={i} onClick={() => setTab(t)} selected={t===tab}>
-              {t.toUpperCase()}
-            </SidebarTab>
-          ))}
-        </Sidebar>
-        <ContentContainer>{tabContent[tab]}</ContentContainer>
-      </AppContent>
-    </PageContainer>
+  return (
+    <PrivatePage>
+      <Sidebar>
+        <StyledHeader>{header}</StyledHeader>
+        {map(keys(tabContent), (t, i) => (
+          <SidebarTab key={i} onClick={() => setTab(t)} selected={t===tab}>
+            {t.toUpperCase()}
+          </SidebarTab>
+        ))}
+      </Sidebar>
+      <ContentContainer>{tabContent[tab]}</ContentContainer>
+    </PrivatePage>
   );
 };
 
