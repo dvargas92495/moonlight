@@ -1,10 +1,6 @@
 import React, { InputHTMLAttributes, useState, useEffect } from "react";
 import styled from "styled-components";
-import {
-  CONTENT_COLOR,
-  PRIMARY_BACKGROUND_COLOR,
-  PRIMARY_COLOR,
-} from "../../styles/colors";
+import { CONTENT_COLOR } from "../../styles/colors";
 
 const StyledCheckbox = styled.input`
   cursor: pointer;
