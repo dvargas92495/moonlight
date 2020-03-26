@@ -22,14 +22,16 @@ const SettingsContent = () => {
     ({ workHoursStart, workHoursEnd, workDays }) => {
       setWorkHoursStart(workHoursStart);
       setWorkHoursEnd(workHoursEnd);
-      setWorkDays(map(range7, i => includes(workDays, i)));
+      setWorkDays(map(range7, (i) => includes(workDays, i)));
     },
     [setWorkHoursStart, setWorkHoursEnd, setWorkDays]
   );
   useEffect(() => {
-    getAvailablity(userId).then(handleAvailabilityCallback).catch(e => {
-      console.log(`TODO - Display error somewhere: ${e.message}`);
-    });
+    getAvailablity(userId)
+      .then(handleAvailabilityCallback)
+      .catch((e) => {
+        console.log(`TODO - Display error somewhere: ${e.message}`);
+      });
   }, [userId, handleAvailabilityCallback]);
   return (
     <Form
@@ -54,7 +56,7 @@ const SettingsContent = () => {
             key={i}
             name="workDays"
             value={i.toString()}
-            checked={workDays[i]}
+            defaultChecked={workDays[i]}
           />
         ))}
       </div>
@@ -66,7 +68,7 @@ const SchedulerContent = () => {
   const userId = useUserId();
   const [availability, setAvailability] = useState(null);
   useEffect(() => {
-    getAvailablity(userId).then(a => setAvailability(a));
+    getAvailablity(userId).then((a) => setAvailability(a));
   }, [userId, setAvailability]);
   return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
 };
@@ -78,7 +80,7 @@ const SpecialistPage = () => (
     tabContent={{
       profile: <ProfileContent />,
       settings: <SettingsContent />,
-      schedule: <SchedulerContent />
+      schedule: <SchedulerContent />,
     }}
   />
 );
