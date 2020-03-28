@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
   useRef,
-  RefObject
+  RefObject,
 } from "react";
 import {
   format,
@@ -14,10 +14,9 @@ import {
   startOfMonth,
   endOfMonth,
   isBefore,
-  isAfter
+  isAfter,
 } from "date-fns";
 import { map, reject, includes, keys, find } from "lodash";
-import { DatePickerComponent } from "@syncfusion/ej2-react-calendars";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -26,7 +25,7 @@ import {
   Month,
   Inject,
   ViewsDirective,
-  ViewDirective
+  ViewDirective,
 } from "@syncfusion/ej2-react-schedule";
 import "@syncfusion/ej2-base/styles/material.css";
 import "@syncfusion/ej2-buttons/styles/material.css";
@@ -41,7 +40,7 @@ import "@syncfusion/ej2-react-schedule/styles/material.css";
 import api, {
   getEvents,
   useApiPost,
-  useApiDelete
+  useApiDelete,
 } from "../../hooks/apiClient";
 import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
@@ -50,6 +49,8 @@ import Form from "./Form";
 import FileInput from "./FileInput";
 import styled from "styled-components";
 import DownloadLink from "./DownloadLink";
+import DatePicker from "./DatePicker";
+import { PRIMARY_COLOR } from "../../styles/colors";
 
 export type AvailabilityProps = {
   userId: number;
@@ -71,7 +72,13 @@ type EventResponse = {
   EndTime: string;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: { [id: number]: {forms: string[]; identifiers: { [key: string]: string }, dateOfBirth: string; }};
+  Patients: {
+    [id: number]: {
+      forms: string[];
+      identifiers: { [key: string]: string };
+      dateOfBirth: string;
+    };
+  };
   fullName: string;
 };
 
@@ -84,7 +91,13 @@ type EventObject = {
   EndTime: Date;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: { [id: number]: {forms: string[]; identifiers: { [key: string]: string }, dateOfBirth: string; }};
+  Patients: {
+    [id: number]: {
+      forms: string[];
+      identifiers: { [key: string]: string };
+      dateOfBirth: string;
+    };
+  };
   fullName: string;
 };
 
@@ -101,11 +114,15 @@ type QuickInfoProps = EventObject & {
 const formatEvent = (e: EventResponse) => ({
   ...e,
   StartTime: new Date(e.StartTime),
-  EndTime: new Date(e.EndTime)
+  EndTime: new Date(e.EndTime),
 });
 
 const PatientSummary = styled.div`
   padding-top: 16px;
+`;
+
+const PatientHeader = styled.h3`
+  color: ${PRIMARY_COLOR};
 `;
 
 const FormContainer = styled.div`
@@ -118,7 +135,7 @@ const FormContainer = styled.div`
 const QuickInfoTemplatesHeader: any = ({
   elementType,
   Subject,
-  IsReadonly
+  IsReadonly,
 }: EventObject & {
   elementType: string;
 }) => (
@@ -141,14 +158,14 @@ const ActionEvent = ({
   eventId,
   closeQuickInfoPopup,
   dataSource,
-  setDataSource
+  setDataSource,
 }: QuickInfoExtraProps & {
   eventId: number;
 }) => {
   const {
     error: acceptError,
     loading: acceptLoading,
-    handleSubmit: acceptEvent
+    handleSubmit: acceptEvent,
   } = useApiPost("accept", (e: EventResponse) => {
     const otherEvents = reject(dataSource, { Id: e.Id });
     setDataSource([...otherEvents, formatEvent(e)]);
@@ -157,7 +174,7 @@ const ActionEvent = ({
   const {
     error: rejectError,
     loading: rejectLoading,
-    handleSubmit: rejectEvent
+    handleSubmit: rejectEvent,
   } = useApiDelete("events", () => {
     const otherEvents = reject(dataSource, { Id: eventId });
     setDataSource(otherEvents);
@@ -189,21 +206,25 @@ const PatientDialog = ({
   Id,
   dataSource,
   setDataSource,
-  closeQuickInfoPopup
+  closeQuickInfoPopup,
 }: QuickInfoExtraProps & {
   Id: number;
 }) => {
   const handleResponse = useCallback(
-    close => ({
+    (close) => ({
       patientId,
       firstName,
       lastName,
-      dateOfBirth
+      dateOfBirth,
+      email,
+      phoneNumber,
     }: {
       patientId: number;
       firstName: string;
       lastName: string;
       dateOfBirth: string;
+      email: string;
+      phoneNumber: string;
     }) => {
       const event = find(dataSource, { Id });
       if (event) {
@@ -211,6 +232,8 @@ const PatientDialog = ({
           identifiers: {
             firstName,
             lastName,
+            email,
+            phoneNumber,
           },
           dateOfBirth,
           forms: [],
@@ -225,18 +248,20 @@ const PatientDialog = ({
   );
   return (
     <Dialog openText={"Add Patient"}>
-      {close => (
+      {(close) => (
         <Form
           path={`events/${Id}/patient`}
           handleResponse={handleResponse(close)}
           width={320}
         >
-          <h3>Enter Patient Information</h3>
+          <PatientHeader>Enter Patient Information</PatientHeader>
           <Input placeholder="First Name" name="firstName" />
           <Input placeholder="Last Name" name="lastName" />
-          <DatePickerComponent
+          <Input placeholder="Email" name="email" />
+          <Input placeholder="Phone Number" name="phoneNumber" />
+          <DatePicker
             placeholder="Date of Birth (yyyy/mm/dd)"
-            format="yyyy/MM/dd"
+            displayFormat="yyyy/MM/dd"
             name="dateOfBirth"
           />
         </Form>
@@ -250,7 +275,7 @@ const QuickInfoTemplatesContent: any = ({
   closeQuickInfoPopup,
   dataSource,
   viewUserId,
-  setDataSource
+  setDataSource,
 }: QuickInfoExtraProps & {
   personal: boolean;
   viewUserId: number;
@@ -263,7 +288,7 @@ const QuickInfoTemplatesContent: any = ({
   Patients,
   IsReadonly,
   elementType,
-  fullName
+  fullName,
 }: QuickInfoProps) => (
   <>
     {elementType === "cell" &&
@@ -302,10 +327,15 @@ const QuickInfoTemplatesContent: any = ({
     <PatientSummary>
       {map(keys(Patients), (p: number) => (
         <div key={p}>
-          {`${Patients[p].identifiers.firstName} ${Patients[p].identifiers.lastName} - ${format(
-            new Date(Patients[p].dateOfBirth),
-            "yyyy/MM/dd"
-          )}`}
+          <div>
+            {`${Patients[p].identifiers.firstName} ${
+              Patients[p].identifiers.lastName
+            } - ${format(new Date(Patients[p].dateOfBirth), "yyyy/MM/dd")}`}
+          </div>
+          <div>{`Email: ${Patients[p].identifiers.email || "None"}`}</div>
+          <div>
+            {`Phone Number: ${Patients[p].identifiers.phoneNumber || "None"}`}
+          </div>
           {viewUserId === CreatedBy && (
             <FileInput
               browseButtonText={"Add Patient Form..."}
@@ -313,8 +343,10 @@ const QuickInfoTemplatesContent: any = ({
             />
           )}
           <FormContainer>
-            {map(Patients[p].forms, f => (
-              <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>{f}</DownloadLink>
+            {map(Patients[p].forms, (f) => (
+              <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>
+                {f}
+              </DownloadLink>
             ))}
           </FormContainer>
         </div>
@@ -332,7 +364,7 @@ const QuickInfoTemplatesContent: any = ({
 );
 
 const QuickInfoTemplatesFooter: any = ({
-  elementType
+  elementType,
 }: {
   elementType: string;
 }) => (
@@ -356,7 +388,7 @@ const onPopupOpen = (
     return;
   }
   const {
-    data: { Subject, StartTime, EndTime, groupIndex }
+    data: { Subject, StartTime, EndTime, groupIndex },
   } = args;
   if (Subject) {
     return;
@@ -364,7 +396,7 @@ const onPopupOpen = (
   const available = schedule.current?.isSlotAvailable({
     StartTime,
     EndTime,
-    groupIndex
+    groupIndex,
   });
   const isInWorkHours = (d: Date) => {
     const startOfDay = new Date(d);
@@ -390,17 +422,17 @@ const getScheduleBounds = (currentDate: Date, currentView: string) => {
   if (currentView === "Day") {
     return {
       startTime: startOfDay(currentDate),
-      endTime: endOfDay(currentDate)
+      endTime: endOfDay(currentDate),
     };
   } else if (currentView === "Week") {
     return {
       startTime: startOfWeek(currentDate),
-      endTime: endOfWeek(currentDate)
+      endTime: endOfWeek(currentDate),
     };
   } else if (currentView === "Month") {
     return {
       startTime: startOfMonth(currentDate),
-      endTime: endOfMonth(currentDate)
+      endTime: endOfMonth(currentDate),
     };
   } else {
     throw new Error(`Unknown Current View: ${currentView}`);
@@ -412,7 +444,7 @@ const Scheduler = ({
   viewUserId,
   workHoursStart,
   workHoursEnd,
-  workDays
+  workDays,
 }: SchedulerProps) => {
   const personal = userId === viewUserId;
   const scheduleRef = useRef() as RefObject<ScheduleComponent>;
@@ -430,7 +462,7 @@ const Scheduler = ({
             createdBy: viewUserId,
             Subject,
             StartTime,
-            EndTime
+            EndTime,
           });
           break;
         case "eventRemove":
@@ -460,8 +492,8 @@ const Scheduler = ({
       userId,
       viewUserId,
       startTime: startTime.toJSON(),
-      endTime: endTime.toJSON()
-    }).then(events => setDataSource(map(events, formatEvent)));
+      endTime: endTime.toJSON(),
+    }).then((events) => setDataSource(map(events, formatEvent)));
   }, [userId, viewUserId, currentDate, currentView, setDataSource]);
   return (
     <ScheduleComponent
@@ -479,9 +511,9 @@ const Scheduler = ({
           viewUserId,
           closeQuickInfoPopup: () => scheduleRef.current?.closeQuickInfoPopup(),
           dataSource,
-          setDataSource
+          setDataSource,
         }),
-        footer: QuickInfoTemplatesFooter
+        footer: QuickInfoTemplatesFooter,
       }}
       popupOpen={onPopupOpen(scheduleRef, personal)}
       actionBegin={actionBegin}
