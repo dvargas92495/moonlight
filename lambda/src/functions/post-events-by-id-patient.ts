@@ -4,14 +4,16 @@ import { okResponse, userErrorResponse } from "../layers/util";
 import { patientIdentifiers } from "../layers/enums";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const { firstName, lastName, dateOfBirth } = JSON.parse(event.body);
+  const { firstName, lastName, dateOfBirth, email, phoneNumber } = JSON.parse(
+    event.body
+  );
   const { id: eventId } = event.pathParameters;
   const client = new Client({
     host: process.env.REACT_APP_RDS_MASTER_HOST,
     user: "moonlight",
     password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
     database: "moonlight",
-    query_timeout: 10000
+    query_timeout: 10000,
   });
   client.connect();
   return client
@@ -24,7 +26,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         [dateOfBirth]
       )
     )
-    .then(res =>
+    .then((res) =>
       client.query(
         `INSERT INTO patient_event_links(patient_id,event_id)
      VALUES ($1,$2)
@@ -33,10 +35,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         [res.rows[0].id, eventId]
       )
     )
-    .then(res =>
+    .then((res) =>
       client.query(
         `INSERT INTO patient_identifiers(patient_id,type,value)
-     VALUES ($1,$2,$3), ($1,$4,$5)
+     VALUES ($1,$2,$3), ($1,$4,$5), ($1, $6, $7), ($1, $8, $9)
      RETURNING *
     `,
         [
@@ -44,11 +46,15 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           patientIdentifiers.FIRST_NAME,
           firstName,
           patientIdentifiers.LAST_NAME,
-          lastName
+          lastName,
+          patientIdentifiers.EMAIL,
+          email,
+          patientIdentifiers.PHONE_NUMBER,
+          phoneNumber,
         ]
       )
     )
-    .then(res =>
+    .then((res) =>
       client.query("COMMIT").then(() => {
         client.end();
         const { patient_id } = res.rows[0];
@@ -56,11 +62,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           patientId: patient_id,
           firstName,
           lastName,
-          dateOfBirth
+          email,
+          phoneNumber,
+          dateOfBirth,
         });
       })
     )
-    .catch(e =>
+    .catch((e) =>
       client.query("ROLLBACK").then(() => {
         client.end();
         return userErrorResponse(e.message);

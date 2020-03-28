@@ -11,7 +11,6 @@ type InputProps = {
 
 const StyledInput = styled.input`
   width: 100%;
-  margin-left: 5px;
   background: transparent;
   border-color: ${CONTENT_COLOR};
   border-width: 0 0 2px;
@@ -23,6 +22,10 @@ const StyledInput = styled.input`
 
   &:focus {
     border-color: ${PRIMARY_COLOR};
+  }
+
+  ::placeholder {
+    opacity: 0.5;
   }
 `;
 

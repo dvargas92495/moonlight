@@ -1,6 +1,7 @@
 import React, { useState, useCallback, ReactNode } from "react";
 import { DialogComponent } from "@syncfusion/ej2-react-popups";
 import styled from "styled-components";
+import Button from "./Button";
 
 const StyledContainer = styled.div`
   padding-top: 16px;
@@ -8,7 +9,7 @@ const StyledContainer = styled.div`
 
 const Dialog = ({
   openText,
-  children
+  children,
 }: {
   openText: string;
   children: (close: () => void) => ReactNode;
@@ -17,9 +18,9 @@ const Dialog = ({
   const close = useCallback(() => setVisible(false), [setVisible]);
   return (
     <StyledContainer>
-      <button className="e-btn e-primary" onClick={() => setVisible(!visible)}>
+      <Button isPrimary onClick={() => setVisible(!visible)}>
         {openText}
-      </button>
+      </Button>
       <DialogComponent
         width="400px"
         visible={visible}
