@@ -5,7 +5,7 @@ import {
   PRIMARY_BACKGROUND_COLOR,
   QUARTER_OPAQUE,
   CONTENT_COLOR,
-  THIRD_COLOR
+  SECONDARY_COLOR,
 } from "../styles/colors";
 import PublicPage from "./PublicPage";
 import PrivatePage from "./PrivatePage";
@@ -13,7 +13,8 @@ import { useUserId } from "../hooks/router";
 
 const MainHeader = styled.h1`
   color: ${PRIMARY_COLOR};
-  text-align: center;
+  display: flex;
+  justify-content: center;
   width: 100%;
 `;
 
@@ -36,24 +37,22 @@ const ContentText = styled.h3`
 `;
 
 const ContentBlurb = styled.section`
-  border-*: 1px solid ${CONTENT_COLOR} ${QUARTER_OPAQUE};
+  border: 1px solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
   flex-direction: row;
   justify-content: space-between;
-  height: 220px;
-  width: 949px;
-  float: left;
   background: ${PRIMARY_BACKGROUND_COLOR};
+  padding-bottom: 18px;
 `;
 
-const RedText = styled.h3`
-  color: ${THIRD_COLOR};
+const SectionHeader = styled.h3`
+  color: ${SECONDARY_COLOR};
   text-align: center;
 `;
 
 const Background1 = styled.section`
   background: ${PRIMARY_BACKGROUND_COLOR};
   padding: 1em;
-  border-bottom: 1px solid ${CONTENT_COLOR} ${QUARTER_OPAQUE};
+  border-bottom: 1px solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
   justify-content: space-between;
 `;
 
@@ -62,11 +61,10 @@ const HomePageContent = () => (
     <MainHeader>MOONLIGHT HEALTH</MainHeader>
 
     <Background1>
-      <RedText>COMPETITIVE ADVANTAGE FOR GP & ORTHODONTIC OFFICES</RedText>
-      <SecondHeader>
-        Put an Oral Surgeon <br></br>
-        In Your Practice
-      </SecondHeader>
+      <SectionHeader>
+        COMPETITIVE ADVANTAGE FOR GP & ORTHODONTIC OFFICES
+      </SectionHeader>
+      <SecondHeader>Put an Oral Surgeon In Your Practice</SecondHeader>
     </Background1>
 
     <div>
@@ -90,7 +88,7 @@ const HomePageContent = () => (
 
     <Content>Advantages</Content>
     <ContentBlurb>
-      <RedText>More Convinient</RedText>
+      <SectionHeader>More Convinient</SectionHeader>
       <ContentText>
         Our services improve the general dentist’s practice by bringing oral
         surgery services directly to their patients. The ability to offer
@@ -100,7 +98,7 @@ const HomePageContent = () => (
     </ContentBlurb>
 
     <ContentBlurb>
-      <RedText>Passive Revenue</RedText>
+      <SectionHeader>Passive Revenue</SectionHeader>
       <ContentText>
         Stop referring patients to another provider when you could own the
         revenue stream. With our unique partnership structure, the practice
@@ -110,7 +108,7 @@ const HomePageContent = () => (
     </ContentBlurb>
 
     <ContentBlurb>
-      <RedText>Stress-Free</RedText>
+      <SectionHeader>Stress-Free</SectionHeader>
       <ContentText>
         Practice owners do not have to concern themselves with the high costs,
         stress, and responsibility of liability associated with surgical
@@ -120,7 +118,7 @@ const HomePageContent = () => (
     </ContentBlurb>
 
     <ContentBlurb>
-      <RedText>More Freedom</RedText>
+      <SectionHeader>More Freedom</SectionHeader>
       <ContentText>
         Practice owners can book our surgeons on-demand, knowing that they will
         come to your office with everything they need to perform their

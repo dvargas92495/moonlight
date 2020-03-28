@@ -6,15 +6,15 @@ const colors = {
     secondaryBackgroundColor: "#1F2833",
     contentColor: "#C5C6C7",
     primaryColor: "#66FCF1",
-    secondaryColor: "#45A29E"
+    secondaryColor: "#45A29E",
   },
   BLUE_AND_REFRESHING: {
     primaryBackgroundColor: "#25274D",
     secondaryBackgroundColor: "#464866",
     contentColor: "#AAABB8",
     primaryColor: "#2E9CCA",
-    secondaryColor: "#29648A"
-  }
+    secondaryColor: "#29648A",
+  },
 };
 
 const theme = (process.env.REACT_APP_THEME ||
@@ -26,7 +26,6 @@ export const SECONDARY_BACKGROUND_COLOR =
 export const CONTENT_COLOR = colors[theme].contentColor;
 export const PRIMARY_COLOR = colors[theme].primaryColor;
 export const SECONDARY_COLOR = colors[theme].secondaryColor;
-export const THIRD_COLOR = "#A52A2A";
 
 export const HALF_OPAQUE = "80";
 export const QUARTER_OPAQUE = "40";
