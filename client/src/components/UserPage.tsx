@@ -1,12 +1,17 @@
 import React, { useState, ReactElement } from "react";
 import styled from "styled-components";
 import { keys, map } from "lodash";
-import { PRIMARY_BACKGROUND_COLOR, SECONDARY_BACKGROUND_COLOR, CONTENT_COLOR, PRIMARY_COLOR } from "../styles/colors";
+import {
+  PRIMARY_BACKGROUND_COLOR,
+  SECONDARY_BACKGROUND_COLOR,
+  CONTENT_COLOR,
+  PRIMARY_COLOR,
+} from "../styles/colors";
 import PrivatePage from "./PrivatePage";
 
 const StyledHeader = styled.h3`
   color: ${PRIMARY_COLOR};
-  padding-left: 10px;
+  padding: 0 10px;
   text-transform: uppercase;
 `;
 
@@ -18,13 +23,13 @@ const Sidebar = styled.div`
   flex-direction: column;
 `;
 
-const SidebarTab = styled.div<{ selected: boolean}>`
+const SidebarTab = styled.div<{ selected: boolean }>`
   height: 48px;
   color: ${CONTENT_COLOR};
   vertical-align: middle;
-  padding-left: 10px;
+  padding: 0 10px;
   cursor: pointer;
-  background: ${props => props.selected && SECONDARY_BACKGROUND_COLOR};
+  background: ${(props) => props.selected && SECONDARY_BACKGROUND_COLOR};
 `;
 
 const ContentContainer = styled.div`
@@ -49,7 +54,7 @@ const UserPage = ({
       <Sidebar>
         <StyledHeader>{header}</StyledHeader>
         {map(keys(tabContent), (t, i) => (
-          <SidebarTab key={i} onClick={() => setTab(t)} selected={t===tab}>
+          <SidebarTab key={i} onClick={() => setTab(t)} selected={t === tab}>
             {t.toUpperCase()}
           </SidebarTab>
         ))}

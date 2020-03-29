@@ -16,7 +16,7 @@ import {
   isBefore,
   isAfter,
 } from "date-fns";
-import { map, reject, includes, keys, find } from "lodash";
+import { map, reject, includes, keys, find, filter } from "lodash";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   ScheduleComponent,
@@ -51,6 +51,8 @@ import styled from "styled-components";
 import DownloadLink from "./DownloadLink";
 import DatePicker from "./DatePicker";
 import { PRIMARY_COLOR } from "../../styles/colors";
+import Button from "./Button";
+import { FilesPropModel } from "@syncfusion/ej2-react-inputs";
 
 export type AvailabilityProps = {
   userId: number;
@@ -63,23 +65,24 @@ type SchedulerProps = AvailabilityProps & {
   viewUserId: number;
 };
 
+type PatientInfo = {
+  forms: FilesPropModel[];
+  identifiers: { [key: string]: string };
+  dateOfBirth: string;
+};
+
 type EventResponse = {
   Id: number;
   userId: number;
   CreatedBy: number;
   Subject: string;
-  StartTime: string;
-  EndTime: string;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: {
-    [id: number]: {
-      forms: string[];
-      identifiers: { [key: string]: string };
-      dateOfBirth: string;
-    };
-  };
+  Patients: { [id: number]: PatientInfo };
   fullName: string;
+
+  StartTime: string;
+  EndTime: string;
 };
 
 type EventObject = {
@@ -87,18 +90,13 @@ type EventObject = {
   userId: number;
   CreatedBy: number;
   Subject: string;
-  StartTime: Date;
-  EndTime: Date;
   IsReadonly: boolean;
   IsPending: boolean;
-  Patients: {
-    [id: number]: {
-      forms: string[];
-      identifiers: { [key: string]: string };
-      dateOfBirth: string;
-    };
-  };
+  Patients: { [id: number]: PatientInfo };
   fullName: string;
+
+  StartTime: Date;
+  EndTime: Date;
 };
 
 type QuickInfoExtraProps = {
@@ -117,7 +115,7 @@ const formatEvent = (e: EventResponse) => ({
   EndTime: new Date(e.EndTime),
 });
 
-const PatientSummary = styled.div`
+const PatientSummaryContainer = styled.div`
   padding-top: 16px;
 `;
 
@@ -182,21 +180,11 @@ const ActionEvent = ({
   });
   return (
     <>
-      <button
-        className="e-text-ellipsis e-btn e-lib e-flat e-primary"
-        title="Accept"
-        onClick={() => acceptEvent({ eventId })}
-      >
+      <Button isPrimary onClick={() => acceptEvent({ eventId })}>
         Accept
-      </button>
+      </Button>
       <RequestFeedback error={acceptError} loading={acceptLoading} />
-      <button
-        className="e-text-ellipsis e-btn e-lib e-flat"
-        title="Reject"
-        onClick={() => rejectEvent(eventId)}
-      >
-        Reject
-      </button>
+      <Button onClick={() => rejectEvent(eventId)}>Reject</Button>
       <RequestFeedback error={rejectError} loading={rejectLoading} />
     </>
   );
@@ -270,6 +258,66 @@ const PatientDialog = ({
   );
 };
 
+const PatientSummary = ({
+  Patients,
+  CreatedBy,
+  viewUserId,
+  dataSource,
+  setDataSource,
+}: {
+  Patients: { [id: string]: PatientInfo };
+  viewUserId: number;
+  CreatedBy: number;
+  dataSource: EventObject[];
+  setDataSource: (events: EventObject[]) => void;
+}) => {
+  const onUploadSuccess = useCallback(
+    (p: number) => (f: FilesPropModel) => {
+      const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
+      eventsWithPatient.forEach((e) => e.Patients[p].forms.push(f));
+      // spreading to force a rerender
+      setDataSource([...dataSource]);
+    },
+    [dataSource, setDataSource]
+  );
+  return (
+    <PatientSummaryContainer>
+      {map(keys(Patients), (p: number) => (
+        <div key={p}>
+          <div>
+            {`${Patients[p].identifiers.firstName} ${
+              Patients[p].identifiers.lastName
+            } - ${format(new Date(Patients[p].dateOfBirth), "yyyy/MM/dd")}`}
+          </div>
+          <div>{`Email: ${Patients[p].identifiers.email || "None"}`}</div>
+          <div>
+            {`Phone Number: ${Patients[p].identifiers.phoneNumber || "None"}`}
+          </div>
+          {viewUserId === CreatedBy ? (
+            <FileInput
+              onUploadSuccess={onUploadSuccess(p)}
+              browseButtonText={"Add Patient Form..."}
+              url={`patients/${p}/form`}
+              files={Patients[p].forms}
+            />
+          ) : (
+            <FormContainer>
+              {map(Patients[p].forms, ({ name, type }, i) => (
+                <DownloadLink
+                  key={i}
+                  href={`patient-forms/${p}/${name}${type}`}
+                >
+                  {`${name}${type}`}
+                </DownloadLink>
+              ))}
+            </FormContainer>
+          )}
+        </div>
+      ))}
+    </PatientSummaryContainer>
+  );
+};
+
 const QuickInfoTemplatesContent: any = ({
   personal,
   closeQuickInfoPopup,
@@ -324,34 +372,13 @@ const QuickInfoTemplatesContent: any = ({
         setDataSource={setDataSource}
       />
     )}
-    <PatientSummary>
-      {map(keys(Patients), (p: number) => (
-        <div key={p}>
-          <div>
-            {`${Patients[p].identifiers.firstName} ${
-              Patients[p].identifiers.lastName
-            } - ${format(new Date(Patients[p].dateOfBirth), "yyyy/MM/dd")}`}
-          </div>
-          <div>{`Email: ${Patients[p].identifiers.email || "None"}`}</div>
-          <div>
-            {`Phone Number: ${Patients[p].identifiers.phoneNumber || "None"}`}
-          </div>
-          {viewUserId === CreatedBy && (
-            <FileInput
-              browseButtonText={"Add Patient Form..."}
-              url={`patients/${p}/form`}
-            />
-          )}
-          <FormContainer>
-            {map(Patients[p].forms, (f) => (
-              <DownloadLink key={f} href={`patient-forms/${p}/${f}`}>
-                {f}
-              </DownloadLink>
-            ))}
-          </FormContainer>
-        </div>
-      ))}
-    </PatientSummary>
+    <PatientSummary
+      Patients={Patients}
+      CreatedBy={CreatedBy}
+      viewUserId={viewUserId}
+      dataSource={dataSource}
+      setDataSource={setDataSource}
+    />
     {!IsPending && viewUserId === CreatedBy && Id && (
       <PatientDialog
         Id={Id}

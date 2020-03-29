@@ -22,6 +22,7 @@ const StyledButton = styled.button<{ isPrimary: boolean }>`
   font-size: 14px;
   font-weight: 500;
   padding: 6px 12px 4px;
+  margin: 4px;
 
   &:hover {
     background: ${(props) =>

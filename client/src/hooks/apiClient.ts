@@ -2,8 +2,8 @@ import axios from "axios";
 import { reduce, noop } from "lodash";
 import { useState, useCallback } from "react";
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_GATEWAY_INVOKE_URL
+export const api = axios.create({
+  baseURL: process.env.REACT_APP_API_GATEWAY_INVOKE_URL,
 });
 
 const useApi = (apiMethod: (request: any) => Promise<any>) => {
@@ -17,15 +17,15 @@ const useApi = (apiMethod: (request: any) => Promise<any>) => {
         setLoading(true);
         setError("");
         apiMethod(request)
-          .then(response => {
+          .then((response) => {
             setLoading(false);
             onSuccess(response.data);
           })
-          .catch(e => {
+          .catch((e) => {
             setLoading(false);
             setError(e.response?.data?.message || e.message);
           });
-      }
+      },
     }),
     [apiMethod, error, loading, setError, setLoading]
   );
@@ -33,7 +33,7 @@ const useApi = (apiMethod: (request: any) => Promise<any>) => {
 };
 
 export const useApiPost = (url: string, onSuccess?: (response: any) => void) =>
-  useApi(request => api.post(url, request))(onSuccess);
+  useApi((request) => api.post(url, request))(onSuccess);
 
 export const useApiFormPost = (
   url: string,
@@ -45,7 +45,7 @@ export const useApiFormPost = (
     onSuccess
   );
   const handleSubmit = useCallback(
-    event => {
+    (event) => {
       const formData = new FormData(event.target);
       const data: { [key: string]: FormDataEntryValue[] } = {};
       formData.forEach((v, k) => {
@@ -59,13 +59,13 @@ export const useApiFormPost = (
         Object.keys(data),
         (acc, k) => ({
           ...acc,
-          [k]: data[k].length === 1 ? data[k][0] : data[k]
+          [k]: data[k].length === 1 ? data[k][0] : data[k],
         }),
         {}
       );
       originalHandler({
         ...request,
-        ...extraProps
+        ...extraProps,
       });
       event.preventDefault();
     },
@@ -74,23 +74,23 @@ export const useApiFormPost = (
   return {
     error,
     loading,
-    handleSubmit
+    handleSubmit,
   };
 };
 
 export const useApiDelete = (
   url: string,
   onSuccess?: (response: any) => void
-) => useApi(request => api.delete(`${url}/${request}`))(onSuccess);
+) => useApi((request) => api.delete(`${url}/${request}`))(onSuccess);
 
 export const getProfile = (userId: number) =>
-  api.get("profile", { params: { userId } }).then(s => s.data);
+  api.get("profile", { params: { userId } }).then((s) => s.data);
 
 export const getAvailablity = (userId: number) =>
-  api.get("availability", { params: { userId } }).then(s => s.data);
+  api.get("availability", { params: { userId } }).then((s) => s.data);
 
 export const getSpecialistViews = (userId: number) =>
-  api.get("specialist-views", { params: { userId } }).then(s => s.data);
+  api.get("specialist-views", { params: { userId } }).then((s) => s.data);
 
 type GetEventsRequest = {
   userId: number;
@@ -99,6 +99,6 @@ type GetEventsRequest = {
   endTime: string;
 };
 export const getEvents = (params: GetEventsRequest) =>
-  api.get("events", { params }).then(s => s.data);
+  api.get("events", { params }).then((s) => s.data);
 
 export default api;
