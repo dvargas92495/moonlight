@@ -280,6 +280,21 @@ const PatientSummary = ({
     },
     [dataSource, setDataSource]
   );
+  const onDeleteSuccess = useCallback(
+    (p: number) => (name: string) => {
+      const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
+      eventsWithPatient.forEach(
+        (e) =>
+          (e.Patients[p].forms = reject(
+            e.Patients[p].forms,
+            (f) => `${f.name}${f.type}` === name
+          ))
+      );
+      // spreading to force a rerender
+      setDataSource([...dataSource]);
+    },
+    [dataSource, setDataSource]
+  );
   return (
     <PatientSummaryContainer>
       {map(keys(Patients), (p: number) => (
@@ -296,6 +311,7 @@ const PatientSummary = ({
           {viewUserId === CreatedBy ? (
             <FileInput
               onUploadSuccess={onUploadSuccess(p)}
+              onDeleteSuccess={onDeleteSuccess(p)}
               browseButtonText={"Add Patient Form..."}
               url={`patients/${p}/form`}
               files={Patients[p].forms}
@@ -305,7 +321,7 @@ const PatientSummary = ({
               {map(Patients[p].forms, ({ name, type }, i) => (
                 <DownloadLink
                   key={i}
-                  href={`patient-forms/${p}/${name}${type}`}
+                  href={`patients/${p}/form/${name}${type}`}
                 >
                   {`${name}${type}`}
                 </DownloadLink>
