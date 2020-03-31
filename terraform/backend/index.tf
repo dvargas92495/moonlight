@@ -13,7 +13,8 @@ locals {
     "events/{id}/delete",
     "events/{id}/patient/post",
     "patients/{id}/form/post",
-    "patient-forms/{id}/{name}/get",
+    "patients/{id}/form/{name}/get",
+    "patients/{id}/form/{name}/delete",
     "profile/get",
     "profile/post",
     "signin/post",
@@ -53,7 +54,11 @@ locals {
     for lambda in local.lambdas: join("/", slice(local.lambda_parts[lambda], 0, 3)) if local.lambda_levels[lambda] > 3
   ])
 
-  allsubresources = concat(local.subresources, local.subsubresources)
+  subsubsubresources = distinct([
+    for lambda in local.lambdas: join("/", slice(local.lambda_parts[lambda], 0, 4)) if local.lambda_levels[lambda] > 4
+  ])
+
+  allsubresources = concat(local.subresources, local.subsubresources, local.subsubsubresources)
 
   allresources = concat(local.resources, local.allsubresources)
 
@@ -135,6 +140,14 @@ resource "aws_api_gateway_resource" "subsubresource" {
   path_part   = local.resource_parts[each.value][2]
 }
 
+resource "aws_api_gateway_resource" "subsubsubresource" {
+  for_each    = toset(local.subsubsubresources)
+
+  rest_api_id = aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.subsubresource[local.parents[each.value]].id
+  path_part   = local.resource_parts[each.value][3]
+}
+
 resource "aws_lambda_function" "lambda_function" {
   for_each      = toset(local.lambdas)
 
@@ -160,7 +173,7 @@ resource "aws_api_gateway_method" "method" {
   for_each      = toset(local.lambdas)
 
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
-  resource_id   = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id
+  resource_id   = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 4 ? aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubsubresource[local.lambda_paths[each.value]].id
   http_method   = upper(local.methods[each.value])
   authorization = "NONE"
 
@@ -174,7 +187,7 @@ resource "aws_api_gateway_integration" "integration" {
   for_each                = toset(local.lambdas)
 
   rest_api_id             = aws_api_gateway_rest_api.rest_api.id
-  resource_id             = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id
+  resource_id             = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 4 ? aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubsubresource[local.lambda_paths[each.value]].id
   http_method             = upper(local.methods[each.value])
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -190,14 +203,14 @@ resource "aws_lambda_permission" "apigw_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:us-east-1:643537615676:${aws_api_gateway_rest_api.rest_api.id}/*/${upper(local.methods[each.value])}${local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].path : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].path : aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].path}"
+  source_arn = "arn:aws:execute-api:us-east-1:643537615676:${aws_api_gateway_rest_api.rest_api.id}/*/${upper(local.methods[each.value])}${local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].path : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].path : local.lambda_levels[each.value] == 4 ? aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].path : aws_api_gateway_resource.subsubsubresource[local.lambda_paths[each.value]].path}"
 }
 
 resource "aws_api_gateway_method" "options" {
   for_each      = toset(local.allresources)
 
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
-  resource_id   = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : aws_api_gateway_resource.subsubresource[each.value].id
+  resource_id   = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : local.resource_levels[each.value] == 3 ? aws_api_gateway_resource.subsubresource[each.value].id : aws_api_gateway_resource.subsubsubresource[each.value].id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
@@ -206,7 +219,7 @@ resource "aws_api_gateway_integration" "mock" {
   for_each             = toset(local.allresources)
 
   rest_api_id          = aws_api_gateway_rest_api.rest_api.id
-  resource_id          = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : aws_api_gateway_resource.subsubresource[each.value].id
+  resource_id          = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : local.resource_levels[each.value] == 3 ? aws_api_gateway_resource.subsubresource[each.value].id : aws_api_gateway_resource.subsubsubresource[each.value].id
   http_method          = aws_api_gateway_method.options[each.value].http_method
   type                 = "MOCK"
   passthrough_behavior = "WHEN_NO_TEMPLATES"
@@ -224,7 +237,7 @@ resource "aws_api_gateway_method_response" "mock" {
   for_each    = toset(local.allresources)
 
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : aws_api_gateway_resource.subsubresource[each.value].id
+  resource_id = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : local.resource_levels[each.value] == 3 ? aws_api_gateway_resource.subsubresource[each.value].id : aws_api_gateway_resource.subsubsubresource[each.value].id
   http_method = aws_api_gateway_method.options[each.value].http_method
   status_code = "200"
   
@@ -243,7 +256,7 @@ resource "aws_api_gateway_integration_response" "mock" {
   for_each    = toset(local.allresources)
 
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
-  resource_id = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : aws_api_gateway_resource.subsubresource[each.value].id
+  resource_id = local.resource_levels[each.value] == 1 ? aws_api_gateway_resource.resource[each.value].id : local.resource_levels[each.value] == 2 ? aws_api_gateway_resource.subresource[each.value].id : local.resource_levels[each.value] == 3 ? aws_api_gateway_resource.subsubresource[each.value].id : aws_api_gateway_resource.subsubsubresource[each.value].id
   http_method = aws_api_gateway_method.options[each.value].http_method
   status_code = aws_api_gateway_method_response.mock[each.value].status_code
 
@@ -257,12 +270,15 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.80.1"
+  stage_description = "2020.90.1"
 
-  depends_on  = [aws_api_gateway_integration.integration, aws_api_gateway_integration.mock]
-
-  
-  lifecycle {
-      create_before_destroy = true
-  }
+  depends_on  = [
+    aws_api_gateway_integration.integration, 
+    aws_api_gateway_integration.mock, 
+    aws_api_gateway_integration_response.mock,
+    aws_api_gateway_method.method,
+    aws_api_gateway_method.options,
+    aws_api_gateway_method_response.mock,
+    aws_lambda_permission.apigw_lambda
+  ]
 }
