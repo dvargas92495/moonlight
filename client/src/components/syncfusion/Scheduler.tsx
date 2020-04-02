@@ -46,13 +46,12 @@ import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
 import Dialog from "./Dialog";
 import Form from "./Form";
-import FileInput from "./FileInput";
+import FileInput, { FileProps } from "./FileInput";
 import styled from "styled-components";
 import DownloadLink from "./DownloadLink";
 import DatePicker from "./DatePicker";
-import { PRIMARY_COLOR } from "../../styles/colors";
+import { PRIMARY_COLOR, CONTENT_COLOR } from "../../styles/colors";
 import Button from "./Button";
-import { FilesPropModel } from "@syncfusion/ej2-react-inputs";
 
 export type AvailabilityProps = {
   userId: number;
@@ -66,7 +65,7 @@ type SchedulerProps = AvailabilityProps & {
 };
 
 type PatientInfo = {
-  forms: FilesPropModel[];
+  forms: FileProps[];
   identifiers: { [key: string]: string };
   dateOfBirth: string;
 };
@@ -116,6 +115,7 @@ const formatEvent = (e: EventResponse) => ({
 });
 
 const PatientSummaryContainer = styled.div`
+  color: ${CONTENT_COLOR};
   padding-top: 16px;
 `;
 
@@ -224,7 +224,7 @@ const PatientDialog = ({
             phoneNumber,
           },
           dateOfBirth,
-          forms: [],
+          forms: [] as File[],
         };
         // spreading to force a rerender
         setDataSource([...dataSource]);
@@ -272,7 +272,7 @@ const PatientSummary = ({
   setDataSource: (events: EventObject[]) => void;
 }) => {
   const onUploadSuccess = useCallback(
-    (p: number) => (f: FilesPropModel) => {
+    (p: number) => (f: FileProps) => {
       const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
       eventsWithPatient.forEach((e) => e.Patients[p].forms.push(f));
       // spreading to force a rerender
@@ -284,11 +284,7 @@ const PatientSummary = ({
     (p: number) => (name: string) => {
       const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
       eventsWithPatient.forEach(
-        (e) =>
-          (e.Patients[p].forms = reject(
-            e.Patients[p].forms,
-            (f) => `${f.name}${f.type}` === name
-          ))
+        (e) => (e.Patients[p].forms = reject(e.Patients[p].forms, { name }))
       );
       // spreading to force a rerender
       setDataSource([...dataSource]);
@@ -314,16 +310,13 @@ const PatientSummary = ({
               onDeleteSuccess={onDeleteSuccess(p)}
               browseButtonText={"Add Patient Form..."}
               url={`patients/${p}/form`}
-              files={Patients[p].forms}
+              initialFiles={Patients[p].forms}
             />
           ) : (
             <FormContainer>
-              {map(Patients[p].forms, ({ name, type }, i) => (
-                <DownloadLink
-                  key={i}
-                  href={`patients/${p}/form/${name}${type}`}
-                >
-                  {`${name}${type}`}
+              {map(Patients[p].forms, ({ name }, i) => (
+                <DownloadLink key={i} href={`patients/${p}/form/${name}`}>
+                  {name}
                 </DownloadLink>
               ))}
             </FormContainer>

@@ -1,4 +1,4 @@
-import { findKey, split, map, join, slice } from "lodash";
+import { findKey, split, map, join } from "lodash";
 
 export const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -41,18 +41,4 @@ export const getFieldByValue = (e: dbEnum, v: number) => {
       : `${k.substring(0, 1)}${k.substring(1).toLowerCase()}`
   );
   return join(keyCamelParts, "");
-};
-
-export const parseFileName = (filename: string) => {
-  if (!filename) {
-    return { name: "", type: "" };
-  }
-  const fileParts = split(filename, ".");
-  const name =
-    fileParts.length === 1
-      ? fileParts[0]
-      : join(slice(fileParts, 0, fileParts.length - 1), ".");
-  const type =
-    fileParts.length === 1 ? "" : `.${fileParts[fileParts.length - 1]}`;
-  return { name, type };
 };
