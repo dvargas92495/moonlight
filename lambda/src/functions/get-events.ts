@@ -1,18 +1,12 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
 import { map, uniqBy, keyBy, find } from "lodash";
-import {
-  okResponse,
-  userErrorResponse,
-  getFieldByValue,
-  parseFileName,
-} from "../layers/util";
+import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
 import { patientIdentifiers } from "../layers/enums";
 
 type PatientForm = {
   name: string;
   size: number;
-  type: string;
 };
 
 type PatientInfo = {
@@ -83,9 +77,14 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           const key = getFieldByValue(patientIdentifiers, parseInt(r.type));
           event.Patients[r.patient_id].identifiers[key] = r.value;
         }
-        const { name, type } = parseFileName(r.form_name);
-        if (name && !find(event.Patients[r.patient_id].forms, { name })) {
-          event.Patients[r.patient_id].forms.push({ name, type, size: r.size });
+        if (
+          r.form_name &&
+          !find(event.Patients[r.patient_id].forms, { name: r.form_name })
+        ) {
+          event.Patients[r.patient_id].forms.push({
+            name: r.form_name,
+            size: r.size,
+          });
         }
       });
       return okResponse(events);

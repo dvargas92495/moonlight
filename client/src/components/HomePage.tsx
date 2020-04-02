@@ -88,7 +88,7 @@ const HomePageContent = () => (
 
     <Content>Advantages</Content>
     <ContentBlurb>
-      <SectionHeader>More Convinient</SectionHeader>
+      <SectionHeader>More Convenient</SectionHeader>
       <ContentText>
         Our services improve the general dentist’s practice by bringing oral
         surgery services directly to their patients. The ability to offer

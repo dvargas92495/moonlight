@@ -1,16 +1,34 @@
-import React, { useCallback, useState } from "react";
-import {
-  UploaderComponent,
-  FilesPropModel,
-  ProgressEventArgs,
-} from "@syncfusion/ej2-react-inputs";
-import "@syncfusion/ej2-base/styles/material.css";
-import "@syncfusion/ej2-buttons/styles/material.css";
-import "@syncfusion/ej2-react-inputs/styles/material.css";
+import React, { useCallback, useState, useRef } from "react";
+import { BsTrashFill } from "react-icons/bs";
+import { map, reject, isEmpty } from "lodash";
 import styled from "styled-components";
 import { CONTENT_COLOR } from "../../styles/colors";
 import api from "../../hooks/apiClient";
-import { BsTrashFill } from "react-icons/bs";
+import Button from "./Button";
+
+export type FileProps = {
+  name: string;
+  size: number;
+};
+
+const Container = styled.div<{ highlight: boolean }>`
+  border: ${(props) =>
+    `1px ${props.highlight ? "dashed" : "solid"} ${CONTENT_COLOR}`};
+`;
+
+const InputContainer = styled.div`
+  padding: 4px;
+`;
+
+const InputFileType = styled.input`
+  opacity: 0;
+  width: 0;
+`;
+
+const FilesContainer = styled.ul`
+  padding: 4px;
+  margin: 0;
+`;
 
 const FileContainer = styled.div`
   padding: 4px;
@@ -30,28 +48,20 @@ const FileDelete = styled(BsTrashFill)`
   cursor: pointer;
 `;
 
-const uploaderTemplate = (
-  progress: number,
-  fileUploading: string,
-  onDelete: (name: string) => void
-) => ({ name, size }: FilesPropModel) => (
+const FileItem = ({
+  item: { name, size },
+  onDelete,
+}: {
+  item: FileProps;
+  onDelete: (name: string) => void;
+}) => (
   <FileContainer>
     <FileTopLine>
-      <FileContent>{`${name} - ${Math.floor(
-        (size || 0) / 1024
+      <FileContent>{`${name} - ${((size || 0) / 1024).toFixed(
+        2
       )}KB`}</FileContent>
-      <FileDelete onClick={() => onDelete(name || "")} />
+      <FileDelete onClick={() => onDelete(name)} />
     </FileTopLine>
-    <div>
-      {fileUploading === name ? (
-        <progress value={progress} max="100" />
-      ) : (
-        <>
-          <span>{`fileUploading ${fileUploading}`}</span>
-          <span>{`name ${name}`}</span>
-        </>
-      )}
-    </div>
   </FileContainer>
 );
 
@@ -60,52 +70,94 @@ const FileInput = ({
   url,
   onUploadSuccess,
   onDeleteSuccess,
-  files,
+  initialFiles,
 }: {
   browseButtonText: string;
   url: string;
-  onUploadSuccess: (f: FilesPropModel) => void;
+  onUploadSuccess: (f: FileProps) => void;
   onDeleteSuccess: (name: string) => void;
-  files: FilesPropModel[];
+  initialFiles: FileProps[];
 }) => {
-  const wrappedUrl = `${process.env.REACT_APP_API_GATEWAY_INVOKE_URL}${url}`;
-  const [progress, setProgress] = useState(0);
-  const [fileUploading, setFileUploading] = useState("");
-  const onSuccess = useCallback(
-    ({ operation, file }) => {
-      if (operation === "upload") {
-        const { name = "", type = "", size }: FilesPropModel = file;
-        const nameWithoutExtension = name.substring(
-          0,
-          name.length - type.length - 1
-        );
-        const fullType = `.${type}`;
-        onUploadSuccess({ name: nameWithoutExtension, type: fullType, size });
-        setFileUploading("");
-      } else {
-        console.log(`Unexpected Success operation: ${operation}`);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [files, setFiles] = useState(initialFiles);
+  const [highlight, setHighlight] = useState(false);
+  const onClick = useCallback(() => fileInputRef?.current?.click(), [
+    fileInputRef,
+  ]);
+  const handleFiles = useCallback(
+    (uploadFiles) => {
+      if (isEmpty(uploadFiles)) {
+        return;
       }
+      const data = new FormData();
+      data.append("UploadFiles", uploadFiles[0]);
+      api.post(url, data).then((res) => {
+        const file = res.data as FileProps;
+        onUploadSuccess(file);
+        setFiles([...files, file]);
+      });
     },
-    [onUploadSuccess]
+    [onUploadSuccess, files, setFiles, url]
   );
-  const onDelete = (name: string) =>
-    api.delete(`${url}/${name}`).then(() => onDeleteSuccess(name));
+  const onChange = useCallback((e) => handleFiles(e.target.files), [
+    handleFiles,
+  ]);
+  const onDelete = useCallback(
+    (name: string) =>
+      api.delete(`${url}/${name}`).then(() => {
+        onDeleteSuccess(name);
+        const rest = reject(files, { name });
+        setFiles(rest);
+      }),
+    [setFiles, onDeleteSuccess, files, url]
+  );
+  const onDragEnter = useCallback(
+    (e) => {
+      setHighlight(true);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [setHighlight]
+  );
+  const onDragLeave = useCallback(
+    (e) => {
+      setHighlight(false);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [setHighlight]
+  );
+  const onDrop = useCallback(
+    (e) => {
+      onDragLeave(e);
+      handleFiles(e.dataTransfer.files);
+    },
+    [onDragLeave, handleFiles]
+  );
   return (
-    <UploaderComponent
-      asyncSettings={{
-        saveUrl: wrappedUrl,
-      }}
-      buttons={{ browse: browseButtonText }}
-      success={onSuccess}
-      files={files}
-      progress={(data) => {
-        const { e, file } = data as ProgressEventArgs;
-        const { loaded, total } = e as ProgressEvent;
-        setProgress(Math.round((loaded / total) * 100));
-        setFileUploading(file?.name || "");
-      }}
-      template={uploaderTemplate(progress, fileUploading, onDelete)}
-    />
+    <Container
+      highlight={highlight}
+      onDragEnter={onDragEnter}
+      onDragOver={onDragEnter}
+      onDrop={onDrop}
+      onDragLeave={onDragLeave}
+    >
+      <InputContainer>
+        <Button onClick={onClick}>{browseButtonText}</Button>
+        <InputFileType
+          ref={fileInputRef}
+          type="file"
+          name="UploadFiles"
+          onChange={onChange}
+        />
+        {"Or Drop Files Here"}
+      </InputContainer>
+      <FilesContainer>
+        {map(files, (f) => (
+          <FileItem key={f.name} item={f} onDelete={onDelete} />
+        ))}
+      </FilesContainer>
+    </Container>
   );
 };
 

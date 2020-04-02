@@ -1,9 +1,9 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import Busboy from "busboy";
-import { pick, set, split, omit, slice, join } from "lodash";
+import { pick, set } from "lodash";
 import { Client } from "pg";
 import { s3 } from "../layers/aws";
-import { userErrorResponse, okResponse, parseFileName } from "../layers/util";
+import { userErrorResponse, okResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) =>
   new Promise((resolve, reject) => {
@@ -36,7 +36,6 @@ export const handler = async (event: APIGatewayProxyEvent) =>
       ) => {
         const { id } = event.pathParameters;
         const { file, filename } = event.body;
-        const { name, type } = parseFileName(filename);
         const size = file.length;
         const client = new Client({
           host: process.env.REACT_APP_RDS_MASTER_HOST,
@@ -66,7 +65,7 @@ export const handler = async (event: APIGatewayProxyEvent) =>
               .promise()
           )
           .then(() => client.query("COMMIT"))
-          .then(() => okResponse({ name, size, type }))
+          .then(() => okResponse({ name: filename, size }))
           .catch((e) => {
             client.query("ROLLBACK");
             throw e;
