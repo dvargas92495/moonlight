@@ -224,7 +224,7 @@ const PatientDialog = ({
             phoneNumber,
           },
           dateOfBirth,
-          forms: [] as File[],
+          forms: [] as FileProps[],
         };
         // spreading to force a rerender
         setDataSource([...dataSource]);
