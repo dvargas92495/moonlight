@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { CONTENT_COLOR } from "../../styles/colors";
 import api from "../../hooks/apiClient";
 import Button from "./Button";
+import RequestFeedback from "../RequestFeedback";
 
 export type FileProps = {
   name: string;
@@ -81,6 +82,8 @@ const FileInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState(initialFiles);
   const [highlight, setHighlight] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const onClick = useCallback(() => fileInputRef?.current?.click(), [
     fileInputRef,
   ]);
@@ -91,25 +94,38 @@ const FileInput = ({
       }
       const data = new FormData();
       data.append("UploadFiles", uploadFiles[0]);
-      api.post(url, data).then((res) => {
-        const file = res.data as FileProps;
-        onUploadSuccess(file);
-        setFiles([...files, file]);
-      });
+      setLoading(true);
+      setError("");
+      api
+        .post(url, data)
+        .then((res) => {
+          const file = res.data as FileProps;
+          onUploadSuccess(file);
+          setFiles([...files, file]);
+        })
+        .catch((e) => setError(e.message))
+        .finally(() => setLoading(false));
     },
-    [onUploadSuccess, files, setFiles, url]
+    [onUploadSuccess, files, setFiles, url, setError, setLoading]
   );
   const onChange = useCallback((e) => handleFiles(e.target.files), [
     handleFiles,
   ]);
   const onDelete = useCallback(
-    (name: string) =>
-      api.delete(`${url}/${name}`).then(() => {
-        onDeleteSuccess(name);
-        const rest = reject(files, { name });
-        setFiles(rest);
-      }),
-    [setFiles, onDeleteSuccess, files, url]
+    (name: string) => {
+      setLoading(true);
+      setError("");
+      api
+        .delete(`${url}/${name}`)
+        .then(() => {
+          onDeleteSuccess(name);
+          const rest = reject(files, { name });
+          setFiles(rest);
+        })
+        .catch((e) => setError(e.message))
+        .finally(() => setLoading(false));
+    },
+    [setFiles, onDeleteSuccess, files, url, setError, setLoading]
   );
   const onDragEnter = useCallback(
     (e) => {
@@ -149,6 +165,7 @@ const FileInput = ({
           type="file"
           name="UploadFiles"
           onChange={onChange}
+          accept="application/pdf,text/*"
         />
         {"Or Drop Files Here"}
       </InputContainer>
@@ -156,6 +173,7 @@ const FileInput = ({
         {map(files, (f) => (
           <FileItem key={f.name} item={f} onDelete={onDelete} />
         ))}
+        <RequestFeedback loading={loading} error={error} />
       </FilesContainer>
     </Container>
   );

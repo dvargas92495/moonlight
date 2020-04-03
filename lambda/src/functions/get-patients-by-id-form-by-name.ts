@@ -17,8 +17,9 @@ export const handler = async (e: APIGatewayProxyEvent) => {
         headers: {
           ...headers,
           "Content-Type": ContentType,
-          "Content-Disposition": `attachment filename=${name}`,
+          "Content-Disposition": `attachment; filename=${name}`,
           "Last-Modified": LastModified,
+          "Access-Control-Expose-Headers": "Content-Disposition",
         },
         body,
         statusCode: 200,

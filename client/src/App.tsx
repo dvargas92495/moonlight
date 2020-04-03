@@ -7,6 +7,7 @@ import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import SpecialistPage from "./components/SpecialistPage";
 import { SECONDARY_BACKGROUND_COLOR } from "./styles/colors";
+import AboutPage from "./components/AboutPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -34,6 +35,7 @@ const App: React.FC = () => (
     <GlobalStyle />
     <Switch>
       <Route exact path="/" component={HomePage} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/dentist" component={DentistPage} />
       <Route path="/specialist" component={SpecialistPage} />
       <Route path="/login" component={LoginPage} />

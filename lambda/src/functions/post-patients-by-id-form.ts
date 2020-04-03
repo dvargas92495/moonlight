@@ -31,11 +31,11 @@ export const handler = async (event: APIGatewayProxyEvent) =>
     .then(
       (
         event: Omit<APIGatewayProxyEvent, "body"> & {
-          body: { filename: string; file: string };
+          body: { filename: string; file: string; contentType: string };
         }
       ) => {
         const { id } = event.pathParameters;
-        const { file, filename } = event.body;
+        const { file, filename, contentType } = event.body;
         const size = file.length;
         const client = new Client({
           host: process.env.REACT_APP_RDS_MASTER_HOST,
@@ -61,6 +61,7 @@ export const handler = async (event: APIGatewayProxyEvent) =>
                 Bucket: process.env.REACT_APP_S3_PATIENT_FORM_BUCKET,
                 Key: `patient${id}/${filename}`,
                 Body: file,
+                ContentType: contentType,
               })
               .promise()
           )
