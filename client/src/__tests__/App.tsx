@@ -4,6 +4,6 @@ import App from "../App";
 
 test("renders Moonlight header", () => {
   const { getByText } = render(<App />);
-  const headerElement = getByText(/moonlight/i);
+  const headerElement = getByText("MOONLIGHT");
   expect(headerElement).toBeInTheDocument();
 });
