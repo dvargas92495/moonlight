@@ -2,6 +2,11 @@ import React, { useCallback, useRef } from "react";
 import { BsDownload } from "react-icons/bs";
 import api from "../../hooks/apiClient";
 import Button from "./Button";
+import styled from "styled-components";
+
+const Downloader = styled.a`
+  opacity: 0;
+`;
 
 const DownloadLink = ({
   href,
@@ -20,9 +25,10 @@ const DownloadLink = ({
       method: "GET",
     }).then((res) => {
       if (aref.current) {
-        aref.current.href = `data:${res.headers["content-type"]};base64, ${btoa(
-          encodeURI(res.data)
-        )}`;
+        const blob = new Blob([res.data], {
+          type: res.headers["content-type"],
+        });
+        aref.current.href = URL.createObjectURL(blob);
         const contentDispositionParts = res.headers[
           "content-disposition"
         ].split("filename=");
@@ -30,14 +36,16 @@ const DownloadLink = ({
         aref.current.click();
       }
     });
-  }, [aref]);
+  }, [aref, href]);
   return (
     <div>
       {children}
       <Button onClick={onClick}>
         <BsDownload />
       </Button>
-      <a ref={aref}></a>
+      <Downloader ref={aref} href="">
+        Download...
+      </Downloader>
     </div>
   );
 };

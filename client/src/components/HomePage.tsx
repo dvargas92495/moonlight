@@ -7,9 +7,6 @@ import {
   CONTENT_COLOR,
   SECONDARY_COLOR,
 } from "../styles/colors";
-import PublicPage from "./PublicPage";
-import PrivatePage from "./PrivatePage";
-import { useUserId } from "../hooks/router";
 import WebPage from "./WebPage";
 
 const MainHeader = styled.h1`
