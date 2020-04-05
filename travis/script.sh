@@ -9,6 +9,11 @@ check() {
     fi
 }
 
+for filename in travis/manual/*.sh; do
+    ./$filename
+    check
+done
+
 DOMAIN=$1
 
 cd terraform

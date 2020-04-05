@@ -375,8 +375,13 @@ resource "aws_db_instance" "default" {
   }
 }
 
-resource "aws_s3_bucket" "patient_forms" {
-  bucket = "${local.env_name}-patient-forms"
+resource "aws_s3_bucket" "app_storage" {
+  for_each = toset([
+    "patient-forms",
+    "profile-photos"
+  ])
+
+  bucket = "${local.env_name}-${each.value}"
   acl    = "private"
   policy = <<POLICY
 {
@@ -389,7 +394,7 @@ resource "aws_s3_bucket" "patient_forms" {
         "AWS": "arn:aws:iam::643537615676:user/moonlight-health-admin"
       },
       "Action": ["s3:PutObject", "s3:DeleteObject", "s3:GetObject"],
-      "Resource": "arn:aws:s3:::${local.env_name}-patient-forms/*"
+      "Resource": "arn:aws:s3:::${local.env_name}-${each.value}/*"
     }
   ]
 }
