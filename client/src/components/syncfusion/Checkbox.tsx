@@ -15,6 +15,7 @@ const Checkbox = ({
   label,
   value,
   defaultChecked,
+  className,
 }: InputHTMLAttributes<HTMLInputElement> & { label: string }) => {
   const [checked, setChecked] = useState(false);
   useEffect(() => {
@@ -28,6 +29,7 @@ const Checkbox = ({
         value={value}
         checked={checked}
         onChange={(e) => setChecked(e.target.checked)}
+        className={className}
       />
       <Label>{label}</Label>
     </div>
