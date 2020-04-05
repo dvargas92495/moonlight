@@ -9,3 +9,10 @@ export const userType = {
   DENTIST: 1,
   SPECIALIST: 2,
 };
+
+export const eventFrequency = {
+  DAILY: 0,
+  WEEKLY: 1,
+  MONTHLY: 2,
+  YEARLY: 3,
+};

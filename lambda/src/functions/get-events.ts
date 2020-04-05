@@ -16,12 +16,7 @@ type PatientInfo = {
 };
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const {
-    userId,
-    viewUserId,
-    startTime,
-    endTime,
-  } = event.queryStringParameters;
+  const { userId, viewUserId } = event.queryStringParameters;
   const viewUserIdInt = parseInt(viewUserId);
   const userIdInt = parseInt(userId);
   const client = new Client({
@@ -34,20 +29,23 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   client.connect();
   return client
     .query(
-      `SELECT e.*, p.date_of_birth, i.*, pr.first_name, pr.last_name, pf.name as form_name, pf.size FROM events e
+      `SELECT e.*, rr.interval, p.date_of_birth, i.*, pr.first_name, pr.last_name, pf.name as form_name, pf.size FROM events e
+       LEFT JOIN event_recurrence_rules rr ON rr.event_id = e.id 
        LEFT JOIN patient_event_links l ON e.id = l.event_id 
        LEFT JOIN patients p ON l.patient_id = p.id 
        LEFT JOIN patient_identifiers i ON i.patient_id = p.id
        LEFT JOIN patient_forms pf ON pf.patient_id = p.id
        LEFT JOIN profile pr ON pr.user_id = e.created_by
-       WHERE e.user_id=$1 AND e.start_time >= $2 AND e.start_time < $3 AND (NOT e.is_pending OR e.created_by=$4 OR e.user_id=$4)`,
-      [userIdInt, startTime, endTime, viewUserIdInt]
+       WHERE e.user_id=$1 AND (NOT e.is_pending OR e.created_by=$2 OR e.user_id=$2)`,
+      [userIdInt, viewUserIdInt]
     )
     .then((res) => {
       client.end();
       const events = map(uniqBy(res.rows, "id"), (e) => {
         const IsReadonly =
           e.user_id != viewUserIdInt && e.created_by != viewUserIdInt;
+        const RecurrenceRule =
+          e.interval == 1 ? "FREQ=WEEKLY;INTERVAL=1" : null;
         return {
           Subject: IsReadonly ? "BUSY" : e.subject,
           StartTime: e.start_time,
@@ -57,6 +55,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           IsPending: e.is_pending,
           CreatedBy: e.created_by,
           Patients: {} as { [id: number]: PatientInfo },
+          RecurrenceRule,
           fullName: e.first_name + " " + e.last_name,
         };
       });

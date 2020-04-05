@@ -52,6 +52,7 @@ import DownloadLink from "./DownloadLink";
 import DatePicker from "./DatePicker";
 import { PRIMARY_COLOR, CONTENT_COLOR } from "../../styles/colors";
 import Button from "./Button";
+import Checkbox from "./Checkbox";
 
 export type AvailabilityProps = {
   userId: number;
@@ -359,6 +360,11 @@ const QuickInfoTemplatesContent: any = ({
             name="Subject"
             className="e-field"
           />
+          <Checkbox
+            label="Repeat Weekly"
+            name="isWeekly"
+            className="e-field e-control"
+          />
         </>
       ))}
     {Id && !IsReadonly && (
@@ -492,18 +498,20 @@ const Scheduler = ({
       switch (requestType) {
         case "eventCreate":
           const { addedRecords } = rest;
-          const { Subject, StartTime, EndTime } = addedRecords[0];
+          const { Subject, StartTime, EndTime, isWeekly } = addedRecords[0];
           api.post("events", {
             userId,
             createdBy: viewUserId,
             Subject,
             StartTime,
             EndTime,
+            isWeekly,
           });
           break;
         case "eventRemove":
-          const { deletedRecords } = rest;
-          const { Id } = deletedRecords[0];
+          const { deletedRecords, changedRecords } = rest;
+          const removedRecords = [...deletedRecords, ...changedRecords];
+          const { Id } = removedRecords[0];
           api.delete(`events/${Id}`);
           break;
         default:
