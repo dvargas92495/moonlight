@@ -9,10 +9,14 @@ check() {
     fi
 }
 
-for filename in travis/manual/*.sh; do
-    ./$filename
-    check
-done
+if [ -z "$(ls -A travis/manual)" ]; then
+   echo "No manual migrations to run"
+else
+    for filename in travis/manual/*.sh; do
+        ./$filename
+        check
+    done
+fi
 
 DOMAIN=$1
 
@@ -35,7 +39,7 @@ REACT_APP_USER_CLIENT_ID=${REACT_APP_USER_CLIENT_ID}
 REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
 REACT_APP_RDS_MASTER_USER_PASSWORD=${TF_VAR_RDS_MASTER_USER_PASSWORD}
 REACT_APP_RDS_MASTER_HOST=${RDS_MASTER_HOST}
-REACT_APP_S3_PATIENT_FORM_BUCKET=${TF_WORKSPACE}-patient-forms
+REACT_APP_ENVIRONMANE_NAME=${TF_WORKSPACE}
 " > client/.env.local
 
 cd db

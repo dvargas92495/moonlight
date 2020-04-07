@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { s3 } from "../layers/aws";
+import { s3, envName } from "../layers/aws";
 import { serverErrorResponse, headers } from "../layers/util";
 import { S3 } from "aws-sdk";
 
@@ -7,7 +7,7 @@ export const handler = async (e: APIGatewayProxyEvent) => {
   const { id, name } = e.pathParameters;
   return s3
     .getObject({
-      Bucket: process.env.REACT_APP_S3_PATIENT_FORM_BUCKET,
+      Bucket: `${envName}-patient-forms`,
       Key: `patient${id}/${name}`,
     })
     .promise()

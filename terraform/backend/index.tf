@@ -19,7 +19,9 @@ locals {
     "profile/post",
     "signin/post",
     "signup/post",
-    "specialist-views/get"
+    "specialist-views/get",
+    "user/{id}/photo/get",
+    "user/{id}/photo/post"
   ]
 
   lambda_parts = {
@@ -270,7 +272,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.90.1"
+  stage_description = "2020.97.2"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 
