@@ -9,10 +9,14 @@ check() {
     fi
 }
 
-for filename in travis/manual/*.sh; do
-    ./$filename
-    check
-done
+if [ -z "$(ls -A travis/manual)" ]; then
+   echo "No manual migrations to run"
+else
+    for filename in travis/manual/*.sh; do
+        ./$filename
+        check
+    done
+fi
 
 DOMAIN=$1
 
