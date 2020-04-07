@@ -49,7 +49,7 @@ export const handler = async (event: APIGatewayProxyEvent) =>
           .query("BEGIN")
           .then(() =>
             client.query(
-              `INSERT INTO patient_forms(patient_id, name, size)
+              `INSERT INTO profile_photos(user_id, name, size)
              VALUES ($1, $2, $3)
              RETURNING *`,
               [id, filename, size]
@@ -58,8 +58,8 @@ export const handler = async (event: APIGatewayProxyEvent) =>
           .then(() =>
             s3
               .putObject({
-                Bucket: `${envName}-patient-forms`,
-                Key: `patient${id}/${filename}`,
+                Bucket: `${envName}-profile-photos`,
+                Key: `user${id}/${filename}`,
                 Body: file,
                 ContentType: contentType,
               })

@@ -46,7 +46,8 @@ import Input from "./Input";
 import RequestFeedback from "../RequestFeedback";
 import Dialog from "./Dialog";
 import Form from "./Form";
-import FileInput, { FileProps } from "./FileInput";
+import { FileProps } from "./FileInput";
+import PatientFormInput from "./PatientFormInput";
 import styled from "styled-components";
 import DownloadLink from "./DownloadLink";
 import DatePicker from "./DatePicker";
@@ -306,11 +307,10 @@ const PatientSummary = ({
             {`Phone Number: ${Patients[p].identifiers.phoneNumber || "None"}`}
           </div>
           {viewUserId === CreatedBy ? (
-            <FileInput
+            <PatientFormInput
+              patientId={p}
               onUploadSuccess={onUploadSuccess(p)}
               onDeleteSuccess={onDeleteSuccess(p)}
-              browseButtonText={"Add Patient Form..."}
-              url={`patients/${p}/form`}
               initialFiles={Patients[p].forms}
             />
           ) : (
