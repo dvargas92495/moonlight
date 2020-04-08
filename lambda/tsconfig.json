@@ -4,8 +4,8 @@
     "noImplicitAny": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
-    "module": "es6",
-    "target": "es5",
+    "module": "esnext",
+    "target": "es6",
     "allowJs": true
   },
   "include": ["src"]
