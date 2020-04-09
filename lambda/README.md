@@ -4,6 +4,10 @@ This directory is responsible for our backend logic, in the form of serverless f
 
 1. Run `npm install`
 
+## Running a local backend
+
+1. Run `npm run local`
+
 ## Deploying a new script
 
 1. Make sure the `aws` cli is installed and that you have `zip`
