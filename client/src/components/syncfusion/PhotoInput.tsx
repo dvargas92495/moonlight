@@ -11,10 +11,7 @@ const PhotoInput = () => {
     api
       .get(`/user/${userId}/photo`)
       .then((res) => {
-        const blob = new Blob([res.data], {
-          type: res.headers["content-type"],
-        });
-        setSrc(URL.createObjectURL(blob));
+        setSrc(`data:${res.headers["content-type"]}; base64, ${res.data}`);
       })
       .catch(() => setSrc(defaultProfilePhoto));
   }, [setSrc, userId]);

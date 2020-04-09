@@ -30,6 +30,7 @@ const transformHandler = (
       "Access-Control-Allow-Origin": string;
       "Access-Control-Allow-Methods": string;
     };
+    isBase64Encoded: boolean;
   }>
 ) => (req: Request<ParamsDictionary>, res: Response<any>) => {
   const event = {
@@ -106,7 +107,7 @@ lambdas.forEach((lambda) => {
     slice(lambdaParts, 1, lambdaParts.length),
     "/"
   )}`;
-  const path = pathWithBy.replace("/by/", "/:");
+  const path = pathWithBy.replace(/\/by\//g, "/:");
   import("./functions/" + lambda).then((m) => {
     console.log(`method: ${method}, path: ${path}`);
     switch (method) {
