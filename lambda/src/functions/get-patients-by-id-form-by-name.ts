@@ -2,7 +2,6 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { s3, envName } from "../layers/aws";
 import { serverErrorResponse, headers } from "../layers/util";
 import { S3 } from "aws-sdk";
-import fs from "fs";
 
 export const handler = async (e: APIGatewayProxyEvent) => {
   const { id, name } = e.pathParameters;
@@ -14,7 +13,6 @@ export const handler = async (e: APIGatewayProxyEvent) => {
     .promise()
     .then(({ Body, ContentType, LastModified }: S3.GetObjectOutput) => {
       const body = Body.toString();
-      fs.writeFileSync(name, body);
       return {
         headers: {
           ...headers,
