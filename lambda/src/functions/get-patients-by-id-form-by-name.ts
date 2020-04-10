@@ -12,7 +12,7 @@ export const handler = async (e: APIGatewayProxyEvent) => {
     })
     .promise()
     .then(({ Body, ContentType, LastModified }: S3.GetObjectOutput) => {
-      const body = Body.toString();
+      const body = Body.toString("base64");
       return {
         headers: {
           ...headers,

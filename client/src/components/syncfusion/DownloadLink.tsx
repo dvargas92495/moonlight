@@ -25,10 +25,7 @@ const DownloadLink = ({
       method: "GET",
     }).then((res) => {
       if (aref.current) {
-        const blob = new Blob([res.data], {
-          type: res.headers["content-type"],
-        });
-        aref.current.href = URL.createObjectURL(blob);
+        aref.current.href = `data:${res.headers["content-type"]}; base64, ${res.data}`;
         const contentDispositionParts = res.headers[
           "content-disposition"
         ].split("filename=");

@@ -37,26 +37,19 @@ export const handler = async (e: APIGatewayProxyEvent) => {
           Key: `user${id}/${res.rows[0].name}`,
         })
         .promise()
-        .then(
-          ({
-            Body,
-            ContentType,
-            LastModified,
-            ContentLength,
-          }: S3.GetObjectOutput) => {
-            const body = Body.toString("base64");
-            return {
-              headers: {
-                ...headers,
-                "Content-Type": ContentType,
-                "Last-Modified": LastModified,
-              },
-              body,
-              statusCode: 200,
-              isBase64Encoded: true,
-            };
-          }
-        );
+        .then(({ Body, ContentType, LastModified }: S3.GetObjectOutput) => {
+          const body = Body.toString("base64");
+          return {
+            headers: {
+              ...headers,
+              "Content-Type": ContentType,
+              "Last-Modified": LastModified,
+            },
+            body,
+            statusCode: 200,
+            isBase64Encoded: true,
+          };
+        });
     })
     .catch((e) => serverErrorResponse(e.message));
 };
