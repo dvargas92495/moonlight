@@ -47,8 +47,9 @@ to it. We plan to have multiple `*-dev-moonlight-health` environments, based on 
 
 ### Local
 
-This still needs to be set up. The idea is to make it so that devs could quickly work on app development with the aws services simulated
-locally, without needing a full `dev` environment to test changes like the environment above.
+This is simulating the full app environment locally on one machine, reachable at `localhost:3000`. This is the fastest way
+for a developer to iterate on changes that are only focused on the application. It is still in active development, however it
+is currently possible to run the front end and backend locally, while using the AWS data infrastructure from the `Dev` environment.
 
 ## Directory Structure
 

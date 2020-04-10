@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const webpack = require("webpack");
-const Dotenv = require("dotenv-webpack");
+const common = require("./webpack.common.config");
 
 const entries = fs.readdirSync("./src/functions/");
 const entry = entries.reduce((acc, e) => {
@@ -10,35 +9,12 @@ const entry = entries.reduce((acc, e) => {
 }, {});
 
 module.exports = {
+  ...common,
   entry,
-  target: "node",
   mode: "production",
-  externals: ["aws-sdk"],
   output: {
     libraryTarget: "commonjs",
     path: path.join(__dirname, "build"),
-    filename: "[name].js"
+    filename: "[name].js",
   },
-  resolve: {
-    extensions: [".ts", ".js"]
-  },
-  module: {
-    noParse: /opt/,
-    rules: [
-      {
-        test: /\.ts$/,
-        use: "ts-loader",
-        exclude: /node_modules/
-      }
-    ]
-  },
-  plugins: [
-    new Dotenv({
-      path: "../client/.env.local"
-    }),
-    new Dotenv({
-      path: "../client/.env"
-    }),
-    new webpack.IgnorePlugin(/.\/native/)
-  ]
 };

@@ -22,7 +22,11 @@ const PhotoInput = () => {
       onUploadSuccess={(f: FileProps) => {}}
       accept="image/*"
     >
-      {src ? <img src={src} alt={"Failed to load"} /> : <div>Loading...</div>}
+      {src ? (
+        <img src={src} alt={"Failed to load"} width={320} height={320} />
+      ) : (
+        <div>Loading...</div>
+      )}
     </FileInput>
   );
 };
