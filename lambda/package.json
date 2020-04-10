@@ -4,7 +4,7 @@
   "description": "Layers of Dependencies",
   "scripts": {
     "build": "rm -Rf build/ && webpack",
-    "local": "webpack --config webpack.local.config.js && node local/index.js"
+    "start": "webpack --config webpack.local.config.js && node local/index.js"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.40",

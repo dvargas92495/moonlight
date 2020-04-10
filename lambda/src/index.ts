@@ -2,23 +2,14 @@ import express, { Request, Response } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 import bodyParser from "body-parser";
 import cors from "cors";
-import {
-  reduce,
-  keys,
-  reject,
-  forEach,
-  split,
-  slice,
-  join,
-  replace,
-} from "lodash";
+import { reduce, keys, reject, forEach, split, slice, join } from "lodash";
 import { isArray } from "util";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import fs from "fs";
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.raw());
 
 const transformHandler = (
   handler: (
@@ -34,7 +25,7 @@ const transformHandler = (
   }>
 ) => (req: Request<ParamsDictionary>, res: Response<any>) => {
   const event = {
-    body: JSON.stringify(req.body),
+    body: req.body,
     headers: reduce(
       reject(keys(req.headers), (header) => isArray(req.headers[header])),
       (acc, header) => ({ ...acc, [header]: req.headers[header] }),
@@ -86,7 +77,7 @@ const transformHandler = (
     },
     resource: req.path,
   };
-  handler(event)
+  Promise.resolve(handler(event))
     .then((r) => {
       forEach(r.headers, (value: string, header: string) =>
         res.setHeader(header, value)
@@ -109,7 +100,6 @@ lambdas.forEach((lambda) => {
   )}`;
   const path = pathWithBy.replace(/\/by\//g, "/:");
   import("./functions/" + lambda).then((m) => {
-    console.log(`method: ${method}, path: ${path}`);
     switch (method) {
       case "get":
         app.get(path, transformHandler(m.handler));
