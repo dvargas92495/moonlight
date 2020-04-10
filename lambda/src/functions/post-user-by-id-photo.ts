@@ -31,7 +31,7 @@ export const handler = async (event: APIGatewayProxyEvent) =>
     .then(
       (
         event: Omit<APIGatewayProxyEvent, "body"> & {
-          body: { filename: string; file: string; contentType: string };
+          body: { filename: string; file: Buffer; contentType: string };
         }
       ) => {
         const { id } = event.pathParameters;
@@ -51,6 +51,8 @@ export const handler = async (event: APIGatewayProxyEvent) =>
             client.query(
               `INSERT INTO profile_photos(user_id, name, size)
              VALUES ($1, $2, $3)
+             ON CONFLICT (user_id) 
+                DO UPDATE SET name=excluded.name, size=excluded.size
              RETURNING *`,
               [id, filename, size]
             )
@@ -67,7 +69,14 @@ export const handler = async (event: APIGatewayProxyEvent) =>
           )
           .then(() => client.query("COMMIT"))
           .then(() => client.end())
-          .then(() => okResponse({ name: filename, size }))
+          .then(() =>
+            okResponse({
+              name: filename,
+              size,
+              contentType,
+              file: file.toString("base64"),
+            })
+          )
           .catch((e) => {
             client.query("ROLLBACK");
             throw e;

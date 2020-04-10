@@ -9,6 +9,8 @@ import RequestFeedback from "../RequestFeedback";
 export type FileProps = {
   name: string;
   size: number;
+  contentType: string;
+  file: string;
 };
 
 const Container = styled.div<{ highlight: boolean }>`
