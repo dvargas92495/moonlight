@@ -8,9 +8,8 @@ const PhotoInput = () => {
   const userId = useUserId();
   const [src, setSrc] = useState("");
   const setData = useCallback(
-    (data: string, contentType: string) => {
-      setSrc(`data:${contentType}; base64, ${data}`);
-    },
+    (data: string, contentType: string) =>
+      setSrc(`data:${contentType}; base64, ${data}`),
     [setSrc]
   );
   useEffect(() => {

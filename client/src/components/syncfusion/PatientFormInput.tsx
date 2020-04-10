@@ -89,7 +89,6 @@ const PatientFormInput = ({
       browseButtonText={"Add Patient Form..."}
       url={`patients/${patientId}/form`}
       onUploadSuccess={onUpload}
-      accept="application/pdf,text/*"
     >
       <FilesContainer>
         {map(files, (f) => (

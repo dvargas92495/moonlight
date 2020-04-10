@@ -31,13 +31,13 @@ const FileInput = ({
   browseButtonText,
   url,
   onUploadSuccess,
-  accept,
+  accept = "*/*",
   children,
 }: {
   browseButtonText: string;
   url: string;
   onUploadSuccess: (f: FileProps) => void;
-  accept: string;
+  accept?: string;
   children: React.ReactNode;
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
