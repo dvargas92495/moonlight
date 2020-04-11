@@ -29,3 +29,4 @@ export const SECONDARY_COLOR = colors[theme].secondaryColor;
 
 export const HALF_OPAQUE = "80";
 export const QUARTER_OPAQUE = "40";
+export const THREE_QUARTER_OPAQUE = "C0";
