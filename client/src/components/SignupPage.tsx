@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
-import Input from "./syncfusion/Input";
-import Form from "./syncfusion/Form";
+import Form, { FieldType } from "./syncfusion/Form";
 import { PRIMARY_COLOR } from "../styles/colors";
 import { useParams, useHistory } from "react-router-dom";
 import PublicPage from "./PublicPage";
@@ -31,7 +30,7 @@ const SignupPage = () => {
   const [username, setUsername] = useState("");
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
   const [userId, setUserId] = useState(0);
-  
+
   const { type } = useParams();
   const history = useHistory();
 
@@ -49,7 +48,11 @@ const SignupPage = () => {
   return (
     <PublicPage>
       <Container>
-        <Header>{showConfirmationCode ? `Enter confirmation code from email`: `Sign up as ${type}`}</Header>
+        <Header>
+          {showConfirmationCode
+            ? `Enter confirmation code from email`
+            : `Sign up as ${type}`}
+        </Header>
         <FormContainer>
           {showConfirmationCode ? (
             <Form
@@ -57,21 +60,48 @@ const SignupPage = () => {
               path="confirm-signup"
               handleResponse={confirmSignupHandleResponse}
               extraProps={{ username }}
-            >
-              <Input placeholder="Confirmation Code" name="confirmationCode" />
-            </Form>
+              fields={[
+                {
+                  placeholder: "Confirmation Code",
+                  name: "confirmationCode",
+                  required: true,
+                  type: FieldType.TEXT,
+                },
+              ]}
+            />
           ) : (
             <Form
               label="sign up"
               path="signup"
               handleResponse={signupHandleResponse}
               extraProps={{ type }}
-            >
-              <Input placeholder="First Name" name="firstName" />
-              <Input placeholder="Last Name" name="lastName" />
-              <Input placeholder="Email" name="username" />
-              <Input placeholder="Password" name="password" type="password" />
-            </Form>
+              fields={[
+                {
+                  placeholder: "First Name",
+                  name: "firstName",
+                  required: true,
+                  type: FieldType.TEXT,
+                },
+                {
+                  placeholder: "Last Name",
+                  name: "lastName",
+                  required: true,
+                  type: FieldType.TEXT,
+                },
+                {
+                  placeholder: "Email",
+                  name: "username",
+                  required: true,
+                  type: FieldType.TEXT,
+                },
+                {
+                  placeholder: "Password",
+                  name: "password",
+                  required: true,
+                  type: FieldType.PASSWORD,
+                },
+              ]}
+            />
           )}
         </FormContainer>
       </Container>
