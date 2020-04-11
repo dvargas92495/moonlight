@@ -15,16 +15,6 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.removeForeignKey(
-    "patient_event_links",
-    "fk_patient_event_links_patient_id_patients_id",
-    {
-      dropIndex: true,
-    }
-  );
-};
-
-exports.down = function (db) {
   return db.addForeignKey(
     "patient_event_links",
     "patients",
@@ -33,8 +23,18 @@ exports.down = function (db) {
       patient_id: "id",
     },
     {
-      onDelete: "RESTRICT",
+      onDelete: "CASCADE",
       onUpdate: "RESTRICT",
+    }
+  );
+};
+
+exports.down = function (db) {
+  return db.removeForeignKey(
+    "patient_event_links",
+    "fk_patient_event_links_patient_id_patients_id",
+    {
+      dropIndex: true,
     }
   );
 };
