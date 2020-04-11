@@ -17,7 +17,7 @@ exports.setup = function (options, seedLink) {
 exports.up = function (db) {
   return db.removeForeignKey(
     "patient_event_links",
-    "fk_patient_event_links_patient_id_patients_id",
+    "fk_patient_event_links_event_id_events_id",
     {
       dropIndex: true,
     }
@@ -28,7 +28,7 @@ exports.down = function (db) {
   return db.addForeignKey(
     "patient_event_links",
     "events",
-    "fk_patient_event_links_patient_id_patients_id",
+    "fk_patient_event_links_event_id_events_id",
     {
       event_id: "id",
     },
