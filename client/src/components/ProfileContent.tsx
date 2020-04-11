@@ -28,8 +28,6 @@ const DeleteUserContainer = styled.div`
   display: flex;
 `;
 
-Modal.setAppElement(`#${ROOT}`);
-
 const ProfileContent = () => {
   const userId = useUserId();
   const history = useHistory();
@@ -101,6 +99,7 @@ const ProfileContent = () => {
               minHeight: "120px",
             },
           }}
+          appElement={document.querySelector(`#${ROOT}`) as HTMLElement}
         >
           <div>
             Are you sure you want to delete your user account? Note that all
