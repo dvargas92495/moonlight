@@ -65,7 +65,7 @@ const Form = ({
           data[k] = [v];
         }
       });
-      if (errors.length == 0) {
+      if (errors.length === 0) {
         setUiError("");
         const request = reduce(
           Object.keys(data),

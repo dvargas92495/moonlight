@@ -1,5 +1,5 @@
 import axios from "axios";
-import { reduce, noop } from "lodash";
+import { noop } from "lodash";
 import { useState, useCallback } from "react";
 
 export const api = axios.create({
