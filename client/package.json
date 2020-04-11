@@ -25,6 +25,7 @@
     "react": "16.12.0",
     "react-dom": "16.12.0",
     "react-icons": "3.9.0",
+    "react-modal": "3.11.2",
     "react-portal": "4.2.1",
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.0",
@@ -50,6 +51,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-modal": "3.10.5",
     "@types/react-portal": "4.0.2",
     "prettier": "1.19.1"
   }
