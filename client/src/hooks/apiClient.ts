@@ -1,5 +1,5 @@
 import axios from "axios";
-import { reduce, noop } from "lodash";
+import { noop } from "lodash";
 import { useState, useCallback } from "react";
 
 export const api = axios.create({
@@ -34,49 +34,6 @@ const useApi = (apiMethod: (request: any) => Promise<any>) => {
 
 export const useApiPost = (url: string, onSuccess?: (response: any) => void) =>
   useApi((request) => api.post(url, request))(onSuccess);
-
-export const useApiFormPost = (
-  url: string,
-  extraProps: object,
-  onSuccess: (response: Object) => void
-) => {
-  const { error, loading, handleSubmit: originalHandler } = useApiPost(
-    url,
-    onSuccess
-  );
-  const handleSubmit = useCallback(
-    (event) => {
-      const formData = new FormData(event.target);
-      const data: { [key: string]: FormDataEntryValue[] } = {};
-      formData.forEach((v, k) => {
-        if (data[k]) {
-          data[k].push(v);
-        } else {
-          data[k] = [v];
-        }
-      });
-      const request = reduce(
-        Object.keys(data),
-        (acc, k) => ({
-          ...acc,
-          [k]: data[k].length === 1 ? data[k][0] : data[k],
-        }),
-        {}
-      );
-      originalHandler({
-        ...request,
-        ...extraProps,
-      });
-      event.preventDefault();
-    },
-    [extraProps, originalHandler]
-  );
-  return {
-    error,
-    loading,
-    handleSubmit,
-  };
-};
 
 export const useApiDelete = (
   url: string,
