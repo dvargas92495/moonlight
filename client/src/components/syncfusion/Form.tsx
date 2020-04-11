@@ -84,7 +84,7 @@ const Form = ({
       }
       event.preventDefault();
     },
-    [extraProps, handleSubmit, setUiError]
+    [extraProps, handleSubmit, setUiError, fields]
   );
   return (
     <StyledForm onSubmit={onSubmit} className={className} width={width}>
