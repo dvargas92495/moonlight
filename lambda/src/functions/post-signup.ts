@@ -1,6 +1,7 @@
 import {
-  createSecretHashObj,
-  cognitoIdentityServiceProvider
+  ClientId,
+  createSecretHash,
+  cognitoIdentityServiceProvider,
 } from "../layers/aws";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { Client } from "pg";
@@ -8,8 +9,13 @@ import { okResponse, userErrorResponse } from "../layers/util";
 import { userType } from "../layers/enums";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const { username: Username, password: Password, firstName, lastName, type } = JSON.parse(event.body);
-  const hashObj = createSecretHashObj(Username);
+  const {
+    username: Username,
+    password: Password,
+    firstName,
+    lastName,
+    type,
+  } = JSON.parse(event.body);
   const key = type.toUpperCase() as string;
   if (!userType.hasOwnProperty(key)) {
     return userErrorResponse(`Tried to create a user of invalid type ${type}`);
@@ -17,9 +23,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   const inputUserType = userType[key as keyof typeof userType];
   return cognitoIdentityServiceProvider
     .signUp({
-      ...hashObj,
+      SecretHash: createSecretHash(Username + ClientId),
+      ClientId,
       Password,
-      Username
+      Username,
     })
     .promise()
     .then(({ UserConfirmed, UserSub }) => {
@@ -31,20 +38,31 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           user: "moonlight",
           password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
           database: "moonlight",
-          query_timeout: 10000
+          query_timeout: 10000,
         });
         client.connect();
         return client
-          .query('BEGIN')
-          .then(() => client.query("INSERT INTO users(uuid, type) VALUES ($1, $2) RETURNING id", [UserSub, inputUserType]))
-          .then(res => client.query("INSERT INTO profile(user_id, first_name, last_name) VALUES ($1, $2, $3) RETURNING *", [res.rows[0].id, firstName, lastName]))
-          .then(res =>
+          .query("BEGIN")
+          .then(() =>
+            client.query(
+              "INSERT INTO users(uuid, type) VALUES ($1, $2) RETURNING id",
+              [UserSub, inputUserType]
+            )
+          )
+          .then((res) =>
+            client.query(
+              "INSERT INTO profile(user_id, first_name, last_name) VALUES ($1, $2, $3) RETURNING *",
+              [res.rows[0].id, firstName, lastName]
+            )
+          )
+          .then((res) =>
             client.query("COMMIT").then(() => {
-            client.end();
-            const { user_id } = res.rows[0];
-            return okResponse({ id: user_id, username: Username });
-          }));
+              client.end();
+              const { user_id } = res.rows[0];
+              return okResponse({ id: user_id, username: Username });
+            })
+          );
       }
     })
-    .catch(e => userErrorResponse(e.message));
+    .catch((e) => userErrorResponse(e.message));
 };

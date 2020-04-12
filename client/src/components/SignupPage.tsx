@@ -42,9 +42,10 @@ const SignupPage = () => {
     },
     [setShowConfirmationCode, setUserId, setUsername]
   );
-  const confirmSignupHandleResponse = useCallback(() => {
-    history.push(`/${type}`, { userId, type });
-  }, [userId, type, history]);
+  const confirmSignupHandleResponse = useCallback(
+    () => history.push("/login"),
+    [history]
+  );
   return (
     <PublicPage>
       <Container>
