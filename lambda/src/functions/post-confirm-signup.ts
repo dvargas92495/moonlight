@@ -1,6 +1,7 @@
 import {
-  createSecretHashObj,
-  cognitoIdentityServiceProvider
+  ClientId,
+  createSecretHash,
+  cognitoIdentityServiceProvider,
 } from "../layers/aws";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { okResponse, userErrorResponse } from "../layers/util";
@@ -9,14 +10,14 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   const { username: Username, confirmationCode: ConfirmationCode } = JSON.parse(
     event.body
   );
-  const hashObj = createSecretHashObj(Username);
   return cognitoIdentityServiceProvider
     .confirmSignUp({
-      ...hashObj,
+      SecretHash: createSecretHash(Username + ClientId),
+      ClientId,
       ConfirmationCode,
-      Username
+      Username,
     })
     .promise()
     .then(() => okResponse({ success: true }))
-    .catch(e => userErrorResponse(e.message));
+    .catch((e) => userErrorResponse(e.message));
 };
