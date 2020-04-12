@@ -29,18 +29,16 @@ const Header = styled.h2`
 const SignupPage = () => {
   const [username, setUsername] = useState("");
   const [showConfirmationCode, setShowConfirmationCode] = useState(false);
-  const [userId, setUserId] = useState(0);
 
   const { type } = useParams();
   const history = useHistory();
 
   const signupHandleResponse = useCallback(
-    ({ id, username }) => {
+    ({ username }) => {
       setShowConfirmationCode(true);
-      setUserId(id);
       setUsername(username);
     },
-    [setShowConfirmationCode, setUserId, setUsername]
+    [setShowConfirmationCode, setUsername]
   );
   const confirmSignupHandleResponse = useCallback(
     () => history.push("/login"),

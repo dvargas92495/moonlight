@@ -55,13 +55,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
               [res.rows[0].id, firstName, lastName]
             )
           )
-          .then((res) =>
-            client.query("COMMIT").then(() => {
-              client.end();
-              const { user_id } = res.rows[0];
-              return okResponse({ id: user_id, username: Username });
-            })
-          );
+          .then(() => client.query("COMMIT"))
+          .then(() => {
+            client.end();
+            return okResponse({ username: Username });
+          });
       }
     })
     .catch((e) => userErrorResponse(e.message));
