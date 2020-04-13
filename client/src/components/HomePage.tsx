@@ -57,7 +57,7 @@ const Background1 = styled.section`
 const HomePage = () => (
   <WebPage>
     <div>
-      <MainHeader>MOONLIGHT</MainHeader>
+      <MainHeader>EMDEO</MainHeader>
 
       <Background1>
         <SectionHeader>
@@ -111,8 +111,8 @@ const HomePage = () => (
         <ContentText>
           Practice owners do not have to concern themselves with the high costs,
           stress, and responsibility of liability associated with surgical
-          procedures. Moonlight Oral Surgery ensures all of our surgeons are
-          fully licensed, certified, and equipped with everything you need.
+          procedures. Emdeo ensures all of our surgeons are fully licensed,
+          certified, and equipped with everything you need.
         </ContentText>
       </ContentBlurb>
 

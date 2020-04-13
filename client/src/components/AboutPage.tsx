@@ -67,9 +67,9 @@ const AboutPage = () => (
         <ColumnContent>
           <Header>Stress Less.</Header>
           <Content>
-            Moonlight Oral Surgery is the premier concierge oral surgery service
-            in the DMV area. By bringing the complete Comprehensive Oral Surgery
-            Experience directly to your office, your patients get the benefit of
+            Emdeo is the premier concierge oral surgery service in the DMV area.
+            By bringing the complete Comprehensive Oral Surgery Experience
+            directly to your office, your patients get the benefit of
             specialized, quality care from the comfort and convenience of your
             chair. Your offices makes more money. Everybody wins. Our Oral
             Surgeon(s) can be hired on a weekly, biweekly, or monthly basis to
@@ -83,14 +83,13 @@ const AboutPage = () => (
         <ColumnContent>
           <Header>No Extra Effort.</Header>
           <Content>
-            We at Moonlight Oral Surgery know that it can be a hassle to expand
-            your practice to include Oral Surgery by traditional methods. The
-            draining process of interviewing and finding an associate right for
-            your practice, the expensive investment of purchasing all the
-            necessary equipment, and the stress of taking on added risk can
-            liability can be draining. Book a Moonlight Oral Surgeon today to
-            discover how easy and convenient a dentist-surgeon partnership can
-            be...
+            We at Emdeo know that it can be a hassle to expand your practice to
+            include Oral Surgery by traditional methods. The draining process of
+            interviewing and finding an associate right for your practice, the
+            expensive investment of purchasing all the necessary equipment, and
+            the stress of taking on added risk can liability can be draining.
+            Book an Emdeo oral surgeon today to discover how easy and convenient
+            a dentist-surgeon partnership can be...
           </Content>
         </ColumnContent>
       </ContentRow>

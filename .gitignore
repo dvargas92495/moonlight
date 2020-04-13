@@ -2,3 +2,6 @@
 **/node_modules
 **/build
 todo.txt
+
+# ide
+.vscode

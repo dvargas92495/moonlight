@@ -2,4 +2,4 @@
 
 export TF_VAR_RDS_MASTER_USER_PASSWORD=$PROD_RDS_MASTER_USER_PASSWORD
 
-./travis/script.sh moonlight-health.com
+./travis/script.sh emdeo.com
