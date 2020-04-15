@@ -15,8 +15,18 @@ import {
   CONTENT_COLOR,
   SECONDARY_BACKGROUND_COLOR,
   HALF_OPAQUE,
+  THREE_QUARTER_OPAQUE,
 } from "../../styles/colors";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import { TiArrowSortedDown } from "react-icons/ti";
+import { map, values, filter } from "lodash";
+
+enum View {
+  TODAY,
+  DAY,
+  WEEK,
+  MONTH,
+}
 
 type PatientInfo = {
   forms: FileProps[];
@@ -38,45 +48,92 @@ type EventObject = {
   EndTime: Date;
 };
 
-const getScheduleBounds = (currentDate: Date, currentView: string) => {
-  if (currentView === "Day") {
-    return {
-      startTime: startOfDay(currentDate),
-      endTime: endOfDay(currentDate),
-    };
-  } else if (currentView === "Week") {
-    return {
-      startTime: startOfWeek(currentDate),
-      endTime: endOfWeek(currentDate),
-    };
-  } else if (currentView === "Month") {
-    return {
-      startTime: startOfMonth(currentDate),
-      endTime: endOfMonth(currentDate),
-    };
-  } else {
-    throw new Error(`Unknown Current View: ${currentView}`);
+const getScheduleBounds = (currentDate: Date, currentView: View) => {
+  switch (currentView) {
+    case View.TODAY:
+    case View.DAY:
+      return {
+        startTime: startOfDay(currentDate),
+        endTime: endOfDay(currentDate),
+      };
+    case View.WEEK:
+      return {
+        startTime: startOfWeek(currentDate),
+        endTime: endOfWeek(currentDate),
+      };
+    case View.MONTH:
+      return {
+        startTime: startOfMonth(currentDate),
+        endTime: endOfMonth(currentDate),
+      };
+    default:
+      throw new Error(`Unknown Current View: ${currentView}`);
   }
 };
 
 const Container = styled.div`
   border: 1px solid ${CONTENT_COLOR};
   width: 100%;
+  background: white;
 `;
 
 const ToolbarContainer = styled.div`
   min-height: 45px;
   padding-bottom: 3px;
-  background: ${SECONDARY_BACKGROUND_COLOR} ${HALF_OPAQUE};
+  background: ${`${SECONDARY_BACKGROUND_COLOR}${THREE_QUARTER_OPAQUE}`};
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: ${CONTENT_COLOR};
 `;
 
-const IconContainer = styled.div`
+const ToolbarButton = styled.button`
   padding: 8px;
+  height: 100%;
+  align-self: center;
+  background: transparent;
+  color: ${CONTENT_COLOR};
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  &:hover {
+    background: ${`${SECONDARY_BACKGROUND_COLOR}`};
+  }
 `;
+
+const ToolbarIcon = styled(ToolbarButton)`
+  &:hover {
+    border-radius: 100%;
+  }
+`;
+
+const TimeToolbarButton = styled(ToolbarButton)`
+  text-transform: capitalize;
+`;
+
+const CalendarTable = styled.table`
+  table-layout: fixed;
+  width: 100%;
+  background: ${`${SECONDARY_BACKGROUND_COLOR}${HALF_OPAQUE}`};
+`;
+
+const TimeCell = styled.td`
+  max-width: 85px;
+`;
+
+const WeekView = () => {
+  return (
+    <CalendarTable>
+      <tbody>
+        <tr>
+          <TimeCell />
+        </tr>
+        <tr></tr>
+      </tbody>
+    </CalendarTable>
+  );
+};
 
 const Schedule = ({
   userId,
@@ -95,7 +152,7 @@ const Schedule = ({
   const [loadingSchedule, setLoadingSchedule] = useState(true);
   const [dataSource, setDataSource] = useState<EventObject[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentView, setCurrentView] = useState("Week");
+  const [currentView, setCurrentView] = useState(View.WEEK);
 
   /*
     const actionBegin = useCallback(
@@ -163,26 +220,39 @@ const Schedule = ({
       )
       .finally(() => setLoadingSchedule(false));
   }, [setWorkHours, setLoadingSchedule]);
-  return loadingSchedule ? (
-    <div>Loading...</div>
-  ) : (
+  return (
     <Container>
-      <ToolbarContainer>
-        <div>
-          <IconContainer>
-            <BsChevronLeft />
-          </IconContainer>
-          <IconContainer>
-            <BsChevronRight />
-          </IconContainer>
-          <IconContainer>
-            <button>{format(currentDate, "MMM dd, yyyy")}</button>
-          </IconContainer>
-        </div>
-        <div>Day</div>
-      </ToolbarContainer>
-      <div>Table</div>
-      {JSON.stringify(workHours)}
+      {loadingSchedule ? (
+        <div>Loading...</div>
+      ) : (
+        <>
+          <ToolbarContainer>
+            <div>
+              <ToolbarIcon>
+                <BsChevronLeft strokeWidth={3} />
+              </ToolbarIcon>
+              <ToolbarIcon>
+                <BsChevronRight strokeWidth={3} />
+              </ToolbarIcon>
+              <ToolbarButton>
+                {format(currentDate, "MMM dd, yyyy")}
+                <TiArrowSortedDown />
+              </ToolbarButton>
+            </div>
+            <div>
+              {map(filter(values(View), isNaN), (v) => (
+                <TimeToolbarButton
+                  key={v as View}
+                  onClick={() => setCurrentView(v as View)}
+                >
+                  {v}
+                </TimeToolbarButton>
+              ))}
+            </div>
+          </ToolbarContainer>
+          <div>{currentView === View.WEEK && <WeekView />}</div>
+        </>
+      )}
     </Container>
   );
 };
