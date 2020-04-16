@@ -18,7 +18,7 @@ const Overlay = ({
   closePortal,
   children,
 }: {
-  isOpen: true;
+  isOpen: boolean;
   closePortal: () => void;
   children: React.ReactNode;
 }) => {
@@ -42,7 +42,7 @@ const Overlay = ({
     document.addEventListener("click", handleOutsideMouseClick);
     return () => document.removeEventListener("click", handleOutsideMouseClick);
   }, [handleOutsideMouseClick]);
-  return isOpen && <Portal ref={portalRef}>{children}</Portal>;
+  return isOpen ? <Portal ref={portalRef}>{children}</Portal> : <></>;
 };
 
 export default Overlay;
