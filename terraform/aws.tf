@@ -107,6 +107,7 @@ resource "aws_acm_certificate" "cert" {
 
 resource "aws_route53_zone" "primary" {
   name         = "emdeo.com."
+  comment      = "Hosted zone for the ${local.env_name} environment"
 }
 
 resource "aws_route53_record" "cert_validation" {
