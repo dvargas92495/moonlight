@@ -1,7 +1,7 @@
 {
   "name": "db",
   "version": "1.0.0",
-  "description": "Managing Moonlight Data",
+  "description": "Managing Emdeo Data",
   "scripts": {
     "create": "db-migrate create",
     "migrate": "db-migrate up",

@@ -11,7 +11,7 @@ check() {
 
 export TF_VAR_RDS_MASTER_USER_PASSWORD=$QA_RDS_MASTER_USER_PASSWORD
 
-DOMAIN="env1.qa.moonlight-health.com"
+DOMAIN="env1.qa.emdeo.com"
 
 ./travis/script.sh $DOMAIN
 check

@@ -3,7 +3,7 @@ variable "RDS_MASTER_USER_PASSWORD" {}
 
 locals {
   env_name     = replace(var.ATLAS_WORKSPACE_NAME, "terraform-", "")
-  domain       = "${replace(replace(local.env_name, "moonlight-health", ""), "-", ".")}moonlight-health.com"
+  domain       = "${replace(replace(local.env_name, "moonlight-health", ""), "-", ".")}emdeo.com"
   s3_origin_id = "S3-${local.env_name}"
   is_prod      = local.env_name == "moonlight-health"
 }
@@ -105,15 +105,15 @@ resource "aws_acm_certificate" "cert" {
   ]
 }
 
-data "aws_route53_zone" "primary" {
-  name         = "moonlight-health.com."
-  private_zone = false
+resource "aws_route53_zone" "primary" {
+  name         = "emdeo.com."
+  comment      = "Hosted zone for the ${local.env_name} environment"
 }
 
 resource "aws_route53_record" "cert_validation" {
   name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
   type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
-  zone_id = data.aws_route53_zone.primary.id
+  zone_id = aws_route53_zone.primary.id
   records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
   ttl     = 60
 }
@@ -121,8 +121,8 @@ resource "aws_route53_record" "cert_validation" {
 resource "aws_route53_record" "www_cert_validation" {
   name    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_name
   type    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_type
-  zone_id = data.aws_route53_zone.primary.id
-  records = ["${aws_acm_certificate.cert.domain_validation_options.1.resource_record_value}"]
+  zone_id = aws_route53_zone.primary.id
+  records = [aws_acm_certificate.cert.domain_validation_options.1.resource_record_value]
   ttl     = 60
 }
 
@@ -199,7 +199,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 resource "aws_route53_record" "A" {
-  zone_id = data.aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = local.domain
   type    = "A"
 
@@ -211,7 +211,7 @@ resource "aws_route53_record" "A" {
 }
 
 resource "aws_route53_record" "AAAA" {
-  zone_id = data.aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = local.domain
   type    = "AAAA"
 
@@ -296,7 +296,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
 }
 
 resource "aws_route53_record" "www-A" {
-  zone_id = data.aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = "www.${local.domain}"
   type    = "A"
 
@@ -308,7 +308,7 @@ resource "aws_route53_record" "www-A" {
 }
 
 resource "aws_route53_record" "www-AAAA" {
-  zone_id = data.aws_route53_zone.primary.zone_id
+  zone_id = aws_route53_zone.primary.zone_id
   name    = "www.${local.domain}"
   type    = "AAAA"
 
