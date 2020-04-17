@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { okResponse, serverErrorResponse } from "../layers/util";
 import { eventFrequency } from "../layers/enums";
+import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const {
@@ -13,14 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     isWeekly,
   } = JSON.parse(event.body);
   const IsPending = userId != createdBy;
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000,
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client.query("BEGIN").then(() =>
     client
       .query(

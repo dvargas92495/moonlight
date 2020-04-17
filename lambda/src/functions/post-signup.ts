@@ -2,9 +2,9 @@ import {
   ClientId,
   createSecretHash,
   cognitoIdentityServiceProvider,
+  connectRdsClient,
 } from "../layers/aws";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { okResponse, userErrorResponse } from "../layers/util";
 import { userType } from "../layers/enums";
 
@@ -33,14 +33,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       if (UserConfirmed) {
         return userErrorResponse("User email is already confirmed");
       } else {
-        const client = new Client({
-          host: process.env.REACT_APP_RDS_MASTER_HOST,
-          user: "moonlight",
-          password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-          database: "moonlight",
-          query_timeout: 10000,
-        });
-        client.connect();
+        const client = connectRdsClient();
         return client
           .query("BEGIN")
           .then(() =>

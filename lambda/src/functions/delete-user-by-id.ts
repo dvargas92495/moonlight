@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { emptyResponse, serverErrorResponse } from "../layers/util";
 import {
   s3,
@@ -7,19 +6,13 @@ import {
   ClientId,
   cognitoIdentityServiceProvider,
   createSecretHash,
+  connectRdsClient,
 } from "../layers/aws";
 import { isEmpty } from "lodash";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { id } = event.pathParameters;
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000,
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client
     .query("BEGIN")
     .then(() =>

@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { filter, range, reduce, reverse } from "lodash";
 import { okResponse, userErrorResponse } from "../layers/util";
+import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { userId, workHoursStart, workHoursEnd, workDays } = JSON.parse(
@@ -12,14 +12,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     (t, i: string) => t + Math.pow(2, parseInt(i)),
     0
   );
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client
     .query(
       `INSERT INTO availability(user_id, work_hours_start, work_hours_end, work_days)
@@ -29,16 +22,16 @@ export const handler = async (event: APIGatewayProxyEvent) => {
                 RETURNING *`,
       [userId, workHoursStart, workHoursEnd, encodedWorkDays]
     )
-    .then(res => {
+    .then((res) => {
       client.end();
       const {
         user_id,
         work_hours_start,
         work_hours_end,
-        work_days
+        work_days,
       } = res.rows[0];
       let encodedValue = work_days;
-      const decodedWorkDays = filter(range(6, -1, -1), i => {
+      const decodedWorkDays = filter(range(6, -1, -1), (i) => {
         const powerOf2 = Math.pow(2, i);
         if (encodedValue >= powerOf2) {
           encodedValue -= powerOf2;
@@ -51,8 +44,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         userId: user_id,
         workHoursStart: work_hours_start,
         workHoursEnd: work_hours_end,
-        workDays: reverse(decodedWorkDays)
+        workDays: reverse(decodedWorkDays),
       });
     })
-    .catch(e => userErrorResponse(e.message));
+    .catch((e) => userErrorResponse(e.message));
 };

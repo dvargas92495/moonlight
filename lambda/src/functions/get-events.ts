@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { map, uniqBy, keyBy, find } from "lodash";
 import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
 import { patientIdentifiers } from "../layers/enums";
+import { connectRdsClient } from "../layers/aws";
 
 type PatientForm = {
   name: string;
@@ -19,14 +19,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   const { userId, viewUserId } = event.queryStringParameters;
   const viewUserIdInt = parseInt(viewUserId);
   const userIdInt = parseInt(userId);
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000,
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client
     .query(
       `SELECT e.*, rr.interval, p.date_of_birth, i.*, pr.first_name, pr.last_name, pf.name as form_name, pf.size FROM events e
