@@ -27,6 +27,7 @@ cd terraform
 check
 cd ..
 
+AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
 API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${ENV_NAME}'].id" --output text)
 REACT_APP_USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 20 --query "UserPools[?Name=='${ENV_NAME}'].Id" --output text)
 REACT_APP_USER_CLIENT_ID=$(aws cognito-idp list-user-pool-clients --user-pool-id $REACT_APP_USER_POOL_ID --query "UserPoolClients[?ClientName=='emdeo-client'].ClientId" --output text)

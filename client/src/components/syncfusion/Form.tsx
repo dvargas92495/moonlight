@@ -1,10 +1,12 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
+import Select from "react-select";
 import { useApiPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 import Button from "./Button";
 import { map, reduce, find, join } from "lodash";
 import Input from "./Input";
+import Checkbox from "./Checkbox";
 
 interface StyledFormExtendProps {
   readonly width: number;
@@ -18,6 +20,8 @@ const StyledForm = styled.form<StyledFormExtendProps>`
 export enum FieldType {
   TEXT,
   PASSWORD,
+  CHECKBOX,
+  DROPDOWN,
 }
 
 type Field = {
@@ -25,6 +29,7 @@ type Field = {
   name: string;
   type: FieldType;
   required?: boolean;
+  values?: string[];
 };
 
 type FormProps = {
@@ -106,6 +111,25 @@ const Form = ({
                 type={"password"}
                 key={field.name}
               />
+            );
+          case FieldType.CHECKBOX:
+            return (
+              <Checkbox
+                label={field.placeholder}
+                name={field.name}
+                key={field.name}
+              />
+            );
+          case FieldType.DROPDOWN:
+            return (
+              <>
+                <div>{field.placeholder}</div>
+                <Select
+                  options={map(field.values, (v) => ({ label: v, value: v }))}
+                  name={field.name}
+                  key={field.name}
+                />
+              </>
             );
         }
       })}
