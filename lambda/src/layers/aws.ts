@@ -26,9 +26,9 @@ export const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 export const connectRdsClient = () => {
   const client = new Client({
     host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
+    user: "emdeo",
     password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
+    database: "emdeo",
     query_timeout: 10000,
   });
   client.connect();

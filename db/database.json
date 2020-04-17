@@ -2,8 +2,8 @@
   "defaultEnv": "aws",
   "aws": {
     "driver": "postgres",
-    "user": "moonlight",
-    "database": "moonlight",
+    "user": "emdeo",
+    "database": "emdeo",
     "port": 5432,
     "password": {
       "ENV": "TF_VAR_RDS_MASTER_USER_PASSWORD"
