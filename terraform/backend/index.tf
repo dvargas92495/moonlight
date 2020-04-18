@@ -273,7 +273,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.102.1"
+  stage_description = "2020.108.1"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 
