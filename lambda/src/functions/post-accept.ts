@@ -1,17 +1,10 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Client } from "pg";
 import { okResponse, userErrorResponse } from "../layers/util";
+import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { eventId } = JSON.parse(event.body);
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client
     .query(
       `UPDATE events
@@ -20,7 +13,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
        RETURNING *`,
       [eventId]
     )
-    .then(res => {
+    .then((res) => {
       client.end();
       const {
         id,
@@ -29,7 +22,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         subject,
         start_time,
         end_time,
-        is_pending
+        is_pending,
       } = res.rows[0];
       return okResponse({
         userId: user_id,
@@ -38,8 +31,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         StartTime: start_time,
         EndTime: end_time,
         Id: id,
-        IsPending: is_pending
+        IsPending: is_pending,
       });
     })
-    .catch(e => userErrorResponse(e.message));
+    .catch((e) => userErrorResponse(e.message));
 };

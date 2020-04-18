@@ -3,12 +3,12 @@ import jwkToPem, { JWK } from "jwk-to-pem";
 import { find, isEmpty } from "lodash";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import axios, { AxiosResponse } from "axios";
-import { Client } from "pg";
 import {
   ClientId,
   createSecretHash,
   cognitoIdentityServiceProvider,
   region,
+  connectRdsClient,
 } from "../layers/aws";
 import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
 import { userType } from "../layers/enums";
@@ -95,14 +95,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
               );
             }
 
-            const client = new Client({
-              host: process.env.REACT_APP_RDS_MASTER_HOST,
-              user: "moonlight",
-              password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-              database: "moonlight",
-              query_timeout: 10000,
-            });
-            client.connect();
+            const client = connectRdsClient();
             return client
               .query(
                 `SELECT id, type FROM users

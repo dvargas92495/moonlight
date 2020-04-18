@@ -1,4 +1,5 @@
 import AWS from "aws-sdk";
+import { Client } from "pg";
 import { createHmac } from "crypto";
 
 export const ClientId = process.env.REACT_APP_USER_CLIENT_ID || "";
@@ -21,3 +22,15 @@ export const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProv
 );
 
 export const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+
+export const connectRdsClient = () => {
+  const client = new Client({
+    host: process.env.REACT_APP_RDS_MASTER_HOST,
+    user: "emdeo",
+    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
+    database: "emdeo",
+    query_timeout: 10000,
+  });
+  client.connect();
+  return client;
+};

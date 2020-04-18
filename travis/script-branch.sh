@@ -11,15 +11,13 @@ check() {
 
 export TF_VAR_RDS_MASTER_USER_PASSWORD=$QA_RDS_MASTER_USER_PASSWORD
 
-DOMAIN="env1.qa.emdeo.com"
-
-./travis/script.sh $DOMAIN
+./travis/script.sh
 check
 
 cd client
 npm test
 check
 
-export CYPRESS_BASE_URL="https://$DOMAIN"
+export CYPRESS_BASE_URL="https://env1.qa.emdeo.com"
 cd ../qa
 npm test

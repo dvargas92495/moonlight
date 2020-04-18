@@ -1,25 +1,16 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { s3, envName } from "../layers/aws";
+import { s3, envName, connectRdsClient } from "../layers/aws";
 import {
   serverErrorResponse,
   headers,
   userErrorResponse,
 } from "../layers/util";
 import { S3 } from "aws-sdk";
-import { Client } from "pg";
 import { isEmpty } from "lodash";
-import fs from "fs";
 
 export const handler = async (e: APIGatewayProxyEvent) => {
   const { id } = e.pathParameters;
-  const client = new Client({
-    host: process.env.REACT_APP_RDS_MASTER_HOST,
-    user: "moonlight",
-    password: process.env.REACT_APP_RDS_MASTER_USER_PASSWORD,
-    database: "moonlight",
-    query_timeout: 10000,
-  });
-  client.connect();
+  const client = connectRdsClient();
   return client
     .query(
       `SELECT name FROM profile_photos

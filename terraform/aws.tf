@@ -2,10 +2,10 @@ variable "ATLAS_WORKSPACE_NAME" {}
 variable "RDS_MASTER_USER_PASSWORD" {}
 
 locals {
-  env_name     = replace(var.ATLAS_WORKSPACE_NAME, "terraform-", "")
-  domain       = "${replace(replace(local.env_name, "moonlight-health", ""), "-", ".")}emdeo.com"
+  env_name     = replace(replace(var.ATLAS_WORKSPACE_NAME, "terraform-", ""), "moonlight-health", "emdeo")
+  domain       = "${replace(local.env_name, "-", ".")}.com"
   s3_origin_id = "S3-${local.env_name}"
-  is_prod      = local.env_name == "moonlight-health"
+  is_prod      = local.env_name == "emdeo"
 }
 
 provider "aws" {
@@ -14,6 +14,7 @@ provider "aws" {
 
 resource "aws_s3_bucket" "client" {
   bucket = local.env_name
+  force_destroy = true
   acl    = "private"
   policy = <<POLICY
 {
@@ -49,7 +50,7 @@ resource "aws_s3_bucket" "client" {
 POLICY
 
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 
   website {
@@ -61,12 +62,13 @@ POLICY
 resource "aws_s3_bucket" "www" {
   bucket = "www-${local.env_name}"
   acl    = "private"
+  force_destroy = true
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 
   website {
-    redirect_all_requests_to = "https://moonlight-health.com"
+    redirect_all_requests_to = "https://${local.domain}"
   }
 }
 
@@ -93,7 +95,7 @@ resource "aws_acm_certificate" "cert" {
   validation_method = "DNS"
 
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 
   lifecycle {
@@ -105,15 +107,15 @@ resource "aws_acm_certificate" "cert" {
   ]
 }
 
-resource "aws_route53_zone" "primary" {
+data "aws_route53_zone" "primary" {
   name         = "emdeo.com."
-  comment      = "Hosted zone for the ${local.env_name} environment"
+  private_zone = false
 }
 
 resource "aws_route53_record" "cert_validation" {
   name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
   type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
-  zone_id = aws_route53_zone.primary.id
+  zone_id = data.aws_route53_zone.primary.id
   records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
   ttl     = 60
 }
@@ -121,7 +123,7 @@ resource "aws_route53_record" "cert_validation" {
 resource "aws_route53_record" "www_cert_validation" {
   name    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_name
   type    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_type
-  zone_id = aws_route53_zone.primary.id
+  zone_id = data.aws_route53_zone.primary.id
   records = [aws_acm_certificate.cert.domain_validation_options.1.resource_record_value]
   ttl     = 60
 }
@@ -168,7 +170,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 
   viewer_certificate {
@@ -199,7 +201,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 resource "aws_route53_record" "A" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = data.aws_route53_zone.primary.zone_id
   name    = local.domain
   type    = "A"
 
@@ -211,7 +213,7 @@ resource "aws_route53_record" "A" {
 }
 
 resource "aws_route53_record" "AAAA" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = data.aws_route53_zone.primary.zone_id
   name    = local.domain
   type    = "AAAA"
 
@@ -265,7 +267,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
   }
 
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 
   viewer_certificate {
@@ -296,7 +298,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
 }
 
 resource "aws_route53_record" "www-A" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = data.aws_route53_zone.primary.zone_id
   name    = "www.${local.domain}"
   type    = "A"
 
@@ -308,7 +310,7 @@ resource "aws_route53_record" "www-A" {
 }
 
 resource "aws_route53_record" "www-AAAA" {
-  zone_id = aws_route53_zone.primary.zone_id
+  zone_id = data.aws_route53_zone.primary.zone_id
   name    = "www.${local.domain}"
   type    = "AAAA"
 
@@ -323,8 +325,8 @@ resource "aws_cognito_user_pool" "pool" {
   name                       = local.env_name
   username_attributes        = ["email"]
   auto_verified_attributes   = ["email"]
-  email_verification_subject = "Your Moonlight Health verification code"
-  email_verification_message = "Your Moonlight Health verification code is {####}."
+  email_verification_subject = "Your Emdeo verification code"
+  email_verification_message = "Your Emdeo verification code is {####}."
   
   password_policy {
     minimum_length                   = 8
@@ -336,12 +338,12 @@ resource "aws_cognito_user_pool" "pool" {
   }
 
   tags                       = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 }
 
 resource "aws_cognito_user_pool_client" "client" {
-  name                = "moonlight-client"
+  name                = "emdeo-client"
   user_pool_id        = aws_cognito_user_pool.pool.id
   generate_secret     = true
   explicit_auth_flows = [
@@ -360,8 +362,8 @@ resource "aws_db_instance" "default" {
   engine_version               = "11.5"
   identifier                   = local.env_name
   instance_class               = "db.t3.micro"
-  name                         = "moonlight"
-  username                     = "moonlight"
+  name                         = "emdeo"
+  username                     = "emdeo"
   password                     = var.RDS_MASTER_USER_PASSWORD
   parameter_group_name         = "default.postgres11"
   port                         = 5432
@@ -371,7 +373,7 @@ resource "aws_db_instance" "default" {
   deletion_protection          = local.is_prod
   performance_insights_enabled = local.is_prod
   tags                         = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 }
 
@@ -383,6 +385,7 @@ resource "aws_s3_bucket" "app_storage" {
 
   bucket = "${local.env_name}-${each.value}"
   acl    = "private"
+  force_destroy = true
   policy = <<POLICY
 {
   "Version": "2012-10-17",
@@ -401,7 +404,7 @@ resource "aws_s3_bucket" "app_storage" {
 POLICY
 
   tags = {
-    Application = "Moonlight"
+    Application = "Emdeo"
   }
 }
 
