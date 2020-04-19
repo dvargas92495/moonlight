@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  RefObject,
+} from "react";
 import { FileProps } from "./FileInput";
 import {
   startOfDay,
@@ -16,7 +22,7 @@ import {
   addWeeks,
   subWeeks,
 } from "date-fns";
-import { api } from "../../hooks/apiClient";
+import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
 import {
   SECONDARY_BACKGROUND_COLOR,
@@ -25,14 +31,29 @@ import {
   THREE_QUARTER_OPAQUE,
   QUARTER_OPAQUE,
   SECONDARY_COLOR,
+  PRIMARY_COLOR,
 } from "../../styles/colors";
-import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import { BsChevronLeft, BsChevronRight, BsCalendarFill } from "react-icons/bs";
 import { TiArrowSortedDown } from "react-icons/ti";
-import { map, values, filter, range, includes, split, reject } from "lodash";
+import {
+  map,
+  values,
+  filter,
+  range,
+  includes,
+  split,
+  reject,
+  find,
+  keys,
+} from "lodash";
 import { setHours } from "date-fns/esm";
 import Overlay from "./Overlay";
 import Icon from "./Icon";
 import Form, { FieldType } from "./Form";
+import Button from "./Button";
+import RequestFeedback from "../RequestFeedback";
+import PatientFormInput from "./PatientFormInput";
+import DownloadLink from "./DownloadLink";
 
 enum View {
   TODAY,
@@ -47,7 +68,7 @@ type PatientInfo = {
   dateOfBirth: string;
 };
 
-type EventObject = {
+type EventCommon = {
   Id: number;
   userId: number;
   CreatedBy: number;
@@ -56,10 +77,23 @@ type EventObject = {
   IsPending: boolean;
   Patients: { [id: number]: PatientInfo };
   fullName: string;
+};
 
+type EventObject = EventCommon & {
   StartTime: Date;
   EndTime: Date;
 };
+
+type EventResponse = EventCommon & {
+  StartTime: string;
+  EndTime: string;
+};
+
+const formatEventResponse = (e: EventResponse) => ({
+  ...e,
+  StartTime: new Date(e.StartTime),
+  EndTime: new Date(e.EndTime),
+});
 
 const getScheduleBounds = (currentDate: Date, currentView: View) => {
   switch (currentView) {
@@ -218,32 +252,55 @@ const EventSummaryContainer = styled.div<{ hours: number }>`
   cursor: pointer;
 `;
 
-/*
+const PatientContainer = styled.div<{ top: number; left: number }>`
+  position: fixed;
+  top: ${(props) => props.top}px;
+  left: ${(props) => props.left}px;
+  z-index: 2001;
+  background: ${SECONDARY_COLOR};
+`;
+
+const PatientSummaryContainer = styled.div`
+  color: ${CONTENT_COLOR};
+  padding-top: 16px;
+`;
+
+const PatientHeader = styled.h3`
+  color: ${PRIMARY_COLOR};
+`;
+
+const FormContainer = styled.div`
+  padding-left: 16px;
+`;
+
 const ActionEvent = ({
   eventId,
-  closeQuickInfoPopup,
-  dataSource,
-  setDataSource,
-}: QuickInfoExtraProps & {
+  closeOverlay,
+  events,
+  setEvents,
+}: {
   eventId: number;
+  closeOverlay: () => void;
+  events: EventObject[];
+  setEvents: (events: EventObject[]) => void;
 }) => {
   const {
     error: acceptError,
     loading: acceptLoading,
     handleSubmit: acceptEvent,
   } = useApiPost("accept", (e: EventResponse) => {
-    const otherEvents = reject(dataSource, { Id: e.Id });
-    setDataSource([...otherEvents, formatEvent(e)]);
-    closeQuickInfoPopup();
+    const otherEvents = reject(events, { Id: e.Id });
+    setEvents([...otherEvents, formatEventResponse(e)]);
+    closeOverlay();
   });
   const {
     error: rejectError,
     loading: rejectLoading,
     handleSubmit: rejectEvent,
   } = useApiDelete("events", () => {
-    const otherEvents = reject(dataSource, { Id: eventId });
-    setDataSource(otherEvents);
-    closeQuickInfoPopup();
+    const otherEvents = reject(events, { Id: eventId });
+    setEvents(otherEvents);
+    closeOverlay();
   });
   return (
     <>
@@ -259,14 +316,36 @@ const ActionEvent = ({
 
 const PatientDialog = ({
   Id,
-  dataSource,
-  setDataSource,
-  closeQuickInfoPopup,
-}: QuickInfoExtraProps & {
+  closeOverlay,
+  events,
+  setEvents,
+  eventRef,
+}: {
   Id: number;
+  closeOverlay: () => void;
+  events: EventObject[];
+  setEvents: (events: EventObject[]) => void;
+  eventRef: RefObject<HTMLElement>;
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+  const openPatient = useCallback(
+    (e) => {
+      const {
+        x,
+        y,
+        height,
+      } = (e.target as HTMLElement).getBoundingClientRect();
+      setTop(y + height);
+      setLeft(x);
+      setIsOpen(true);
+    },
+    [setTop, setLeft, setIsOpen]
+  );
+  const closePatient = useCallback(() => setIsOpen(false), [setIsOpen]);
   const handleResponse = useCallback(
-    (close) => ({
+    ({
       patientId,
       firstName,
       lastName,
@@ -281,7 +360,7 @@ const PatientDialog = ({
       email: string;
       phoneNumber: string;
     }) => {
-      const event = find(dataSource, { Id });
+      const event = find(events, { Id });
       if (event) {
         event.Patients[patientId] = {
           identifiers: {
@@ -294,34 +373,56 @@ const PatientDialog = ({
           forms: [] as FileProps[],
         };
         // spreading to force a rerender
-        setDataSource([...dataSource]);
+        setEvents([...events]);
       }
-      close();
-      closeQuickInfoPopup();
+      closePatient();
+      closeOverlay();
     },
-    [Id, dataSource, setDataSource, closeQuickInfoPopup]
+    [Id, events, setEvents, closeOverlay, closePatient]
   );
   return (
-    <Dialog openText={"Add Patient"}>
-      {(close) => (
-        <Form
-          path={`events/${Id}/patient`}
-          handleResponse={handleResponse(close)}
-          width={320}
-        >
+    <>
+      <Button isPrimary onClick={openPatient}>
+        Add Patient
+      </Button>
+      <Overlay
+        isOpen={isOpen}
+        closePortal={() => setIsOpen(false)}
+        parent={eventRef}
+      >
+        <PatientContainer top={top} left={left}>
           <PatientHeader>Enter Patient Information</PatientHeader>
-          <Input placeholder="First Name" name="firstName" />
-          <Input placeholder="Last Name" name="lastName" />
-          <Input placeholder="Email" name="email" />
-          <Input placeholder="Phone Number" name="phoneNumber" />
-          <DatePicker
-            placeholder="Date of Birth (yyyy/mm/dd)"
-            displayFormat="yyyy/MM/dd"
-            name="dateOfBirth"
+          <Form
+            path={`events/${Id}/patient`}
+            handleResponse={handleResponse}
+            width={320}
+            fields={[
+              {
+                placeholder: "First Name",
+                name: "firstName",
+                type: FieldType.TEXT,
+              },
+              {
+                placeholder: "Last Name",
+                name: "lastName",
+                type: FieldType.TEXT,
+              },
+              { placeholder: "Email", name: "email", type: FieldType.TEXT },
+              {
+                placeholder: "Phone Number",
+                name: "phoneNumber",
+                type: FieldType.TEXT,
+              },
+              {
+                placeholder: "Date of Birth (yyyy/mm/dd)",
+                name: "dateOfBirth",
+                type: FieldType.DATE,
+              },
+            ]}
           />
-        </Form>
-      )}
-    </Dialog>
+        </PatientContainer>
+      </Overlay>
+    </>
   );
 };
 
@@ -329,34 +430,34 @@ const PatientSummary = ({
   Patients,
   CreatedBy,
   viewUserId,
-  dataSource,
-  setDataSource,
+  events,
+  setEvents,
 }: {
   Patients: { [id: string]: PatientInfo };
   viewUserId: number;
   CreatedBy: number;
-  dataSource: EventObject[];
-  setDataSource: (events: EventObject[]) => void;
+  events: EventObject[];
+  setEvents: (events: EventObject[]) => void;
 }) => {
   const onUploadSuccess = useCallback(
     (p: number) => (f: FileProps) => {
-      const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
+      const eventsWithPatient = filter(events, (e) => !!e.Patients[p]);
       eventsWithPatient.forEach((e) => e.Patients[p].forms.push(f));
       // spreading to force a rerender
-      setDataSource([...dataSource]);
+      setEvents([...events]);
     },
-    [dataSource, setDataSource]
+    [events, setEvents]
   );
   const onDeleteSuccess = useCallback(
     (p: number) => (name: string) => {
-      const eventsWithPatient = filter(dataSource, (e) => !!e.Patients[p]);
+      const eventsWithPatient = filter(events, (e) => !!e.Patients[p]);
       eventsWithPatient.forEach(
         (e) => (e.Patients[p].forms = reject(e.Patients[p].forms, { name }))
       );
       // spreading to force a rerender
-      setDataSource([...dataSource]);
+      setEvents([...events]);
     },
-    [dataSource, setDataSource]
+    [events, setEvents]
   );
   return (
     <PatientSummaryContainer>
@@ -392,66 +493,6 @@ const PatientSummary = ({
     </PatientSummaryContainer>
   );
 };
-
-const QuickInfoTemplatesContent: any = ({
-  personal,
-  closeQuickInfoPopup,
-  dataSource,
-  viewUserId,
-  setDataSource,
-}: QuickInfoExtraProps & {
-  personal: boolean;
-  viewUserId: number;
-}) => ({
-  Id,
-  StartTime,
-  EndTime,
-  IsPending,
-  CreatedBy,
-  Patients,
-  IsReadonly,
-  elementType,
-  fullName,
-}: QuickInfoProps) => (
-  <>
-    {Id && !IsReadonly && (
-      <div>
-        <h3>Created by {fullName}</h3>
-      </div>
-    )}
-    <div className="e-date-time">
-      <div className="e-date-time-icon e-icons" />
-      <div>{`${format(StartTime, "MMMM dd, yyyy")} (${format(
-        StartTime,
-        "hh:mm a"
-      )} - ${format(EndTime, "hh:mm a")})`}</div>
-    </div>
-    {IsPending && personal && (
-      <ActionEvent
-        eventId={Id}
-        closeQuickInfoPopup={closeQuickInfoPopup}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-      />
-    )}
-    <PatientSummary
-      Patients={Patients}
-      CreatedBy={CreatedBy}
-      viewUserId={viewUserId}
-      dataSource={dataSource}
-      setDataSource={setDataSource}
-    />
-    {!IsPending && viewUserId === CreatedBy && Id && (
-      <PatientDialog
-        Id={Id}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-        closeQuickInfoPopup={closeQuickInfoPopup}
-      />
-    )}
-  </>
-);
-*/
 
 const EventSummary = ({
   e,
@@ -501,6 +542,7 @@ const WeekView = ({
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
   const tableRef = useRef<HTMLTableSectionElement>(null);
+  const eventRef = useRef<HTMLDivElement>(null);
   const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
   const [isEventOpen, setIsEventOpen] = useState(false);
   const [overlayTop, setOverlayTop] = useState(0);
@@ -508,6 +550,7 @@ const WeekView = ({
   const [eventSelected, setEventSelected] = useState<EventObject>();
 
   const closeOverlay = useCallback(() => {
+    setSelectedHour(new Date(0));
     setEventSelected(undefined);
     setIsEventOpen(false);
   }, [setIsEventOpen, setEventSelected]);
@@ -529,8 +572,9 @@ const WeekView = ({
     api.delete(`events/${eventSelected?.Id}`).then(() => {
       const filteredEvents = reject(events, { Id: eventSelected?.Id });
       setEvents(filteredEvents);
+      closeOverlay();
     });
-  }, [events, setEvents, eventSelected]);
+  }, [events, setEvents, eventSelected, closeOverlay]);
 
   return (
     <CalendarTable>
@@ -604,7 +648,7 @@ const WeekView = ({
         closePortal={closeOverlay}
         parent={tableRef}
       >
-        <EventContainer top={overlayTop} left={overlayLeft}>
+        <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
           <EventHeader>
             {eventSelected && eventSelected.Subject}
             {eventSelected && !eventSelected.IsReadonly && (
@@ -638,6 +682,47 @@ const WeekView = ({
               }}
             />
           )}
+          {eventSelected && !eventSelected.IsReadonly && (
+            <div>
+              <h3>Created by {eventSelected.fullName}</h3>
+              <BsCalendarFill />
+              <div>{`${format(
+                eventSelected.StartTime,
+                "MMMM dd, yyyy"
+              )} (${format(eventSelected.StartTime, "hh:mm a")} - ${format(
+                eventSelected.EndTime,
+                "hh:mm a"
+              )})`}</div>
+            </div>
+          )}
+          {eventSelected?.IsPending && personal && (
+            <ActionEvent
+              eventId={eventSelected.Id}
+              closeOverlay={closeOverlay}
+              events={events}
+              setEvents={setEvents}
+            />
+          )}
+          {eventSelected && (
+            <PatientSummary
+              Patients={eventSelected.Patients}
+              CreatedBy={eventSelected.CreatedBy}
+              viewUserId={viewUserId}
+              events={events}
+              setEvents={setEvents}
+            />
+          )}
+          {!eventSelected?.IsPending &&
+            viewUserId === eventSelected?.CreatedBy &&
+            eventSelected?.Id && (
+              <PatientDialog
+                Id={eventSelected.Id}
+                events={events}
+                setEvents={setEvents}
+                closeOverlay={closeOverlay}
+                eventRef={eventRef}
+              />
+            )}
         </EventContainer>
       </Overlay>
     </CalendarTable>

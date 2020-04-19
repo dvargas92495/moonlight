@@ -7,6 +7,7 @@ import Button from "./Button";
 import { map, reduce, find, join } from "lodash";
 import Input from "./Input";
 import Checkbox from "./Checkbox";
+import DatePicker from "./DatePicker";
 
 interface StyledFormExtendProps {
   readonly width: number;
@@ -22,6 +23,7 @@ export enum FieldType {
   PASSWORD,
   CHECKBOX,
   DROPDOWN,
+  DATE,
 }
 
 type Field = {
@@ -122,14 +124,21 @@ const Form = ({
             );
           case FieldType.DROPDOWN:
             return (
-              <>
-                <div>{field.placeholder}</div>
-                <Select
-                  options={map(field.values, (v) => ({ label: v, value: v }))}
-                  name={field.name}
-                  key={field.name}
-                />
-              </>
+              <Select
+                placeholder={field.placeholder}
+                options={map(field.values, (v) => ({ label: v, value: v }))}
+                name={field.name}
+                key={field.name}
+              />
+            );
+          case FieldType.DATE:
+            return (
+              <DatePicker
+                placeholder={field.placeholder}
+                displayFormat="yyyy/MM/dd"
+                name={field.name}
+                key={field.name}
+              />
             );
         }
       })}
