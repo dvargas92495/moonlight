@@ -351,7 +351,7 @@ const QuickInfoTemplatesContent: any = ({
   <>
     {elementType === "cell" &&
       (personal ? (
-        <Input placeholder="Add Title" name="Subject" />
+        <Input placeholder="Add Title" name="Subject" className="e-field" />
       ) : (
         <>
           <div>TYPE</div>
