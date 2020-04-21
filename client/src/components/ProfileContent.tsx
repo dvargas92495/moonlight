@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { getProfile } from "../hooks/apiClient";
-import Form from "./syncfusion/Form";
-import Input from "./syncfusion/Input";
+import Form from "./core/Form";
+import Input from "./core/Input";
 import { useUserId } from "../hooks/router";
 import styled from "styled-components";
-import PhotoInput from "./syncfusion/PhotoInput";
+import PhotoInput from "./core/PhotoInput";
 import { useHistory } from "react-router-dom";
-import DeletionModal from "./syncfusion/DeletionModal";
+import DeletionModal from "./core/DeletionModal";
 
 const Container = styled.div`
   padding: 32px;

@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
 import UserPage from "./UserPage";
 import { getAvailablity } from "../hooks/apiClient";
-import Input from "./syncfusion/Input";
-import Checkbox from "./syncfusion/Checkbox";
-import Form from "./syncfusion/Form";
+import Input from "./core/Input";
+import Checkbox from "./core/Checkbox";
+import Form from "./core/Form";
 import ProfileContent from "./ProfileContent";
 import { useUserId } from "../hooks/router";
-import Schedule from "./syncfusion/Schedule";
+import Schedule from "./core/Schedule";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
