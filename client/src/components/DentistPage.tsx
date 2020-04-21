@@ -26,6 +26,7 @@ type SpecialistView = SelectedSchedule & {
 
 const Content = styled.div`
   display: flex;
+  width: 100%;
 `;
 
 const SpecialistOptionsContainer = styled.div`
@@ -35,20 +36,15 @@ const SpecialistOptionsContainer = styled.div`
   flex-direction: column;
   vertical-align: top;
   height: 100%;
-  border-right: solid ${CONTENT_COLOR} ${QUARTER_OPAQUE} 2px;
+  border-right: solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`} 2px;
 `;
 
 const SpecialistOption = styled.div`
   padding: 5px;
-  border-bottom: solid ${CONTENT_COLOR} ${QUARTER_OPAQUE} 2px;
+  border-bottom: solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`} 2px;
   background-color: ${(props: SpecialistOptionType) =>
     props.selected ? SECONDARY_COLOR : SECONDARY_BACKGROUND_COLOR};
   color: ${CONTENT_COLOR};
-`;
-
-const SpecialistViewContainer = styled.div`
-  display: inline-flex;
-  height: 100%;
 `;
 
 const SpecialistsContent = () => {
@@ -79,9 +75,7 @@ const SpecialistsContent = () => {
         ))}
       </SpecialistOptionsContainer>
       {selectedSchedule && (
-        <SpecialistViewContainer>
-          <Schedule userId={selectedSchedule.userId} viewUserId={userId} />
-        </SpecialistViewContainer>
+        <Schedule userId={selectedSchedule.userId} viewUserId={userId} />
       )}
     </Content>
   );

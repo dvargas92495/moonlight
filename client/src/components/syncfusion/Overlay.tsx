@@ -1,36 +1,22 @@
 import React, { useEffect, useCallback, useRef, RefObject } from "react";
 import { Portal } from "react-portal";
-
-// temporary since syncfusion is not actually in react -.-
-const isOrphaned = (e: HTMLElement) => {
-  let current: HTMLElement | null = e;
-  while (current !== document.body) {
-    current = current.parentElement;
-    if (current == null) {
-      return true;
-    }
-  }
-  return false;
-};
+import { some } from "lodash";
 
 const OverlayPortal = ({
   closePortal,
-  parent,
+  parents = [],
   children,
 }: {
   closePortal: () => void;
-  parent?: RefObject<Element>;
+  parents?: RefObject<Element>[];
   children: React.ReactNode;
 }) => {
   const portalRef = useRef<any>(null);
   const handleOutsideMouseClick = useCallback(
     (e: MouseEvent) => {
-      const root = parent?.current;
       const target = e.target as HTMLElement;
       if (
-        !root ||
-        root.contains(target) ||
-        isOrphaned(target) ||
+        some(parents, (p) => p?.current?.contains(target)) ||
         portalRef?.current?.defaultNode.contains(target) ||
         (e.button && e.button !== 0)
       ) {
@@ -38,7 +24,7 @@ const OverlayPortal = ({
       }
       closePortal();
     },
-    [closePortal, portalRef, parent]
+    [closePortal, portalRef, parents]
   );
   useEffect(() => {
     document.addEventListener("click", handleOutsideMouseClick);
@@ -50,16 +36,16 @@ const OverlayPortal = ({
 const Overlay = ({
   isOpen,
   closePortal,
-  parent,
+  parents,
   children,
 }: {
   isOpen: boolean;
   closePortal: () => void;
-  parent?: RefObject<Element>;
+  parents?: RefObject<Element>[];
   children: React.ReactNode;
 }) => {
   return isOpen ? (
-    <OverlayPortal closePortal={closePortal} parent={parent}>
+    <OverlayPortal closePortal={closePortal} parents={parents}>
       {children}
     </OverlayPortal>
   ) : (

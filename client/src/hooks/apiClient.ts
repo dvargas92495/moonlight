@@ -16,7 +16,7 @@ const useApi = (apiMethod: (request: any) => Promise<any>) => {
       handleSubmit: (request: any) => {
         setLoading(true);
         setError("");
-        apiMethod(request)
+        return apiMethod(request)
           .then((response) => {
             setLoading(false);
             onSuccess(response.data);

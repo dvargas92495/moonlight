@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  RefObject,
-} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FileProps } from "./FileInput";
 import {
   startOfDay,
@@ -54,6 +48,7 @@ import Button from "./Button";
 import RequestFeedback from "../RequestFeedback";
 import PatientFormInput from "./PatientFormInput";
 import DownloadLink from "./DownloadLink";
+import FormModal from "./FormModal";
 
 enum View {
   TODAY,
@@ -230,15 +225,35 @@ const HeaderCellContent = styled.span`
 `;
 
 const EventHeader = styled.div`
-  background: ${SECONDARY_COLOR};
+  background: ${SECONDARY_BACKGROUND_COLOR};
+  padding: 5px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const SubjectHeader = styled.div`
+  color: ${CONTENT_COLOR};
+  font-size: 18px;
+  padding: 0 24px 16px;
+  background: ${SECONDARY_BACKGROUND_COLOR};
 `;
 
 const EventContainer = styled.div<{ top: number; left: number }>`
   position: fixed;
   top: ${(props) => props.top}px;
   left: ${(props) => props.left}px;
-  z-index: 2000;
-  background: ${SECONDARY_COLOR};
+  width: 300px;
+  background: white;
+  border-radius: 2px;
+  box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14),
+    0 9px 46px 8px rgba(0, 0, 0, 0.12), 0 11px 15px -7px rgba(0, 0, 0, 0.2);
+`;
+
+const EventContentContainer = styled.div`
+  background: ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  padding: 16px;
+  color: ${SECONDARY_BACKGROUND_COLOR};
+  font-size: 12px;
 `;
 
 const EventSummaryContainer = styled.div<{ hours: number }>`
@@ -252,25 +267,27 @@ const EventSummaryContainer = styled.div<{ hours: number }>`
   cursor: pointer;
 `;
 
-const PatientContainer = styled.div<{ top: number; left: number }>`
-  position: fixed;
-  top: ${(props) => props.top}px;
-  left: ${(props) => props.left}px;
-  z-index: 2001;
-  background: ${SECONDARY_COLOR};
-`;
-
 const PatientSummaryContainer = styled.div`
-  color: ${CONTENT_COLOR};
+  color: ${SECONDARY_BACKGROUND_COLOR};
   padding-top: 16px;
 `;
 
 const PatientHeader = styled.h3`
   color: ${PRIMARY_COLOR};
+  margin-left: 16px;
+`;
+
+const CreatedByContainer = styled.div`
+  font-size: 14px;
+  color: ${SECONDARY_BACKGROUND_COLOR};
 `;
 
 const FormContainer = styled.div`
   padding-left: 16px;
+`;
+
+const ActionEventContainer = styled.div`
+  display: flex;
 `;
 
 const ActionEvent = ({
@@ -303,47 +320,25 @@ const ActionEvent = ({
     closeOverlay();
   });
   return (
-    <>
+    <ActionEventContainer>
       <Button isPrimary onClick={() => acceptEvent({ eventId })}>
         Accept
       </Button>
       <RequestFeedback error={acceptError} loading={acceptLoading} />
       <Button onClick={() => rejectEvent(eventId)}>Reject</Button>
       <RequestFeedback error={rejectError} loading={rejectLoading} />
-    </>
+    </ActionEventContainer>
   );
 };
 
-const PatientDialog = ({
-  Id,
-  closeOverlay,
-  events,
-  setEvents,
-  eventRef,
-}: {
-  Id: number;
-  closeOverlay: () => void;
-  events: EventObject[];
-  setEvents: (events: EventObject[]) => void;
-  eventRef: RefObject<HTMLElement>;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [top, setTop] = useState(0);
-  const [left, setLeft] = useState(0);
-  const openPatient = useCallback(
-    (e) => {
-      const {
-        x,
-        y,
-        height,
-      } = (e.target as HTMLElement).getBoundingClientRect();
-      setTop(y + height);
-      setLeft(x);
-      setIsOpen(true);
-    },
-    [setTop, setLeft, setIsOpen]
-  );
-  const closePatient = useCallback(() => setIsOpen(false), [setIsOpen]);
+const PatientDialog = React.forwardRef<
+  HTMLDivElement,
+  {
+    Id: number;
+    events: EventObject[];
+    setEvents: (events: EventObject[]) => void;
+  }
+>(({ Id, events, setEvents }, ref) => {
   const handleResponse = useCallback(
     ({
       patientId,
@@ -375,56 +370,43 @@ const PatientDialog = ({
         // spreading to force a rerender
         setEvents([...events]);
       }
-      closePatient();
-      closeOverlay();
     },
-    [Id, events, setEvents, closeOverlay, closePatient]
+    [Id, events, setEvents]
   );
   return (
-    <>
-      <Button isPrimary onClick={openPatient}>
-        Add Patient
-      </Button>
-      <Overlay
-        isOpen={isOpen}
-        closePortal={() => setIsOpen(false)}
-        parent={eventRef}
-      >
-        <PatientContainer top={top} left={left}>
-          <PatientHeader>Enter Patient Information</PatientHeader>
-          <Form
-            path={`events/${Id}/patient`}
-            handleResponse={handleResponse}
-            width={320}
-            fields={[
-              {
-                placeholder: "First Name",
-                name: "firstName",
-                type: FieldType.TEXT,
-              },
-              {
-                placeholder: "Last Name",
-                name: "lastName",
-                type: FieldType.TEXT,
-              },
-              { placeholder: "Email", name: "email", type: FieldType.TEXT },
-              {
-                placeholder: "Phone Number",
-                name: "phoneNumber",
-                type: FieldType.TEXT,
-              },
-              {
-                placeholder: "Date of Birth (yyyy/mm/dd)",
-                name: "dateOfBirth",
-                type: FieldType.DATE,
-              },
-            ]}
-          />
-        </PatientContainer>
-      </Overlay>
-    </>
+    <FormModal
+      openModalText={"Add Patient"}
+      path={`events/${Id}/patient`}
+      handleResponse={handleResponse}
+      fields={[
+        {
+          placeholder: "First Name",
+          name: "firstName",
+          type: FieldType.TEXT,
+        },
+        {
+          placeholder: "Last Name",
+          name: "lastName",
+          type: FieldType.TEXT,
+        },
+        { placeholder: "Email", name: "email", type: FieldType.TEXT },
+        {
+          placeholder: "Phone Number",
+          name: "phoneNumber",
+          type: FieldType.TEXT,
+        },
+        {
+          placeholder: "Date of Birth (yyyy/mm/dd)",
+          name: "dateOfBirth",
+          type: FieldType.DATE,
+        },
+      ]}
+      ref={ref}
+    >
+      <PatientHeader>Enter Patient Information</PatientHeader>
+    </FormModal>
   );
-};
+});
 
 const PatientSummary = ({
   Patients,
@@ -542,7 +524,7 @@ const WeekView = ({
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
   const tableRef = useRef<HTMLTableSectionElement>(null);
-  const eventRef = useRef<HTMLDivElement>(null);
+  const patientRef = useRef<HTMLDivElement>(null);
   const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
   const [isEventOpen, setIsEventOpen] = useState(false);
   const [overlayTop, setOverlayTop] = useState(0);
@@ -615,10 +597,10 @@ const WeekView = ({
                 const {
                   x,
                   y,
-                  height,
+                  width,
                 } = (e.target as HTMLElement).getBoundingClientRect();
-                setOverlayTop(y + height);
-                setOverlayLeft(x);
+                setOverlayTop(y);
+                setOverlayLeft(i < 3 ? x + width : x - 300);
                 setSelectedHour(tdHour);
                 setIsEventOpen(true);
                 setEventSelected(event);
@@ -646,83 +628,88 @@ const WeekView = ({
       <Overlay
         isOpen={isEventOpen}
         closePortal={closeOverlay}
-        parent={tableRef}
+        parents={[tableRef, patientRef]}
       >
-        <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
+        <EventContainer top={overlayTop} left={overlayLeft}>
           <EventHeader>
-            {eventSelected && eventSelected.Subject}
             {eventSelected && !eventSelected.IsReadonly && (
               <Icon onClick={deleteEvent} type={"DELETE"} />
             )}
             <Icon onClick={closeOverlay} type={"CANCEL"} />
           </EventHeader>
-          {!eventSelected && (
-            <Form
-              path={"/events"}
-              handleResponse={handleEventCreate}
-              fields={[
-                {
-                  type: personal ? FieldType.TEXT : FieldType.DROPDOWN,
-                  name: "Subject",
-                  placeholder: "Event Subject",
-                  values: ["Request Booking"],
-                  required: true,
-                },
-                {
-                  type: FieldType.CHECKBOX,
-                  name: "isWeekly",
-                  placeholder: "Repeat Weekly",
-                },
-              ]}
-              extraProps={{
-                StartTime: selectedHour.toJSON(),
-                EndTime: addHours(selectedHour, 1).toJSON(),
-                userId: userId,
-                createdBy: viewUserId,
-              }}
-            />
-          )}
-          {eventSelected && !eventSelected.IsReadonly && (
-            <div>
-              <h3>Created by {eventSelected.fullName}</h3>
-              <BsCalendarFill />
-              <div>{`${format(
-                eventSelected.StartTime,
-                "MMMM dd, yyyy"
-              )} (${format(eventSelected.StartTime, "hh:mm a")} - ${format(
-                eventSelected.EndTime,
-                "hh:mm a"
-              )})`}</div>
-            </div>
-          )}
-          {eventSelected?.IsPending && personal && (
-            <ActionEvent
-              eventId={eventSelected.Id}
-              closeOverlay={closeOverlay}
-              events={events}
-              setEvents={setEvents}
-            />
-          )}
           {eventSelected && (
-            <PatientSummary
-              Patients={eventSelected.Patients}
-              CreatedBy={eventSelected.CreatedBy}
-              viewUserId={viewUserId}
-              events={events}
-              setEvents={setEvents}
-            />
+            <SubjectHeader>{eventSelected.Subject}</SubjectHeader>
           )}
-          {!eventSelected?.IsPending &&
-            viewUserId === eventSelected?.CreatedBy &&
-            eventSelected?.Id && (
-              <PatientDialog
-                Id={eventSelected.Id}
-                events={events}
-                setEvents={setEvents}
-                closeOverlay={closeOverlay}
-                eventRef={eventRef}
+          <EventContentContainer>
+            {!eventSelected && (
+              <Form
+                path={"/events"}
+                handleResponse={handleEventCreate}
+                fields={[
+                  {
+                    type: personal ? FieldType.TEXT : FieldType.DROPDOWN,
+                    name: "Subject",
+                    placeholder: "Event Subject",
+                    values: ["Request Booking"],
+                    required: true,
+                  },
+                  {
+                    type: FieldType.CHECKBOX,
+                    name: "isWeekly",
+                    placeholder: "Repeat Weekly",
+                  },
+                ]}
+                extraProps={{
+                  StartTime: selectedHour.toJSON(),
+                  EndTime: addHours(selectedHour, 1).toJSON(),
+                  userId: userId,
+                  createdBy: viewUserId,
+                }}
               />
             )}
+            {eventSelected && !eventSelected.IsReadonly && (
+              <div>
+                <CreatedByContainer>
+                  Created by {eventSelected.fullName}
+                </CreatedByContainer>
+                <BsCalendarFill />
+                <span>{`${format(
+                  eventSelected.StartTime,
+                  "MMMM dd, yyyy"
+                )} (${format(eventSelected.StartTime, "hh:mm a")} - ${format(
+                  eventSelected.EndTime,
+                  "hh:mm a"
+                )})`}</span>
+              </div>
+            )}
+            {eventSelected?.IsPending && personal && (
+              <ActionEvent
+                eventId={eventSelected.Id}
+                closeOverlay={closeOverlay}
+                events={events}
+                setEvents={setEvents}
+              />
+            )}
+            {eventSelected && (
+              <PatientSummary
+                Patients={eventSelected.Patients}
+                CreatedBy={eventSelected.CreatedBy}
+                viewUserId={viewUserId}
+                events={events}
+                setEvents={setEvents}
+              />
+            )}
+            {!eventSelected?.IsPending &&
+              viewUserId === eventSelected?.CreatedBy &&
+              eventSelected?.Id && (
+                <PatientDialog
+                  Id={eventSelected.Id}
+                  events={events}
+                  setEvents={setEvents}
+                  ref={patientRef}
+                />
+              )}
+          </EventContentContainer>
         </EventContainer>
       </Overlay>
     </CalendarTable>

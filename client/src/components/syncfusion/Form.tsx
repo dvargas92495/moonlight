@@ -26,7 +26,7 @@ export enum FieldType {
   DATE,
 }
 
-type Field = {
+export type Field = {
   placeholder: string;
   name: string;
   type: FieldType;
