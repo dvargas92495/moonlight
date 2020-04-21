@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
-import Form, { FieldType } from "./syncfusion/Form";
+import Form, { FieldType } from "./core/Form";
 import { PRIMARY_COLOR } from "../styles/colors";
 import { useParams, useHistory } from "react-router-dom";
 import PublicPage from "./PublicPage";

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserPage from "./UserPage";
-import Schedule from "./syncfusion/Schedule";
+import Schedule from "./core/Schedule";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
@@ -11,7 +11,7 @@ import {
   SECONDARY_BACKGROUND_COLOR,
   QUARTER_OPAQUE,
 } from "../styles/colors";
-import Button from "./syncfusion/Button";
+import Button from "./core/Button";
 import { useUserId } from "../hooks/router";
 
 type SpecialistOptionType = {
