@@ -14,6 +14,7 @@ import {
   startOfHour,
   addHours,
   addWeeks,
+  setHours,
   subWeeks,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
@@ -40,7 +41,6 @@ import {
   find,
   keys,
 } from "lodash";
-import { setHours } from "date-fns/esm";
 import Overlay from "./Overlay";
 import Icon from "./Icon";
 import Form, { FieldType } from "./Form";
