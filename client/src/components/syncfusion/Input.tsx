@@ -7,7 +7,6 @@ type InputProps = {
   placeholder: string;
   name?: string;
   defaultValue?: string;
-  className?: string;
 };
 
 const StyledInput = styled.input`
@@ -35,7 +34,6 @@ const Input = ({
   placeholder,
   name,
   defaultValue = "",
-  className = "",
 }: InputProps) => (
   <div>
     <StyledInput
@@ -43,7 +41,6 @@ const Input = ({
       placeholder={placeholder}
       name={name}
       defaultValue={defaultValue}
-      className={className}
     />
   </div>
 );

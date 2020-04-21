@@ -1,10 +1,13 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
+import Select from "react-select";
 import { useApiPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 import Button from "./Button";
 import { map, reduce, find, join } from "lodash";
 import Input from "./Input";
+import Checkbox from "./Checkbox";
+import DatePicker from "./DatePicker";
 
 interface StyledFormExtendProps {
   readonly width: number;
@@ -18,13 +21,17 @@ const StyledForm = styled.form<StyledFormExtendProps>`
 export enum FieldType {
   TEXT,
   PASSWORD,
+  CHECKBOX,
+  DROPDOWN,
+  DATE,
 }
 
-type Field = {
+export type Field = {
   placeholder: string;
   name: string;
   type: FieldType;
   required?: boolean;
+  values?: string[];
 };
 
 type FormProps = {
@@ -104,6 +111,32 @@ const Form = ({
                 placeholder={field.placeholder}
                 name={field.name}
                 type={"password"}
+                key={field.name}
+              />
+            );
+          case FieldType.CHECKBOX:
+            return (
+              <Checkbox
+                label={field.placeholder}
+                name={field.name}
+                key={field.name}
+              />
+            );
+          case FieldType.DROPDOWN:
+            return (
+              <Select
+                placeholder={field.placeholder}
+                options={map(field.values, (v) => ({ label: v, value: v }))}
+                name={field.name}
+                key={field.name}
+              />
+            );
+          case FieldType.DATE:
+            return (
+              <DatePicker
+                placeholder={field.placeholder}
+                displayFormat="yyyy/MM/dd"
+                name={field.name}
                 key={field.name}
               />
             );

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
 import UserPage from "./UserPage";
-import Scheduler from "./syncfusion/Scheduler";
 import { getAvailablity } from "../hooks/apiClient";
 import Input from "./syncfusion/Input";
 import Checkbox from "./syncfusion/Checkbox";
 import Form from "./syncfusion/Form";
 import ProfileContent from "./ProfileContent";
 import { useUserId } from "../hooks/router";
+import Schedule from "./syncfusion/Schedule";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
@@ -66,11 +66,7 @@ const SettingsContent = () => {
 
 const SchedulerContent = () => {
   const userId = useUserId();
-  const [availability, setAvailability] = useState(null);
-  useEffect(() => {
-    getAvailablity(userId).then((a) => setAvailability(a));
-  }, [userId, setAvailability]);
-  return <Scheduler {...availability} viewUserId={userId} userId={userId} />;
+  return <Schedule viewUserId={userId} userId={userId} />;
 };
 
 const SpecialistPage = () => (

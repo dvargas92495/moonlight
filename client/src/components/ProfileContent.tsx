@@ -1,21 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
-import Modal from "react-modal";
-import { getProfile, useApiDelete } from "../hooks/apiClient";
+import { getProfile } from "../hooks/apiClient";
 import Form from "./syncfusion/Form";
 import Input from "./syncfusion/Input";
 import { useUserId } from "../hooks/router";
 import styled from "styled-components";
 import PhotoInput from "./syncfusion/PhotoInput";
-import Button from "./syncfusion/Button";
-import RequestFeedback from "./RequestFeedback";
-import { ROOT } from "../hooks/constants";
-import {
-  PRIMARY_BACKGROUND_COLOR,
-  CONTENT_COLOR,
-  THREE_QUARTER_OPAQUE,
-  SECONDARY_BACKGROUND_COLOR,
-} from "../styles/colors";
 import { useHistory } from "react-router-dom";
+import DeletionModal from "./syncfusion/DeletionModal";
 
 const Container = styled.div`
   padding: 32px;
@@ -38,9 +29,6 @@ const ProfileContent = () => {
       }),
     [history]
   );
-  const [isOpen, setIsOpen] = useState(false);
-  const openModal = useCallback(() => setIsOpen(true), [setIsOpen]);
-  const closeModal = useCallback(() => setIsOpen(false), [setIsOpen]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const handleProfileCallback = useCallback(
@@ -53,7 +41,6 @@ const ProfileContent = () => {
   useEffect(() => {
     getProfile(userId).then(handleProfileCallback);
   }, [userId, handleProfileCallback]);
-  const { loading, error, handleSubmit } = useApiDelete("user", handleResponse);
   return (
     <Container>
       <div>
@@ -76,41 +63,17 @@ const ProfileContent = () => {
         </Form>
       </div>
       <DeleteUserContainer>
-        <Button onClick={openModal}>Delete Account</Button>
-        <Modal
-          isOpen={isOpen}
-          style={{
-            overlay: {
-              backgroundColor: `${PRIMARY_BACKGROUND_COLOR}${THREE_QUARTER_OPAQUE}`,
-            },
-            content: {
-              position: "absolute",
-              top: "40%",
-              left: "35%",
-              right: "35%",
-              bottom: "40%",
-              border: `1px solid ${CONTENT_COLOR}`,
-              background: SECONDARY_BACKGROUND_COLOR,
-              color: CONTENT_COLOR,
-              borderRadius: "4px",
-              outline: "none",
-              padding: "16px",
-              minWidth: "240px",
-              minHeight: "120px",
-            },
-          }}
-          appElement={document.querySelector(`#${ROOT}`) as HTMLElement}
+        <DeletionModal
+          openModalText={"Delete Account"}
+          path={"user"}
+          handleResponse={handleResponse}
+          id={userId}
         >
           <div>
             Are you sure you want to delete your user account? Note that all
             data associated with the account will be <b>permanently</b> deleted.
           </div>
-          <Button isPrimary onClick={() => handleSubmit(userId)}>
-            Submit
-          </Button>
-          <Button onClick={closeModal}>Cancel</Button>
-          <RequestFeedback loading={loading} error={error} />
-        </Modal>
+        </DeletionModal>
       </DeleteUserContainer>
     </Container>
   );

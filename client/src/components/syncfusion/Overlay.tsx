@@ -1,48 +1,56 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, RefObject } from "react";
 import { Portal } from "react-portal";
+import { some } from "lodash";
 
-// temporary since syncfusion is not actually in react -.-
-const isOrphaned = (e: HTMLElement) => {
-  let current: HTMLElement | null = e;
-  while (current !== document.body) {
-    current = current.parentElement;
-    if (current == null) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const Overlay = ({
-  isOpen,
+const OverlayPortal = ({
   closePortal,
+  parents = [],
   children,
 }: {
-  isOpen: true;
   closePortal: () => void;
+  parents?: RefObject<Element>[];
   children: React.ReactNode;
 }) => {
   const portalRef = useRef<any>(null);
   const handleOutsideMouseClick = useCallback(
     (e: MouseEvent) => {
-      const root = portalRef.current?.defaultNode;
+      const target = e.target as HTMLElement;
       if (
-        !root ||
-        root.contains(e.target) ||
-        isOrphaned(e.target as HTMLElement) ||
+        some(parents, (p) => p?.current?.contains(target)) ||
+        portalRef?.current?.defaultNode.contains(target) ||
         (e.button && e.button !== 0)
       ) {
         return;
       }
       closePortal();
     },
-    [closePortal]
+    [closePortal, portalRef, parents]
   );
   useEffect(() => {
     document.addEventListener("click", handleOutsideMouseClick);
     return () => document.removeEventListener("click", handleOutsideMouseClick);
   }, [handleOutsideMouseClick]);
-  return isOpen && <Portal ref={portalRef}>{children}</Portal>;
+  return <Portal ref={portalRef}>{children}</Portal>;
+};
+
+const Overlay = ({
+  isOpen,
+  closePortal,
+  parents,
+  children,
+}: {
+  isOpen: boolean;
+  closePortal: () => void;
+  parents?: RefObject<Element>[];
+  children: React.ReactNode;
+}) => {
+  return isOpen ? (
+    <OverlayPortal closePortal={closePortal} parents={parents}>
+      {children}
+    </OverlayPortal>
+  ) : (
+    <></>
+  );
 };
 
 export default Overlay;

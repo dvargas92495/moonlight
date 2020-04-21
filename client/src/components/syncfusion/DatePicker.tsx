@@ -95,25 +95,23 @@ const DatePicker = ({
           setIsOpen(true);
         }}
       />
-      {isOpen && (
-        <Overlay isOpen={isOpen} closePortal={() => setIsOpen(false)}>
-          <CalendarContainer
-            top={top}
-            left={left}
-            className="e-quick-popup-wrapper"
-          >
-            <CalendarComponent
-              value={new Date(value)}
-              change={(e) => {
-                if (e?.value) {
-                  setValue(format(e?.value, displayFormat));
-                  setIsOpen(false);
-                }
-              }}
-            />
-          </CalendarContainer>
-        </Overlay>
-      )}
+      <Overlay isOpen={isOpen} closePortal={() => setIsOpen(false)}>
+        <CalendarContainer
+          top={top}
+          left={left}
+          className="e-quick-popup-wrapper"
+        >
+          <CalendarComponent
+            value={new Date(value)}
+            change={(e) => {
+              if (e?.value) {
+                setValue(format(e?.value, displayFormat));
+                setIsOpen(false);
+              }
+            }}
+          />
+        </CalendarContainer>
+      </Overlay>
     </Container>
   );
 };

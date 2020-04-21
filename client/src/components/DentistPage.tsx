@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import UserPage from "./UserPage";
-import Scheduler, { AvailabilityProps } from "./syncfusion/Scheduler";
+import Schedule from "./syncfusion/Schedule";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
 import ProfileContent from "./ProfileContent";
-import { CONTENT_COLOR, SECONDARY_COLOR, SECONDARY_BACKGROUND_COLOR, QUARTER_OPAQUE } from "../styles/colors";
+import {
+  CONTENT_COLOR,
+  SECONDARY_COLOR,
+  SECONDARY_BACKGROUND_COLOR,
+  QUARTER_OPAQUE,
+} from "../styles/colors";
 import Button from "./syncfusion/Button";
 import { useUserId } from "../hooks/router";
 
@@ -13,7 +18,7 @@ type SpecialistOptionType = {
   selected: boolean;
 };
 
-type SelectedSchedule = { userId: number } & AvailabilityProps;
+type SelectedSchedule = { userId: number };
 
 type SpecialistView = SelectedSchedule & {
   fullName: string;
@@ -21,6 +26,7 @@ type SpecialistView = SelectedSchedule & {
 
 const Content = styled.div`
   display: flex;
+  width: 100%;
 `;
 
 const SpecialistOptionsContainer = styled.div`
@@ -30,20 +36,15 @@ const SpecialistOptionsContainer = styled.div`
   flex-direction: column;
   vertical-align: top;
   height: 100%;
-  border-right: solid ${CONTENT_COLOR}${QUARTER_OPAQUE} 2px;
+  border-right: solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`} 2px;
 `;
 
 const SpecialistOption = styled.div`
   padding: 5px;
-  border-bottom: solid ${CONTENT_COLOR}${QUARTER_OPAQUE} 2px;
+  border-bottom: solid ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`} 2px;
   background-color: ${(props: SpecialistOptionType) =>
     props.selected ? SECONDARY_COLOR : SECONDARY_BACKGROUND_COLOR};
   color: ${CONTENT_COLOR};
-`;
-
-const SpecialistViewContainer = styled.div`
-  display: inline-flex;
-  height: 100%;
 `;
 
 const SpecialistsContent = () => {
@@ -51,7 +52,7 @@ const SpecialistsContent = () => {
   const [specialistViews, setSpecialistViews] = useState<SpecialistView[]>([]);
   const [
     selectedSchedule,
-    setSelectedSchedule
+    setSelectedSchedule,
   ] = useState<SelectedSchedule | null>(null);
   useEffect(() => {
     getSpecialistViews(userId).then((s: SpecialistView[]) =>
@@ -74,9 +75,7 @@ const SpecialistsContent = () => {
         ))}
       </SpecialistOptionsContainer>
       {selectedSchedule && (
-        <SpecialistViewContainer>
-          <Scheduler {...selectedSchedule} viewUserId={userId} />
-        </SpecialistViewContainer>
+        <Schedule userId={selectedSchedule.userId} viewUserId={userId} />
       )}
     </Content>
   );
@@ -89,7 +88,7 @@ const DentistPage = () => (
       initialTab="specialists"
       tabContent={{
         profile: <ProfileContent />,
-        specialists: <SpecialistsContent />
+        specialists: <SpecialistsContent />,
       }}
     />
   </>
