@@ -48,7 +48,9 @@ const BaseModal = ({
         appElement={document.querySelector(`#${ROOT}`) as HTMLElement}
       >
         {children(closeModal)}
-        <Button onClick={closeModal}>Cancel</Button>
+        <Button isPrimary onClick={closeModal}>
+          Cancel
+        </Button>
       </Modal>
     </>
   );

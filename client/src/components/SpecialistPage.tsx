@@ -8,10 +8,16 @@ import Form from "./core/Form";
 import ProfileContent from "./ProfileContent";
 import { useUserId } from "../hooks/router";
 import Schedule from "./core/Schedule";
+import styled from "styled-components";
+import { CONTENT_COLOR } from "../styles/colors";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
 const initialWorkDays = map(range7, () => false);
+
+const CheckboxContainer = styled.div`
+  color: ${CONTENT_COLOR};
+`;
 
 const SettingsContent = () => {
   const userId = useUserId();
@@ -49,7 +55,7 @@ const SettingsContent = () => {
         defaultValue={workHoursEnd}
         name="workHoursEnd"
       />
-      <div>
+      <CheckboxContainer>
         {map(days, (d, i) => (
           <Checkbox
             label={d}
@@ -59,7 +65,7 @@ const SettingsContent = () => {
             defaultChecked={workDays[i]}
           />
         ))}
-      </div>
+      </CheckboxContainer>
     </Form>
   );
 };

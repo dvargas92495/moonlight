@@ -16,6 +16,9 @@ import {
   addWeeks,
   setHours,
   subWeeks,
+  subDays,
+  addMonths,
+  subMonths,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -51,7 +54,6 @@ import DownloadLink from "./DownloadLink";
 import FormModal from "./FormModal";
 
 enum View {
-  TODAY,
   DAY,
   WEEK,
   MONTH,
@@ -92,7 +94,6 @@ const formatEventResponse = (e: EventResponse) => ({
 
 const getScheduleBounds = (currentDate: Date, currentView: View) => {
   switch (currentView) {
-    case View.TODAY:
     case View.DAY:
       return {
         startTime: startOfDay(currentDate),
@@ -119,6 +120,7 @@ const Container = styled.div`
   background: white;
   display: flex;
   flex-direction: column;
+  user-select: none;
 `;
 
 const RestOfContainer = styled.div`
@@ -183,15 +185,27 @@ const HeaderTableRow = styled(TableRow)`
   border-bottom-width: 1px;
 `;
 
-const TableCell = styled.td<{ isToday?: boolean }>`
+const TableCell = styled.td`
   border-color: ${`${SECONDARY_BACKGROUND_COLOR}${QUARTER_OPAQUE}`};
   border-style: solid;
   border-width: 0 0 1px 1px;
   padding: 5px;
   font-weight: 400;
+  background: ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  vertical-align: top;
+`;
+
+const HeaderCell = styled.div<{ isToday?: boolean }>`
   color: ${(props) =>
     props.isToday ? SECONDARY_COLOR : SECONDARY_BACKGROUND_COLOR};
-  background: ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const TimeCell = styled(TableCell)`
@@ -216,12 +230,6 @@ const HourCell = styled(TableCell)<{
     background: ${(props) =>
       !props.selected && `${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
   }
-`;
-
-const HeaderCellContent = styled.span`
-  cursor: pointer;
-  display: table;
-  font-size: 18px;
 `;
 
 const EventHeader = styled.div`
@@ -500,6 +508,8 @@ const EventSummary = ({
   );
 };
 
+const DayView = () => <div>Day View is coming soon!</div>;
+
 const WeekView = ({
   userId,
   viewUserId,
@@ -523,9 +533,10 @@ const WeekView = ({
   const start = startOfWeek(currentDate);
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
-  const tableRef = useRef<HTMLTableSectionElement>(null);
+  const eventRef = useRef<HTMLDivElement>(null);
   const patientRef = useRef<HTMLDivElement>(null);
   const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
+  const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
   const [isEventOpen, setIsEventOpen] = useState(false);
   const [overlayTop, setOverlayTop] = useState(0);
   const [overlayLeft, setOverlayLeft] = useState(0);
@@ -560,18 +571,51 @@ const WeekView = ({
 
   return (
     <CalendarTable>
-      <tbody ref={tableRef}>
+      <tbody>
         <HeaderTableRow>
           <TimeCell />
           {map(range(0, 7), (i) => {
-            const tdDate = addDays(start, i);
+            const tdDate = startOfDay(addDays(start, i));
+            const eventsThisDay = filter(
+              events,
+              (e) =>
+                isEqual(e.StartTime, tdDate) &&
+                isEqual(e.EndTime, addDays(tdDate, 1))
+            );
+            const openOverlay = (event?: EventObject) => (
+              e: React.MouseEvent
+            ) => {
+              if (!personal) {
+                return;
+              }
+              const {
+                x,
+                y,
+                width,
+              } = (e.target as HTMLElement).getBoundingClientRect();
+              setOverlayTop(y);
+              setOverlayLeft(i < 3 ? x + width : x - 300);
+              setSelectedHour(tdDate);
+              setSelectedEndHour(addDays(tdDate, 1));
+              setIsEventOpen(true);
+              setEventSelected(event);
+            };
             return (
-              <TableCell
-                key={i}
-                isToday={isEqual(getDate(currentDate), getDate(tdDate))}
-              >
-                <HeaderCellContent>{format(tdDate, "iii")}</HeaderCellContent>
-                <HeaderCellContent>{format(tdDate, "dd")}</HeaderCellContent>
+              <TableCell key={i}>
+                <HeaderCell
+                  isToday={isEqual(getDate(currentDate), getDate(tdDate))}
+                  onClick={openOverlay()}
+                >
+                  <span>{format(tdDate, "iii")}</span>
+                  <span>{format(tdDate, "dd")}</span>
+                  {map(eventsThisDay, (e) => (
+                    <EventSummary
+                      e={e}
+                      key={e.Id}
+                      setEventSelected={openOverlay}
+                    />
+                  ))}
+                </HeaderCell>
               </TableCell>
             );
           })}
@@ -594,6 +638,9 @@ const WeekView = ({
               const openOverlay = (event?: EventObject) => (
                 e: React.MouseEvent
               ) => {
+                if (isUnavailable && !personal) {
+                  return;
+                }
                 const {
                   x,
                   y,
@@ -602,6 +649,7 @@ const WeekView = ({
                 setOverlayTop(y);
                 setOverlayLeft(i < 3 ? x + width : x - 300);
                 setSelectedHour(tdHour);
+                setSelectedEndHour(addHours(tdHour, 1));
                 setIsEventOpen(true);
                 setEventSelected(event);
               };
@@ -628,9 +676,9 @@ const WeekView = ({
       <Overlay
         isOpen={isEventOpen}
         closePortal={closeOverlay}
-        parents={[tableRef, patientRef]}
+        parents={[eventRef, patientRef]}
       >
-        <EventContainer top={overlayTop} left={overlayLeft}>
+        <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
           <EventHeader>
             {eventSelected && !eventSelected.IsReadonly && (
               <Icon onClick={deleteEvent} type={"DELETE"} />
@@ -661,7 +709,7 @@ const WeekView = ({
                 ]}
                 extraProps={{
                   StartTime: selectedHour.toJSON(),
-                  EndTime: addHours(selectedHour, 1).toJSON(),
+                  EndTime: selectedEndHour.toJSON(),
                   userId: userId,
                   createdBy: viewUserId,
                 }}
@@ -716,6 +764,8 @@ const WeekView = ({
   );
 };
 
+const MonthView = () => <div>Month View is coming soon!</div>;
+
 const Schedule = ({
   userId,
   viewUserId,
@@ -735,15 +785,27 @@ const Schedule = ({
 
   const increaseCurrentDate = useCallback(() => {
     switch (currentView) {
+      case View.DAY:
+        setCurrentDate(addDays(currentDate, 1));
+        break;
       case View.WEEK:
         setCurrentDate(addWeeks(currentDate, 1));
+        break;
+      case View.MONTH:
+        setCurrentDate(addMonths(currentDate, 1));
         break;
     }
   }, [setCurrentDate, currentDate, currentView]);
   const decreaseCurrentDate = useCallback(() => {
     switch (currentView) {
+      case View.DAY:
+        setCurrentDate(subDays(currentDate, 1));
+        break;
       case View.WEEK:
         setCurrentDate(subWeeks(currentDate, 1));
+        break;
+      case View.MONTH:
+        setCurrentDate(subMonths(currentDate, 1));
         break;
     }
   }, [setCurrentDate, currentDate, currentView]);
@@ -799,20 +861,24 @@ const Schedule = ({
                 {format(currentDate, "MMM dd, yyyy")}
                 <TiArrowSortedDown />
               </ToolbarButton>
+              <ToolbarButton onClick={() => setCurrentDate(new Date())}>
+                TODAY
+              </ToolbarButton>
             </div>
             <div>
-              {map(filter(values(View), isNaN), (v) => (
+              {map(reject(values(View), isNaN), (v) => (
                 <TimeToolbarButton
                   key={v as View}
                   onClick={() => setCurrentView(v as View)}
-                  selected={View[currentView] === v}
+                  selected={currentView === v}
                 >
-                  {v}
+                  {View[v as View]}
                 </TimeToolbarButton>
               ))}
             </div>
           </ToolbarContainer>
           <div>
+            {currentView === View.DAY && <DayView />}
             {currentView === View.WEEK && (
               <WeekView
                 userId={userId}
@@ -823,6 +889,7 @@ const Schedule = ({
                 setEvents={setDataSource}
               />
             )}
+            {currentView === View.MONTH && <MonthView />}
           </div>
           <RestOfContainer />
         </>

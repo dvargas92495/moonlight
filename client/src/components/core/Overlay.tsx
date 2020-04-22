@@ -2,6 +2,17 @@ import React, { useEffect, useCallback, useRef, RefObject } from "react";
 import { Portal } from "react-portal";
 import { some } from "lodash";
 
+const isOrphaned = (e: HTMLElement) => {
+  let current: HTMLElement | null = e;
+  while (current !== document.body) {
+    current = current.parentElement;
+    if (current == null) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const OverlayPortal = ({
   closePortal,
   parents = [],
@@ -18,6 +29,7 @@ const OverlayPortal = ({
       if (
         some(parents, (p) => p?.current?.contains(target)) ||
         portalRef?.current?.defaultNode.contains(target) ||
+        isOrphaned(target) ||
         (e.button && e.button !== 0)
       ) {
         return;
