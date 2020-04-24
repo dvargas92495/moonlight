@@ -1,13 +1,10 @@
 import React, { useState } from "react";
-import { CalendarComponent } from "@syncfusion/ej2-react-calendars";
 import styled from "styled-components";
 import { CONTENT_COLOR, PRIMARY_COLOR } from "../../styles/colors";
 import { format } from "date-fns";
 import Overlay from "./Overlay";
 import Icon from "./Icon";
-import "@syncfusion/ej2-base/styles/material.css";
-import "@syncfusion/ej2-buttons/styles/material.css";
-import "@syncfusion/ej2-react-calendars/styles/material.css";
+import Calendar from "./Calendar";
 
 const Container = styled.div`
   border-color: ${CONTENT_COLOR};
@@ -32,18 +29,6 @@ const DateInput = styled.input`
 
   ::placeholder {
     opacity: 0.5;
-  }
-`;
-
-const CalendarContainer = styled.div<{ top: number; left: number }>`
-  position: fixed;
-  top: ${(props) => props.top}px;
-  left: ${(props) => props.left}px;
-  z-index: 2000;
-
-  && {
-    min-width: 0;
-    max-width: 0;
   }
 `;
 
@@ -77,22 +62,18 @@ const DatePicker = React.forwardRef<
         }}
       />
       <Overlay isOpen={isOpen} closePortal={() => setIsOpen(false)}>
-        <CalendarContainer
+        <Calendar
           top={top}
           left={left}
-          className="e-quick-popup-wrapper"
           ref={ref}
-        >
-          <CalendarComponent
-            value={new Date(value)}
-            change={(e) => {
-              if (e?.value) {
-                setValue(format(e?.value, displayFormat));
-                setIsOpen(false);
-              }
-            }}
-          />
-        </CalendarContainer>
+          value={value === "" ? new Date() : new Date(value)}
+          onChange={(v) => {
+            if (v) {
+              setValue(format(v, displayFormat));
+              setIsOpen(false);
+            }
+          }}
+        />
       </Overlay>
     </Container>
   );

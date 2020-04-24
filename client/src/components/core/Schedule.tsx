@@ -502,7 +502,9 @@ const EventSummary = ({
         evt.stopPropagation();
       }}
     >
-      <div>{e.Subject}</div>
+      <div>
+        {e.Subject.length > 10 ? `${e.Subject.substring(0, 9)}...` : e.Subject}
+      </div>
       <div>{`${format(e.StartTime, "hh:mm")} - ${format(
         e.EndTime,
         "hh:mm"
