@@ -17,10 +17,12 @@ import {
   addYears,
   startOfYear,
   startOfDecade,
+  differenceInWeeks,
+  addDays,
+  endOfDecade,
 } from "date-fns";
 import Icon from "./Icon";
 import { map, range } from "lodash";
-import { differenceInWeeks, addDays, endOfDecade } from "date-fns/esm";
 
 enum View {
   MONTH,
