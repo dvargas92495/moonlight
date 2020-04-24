@@ -1,8 +1,7 @@
 import React, { useCallback, useRef } from "react";
-import { BsDownload } from "react-icons/bs";
 import api from "../../hooks/apiClient";
-import Button from "./Button";
 import styled from "styled-components";
+import Icon from "./Icon";
 
 const Downloader = styled.a`
   opacity: 0;
@@ -37,9 +36,7 @@ const DownloadLink = ({
   return (
     <div>
       {children}
-      <Button onClick={onClick}>
-        <BsDownload />
-      </Button>
+      <Icon type={"DOWNLOAD"} onClick={onClick} />
       <Downloader ref={aref} href="">
         Download...
       </Downloader>

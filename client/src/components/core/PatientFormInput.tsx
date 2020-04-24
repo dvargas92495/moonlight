@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React from "react";
 import { BsTrashFill } from "react-icons/bs";
-import { map, reject } from "lodash";
+import { map } from "lodash";
 import styled from "styled-components";
 import { SECONDARY_BACKGROUND_COLOR } from "../../styles/colors";
 import { useApiDelete } from "../../hooks/apiClient";

@@ -295,6 +295,7 @@ const CreatedByContainer = styled.div`
 
 const FormContainer = styled.div`
   padding-left: 16px;
+  color: ${SECONDARY_BACKGROUND_COLOR};
 `;
 
 const ActionEventContainer = styled.div`

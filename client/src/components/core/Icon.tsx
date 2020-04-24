@@ -5,13 +5,10 @@ import {
   BsCalendarFill,
   BsChevronUp,
   BsChevronDown,
+  BsDownload,
 } from "react-icons/bs";
 import styled from "styled-components";
-import {
-  CONTENT_COLOR,
-  SECONDARY_BACKGROUND_COLOR,
-  HALF_OPAQUE,
-} from "../../styles/colors";
+import { SECONDARY_BACKGROUND_COLOR, HALF_OPAQUE } from "../../styles/colors";
 
 export const IconType = {
   DELETE: <BsTrashFill />,
@@ -19,11 +16,11 @@ export const IconType = {
   DATE: <BsCalendarFill />,
   UP: <BsChevronUp strokeWidth={3} />,
   DOWN: <BsChevronDown strokeWidth={3} />,
+  DOWNLOAD: <BsDownload />,
 };
 
 const IconButton = styled.button`
   background: transparent;
-  color: ${CONTENT_COLOR};
   border: none;
   outline: none;
   cursor: pointer;
