@@ -19,6 +19,7 @@ import {
   subDays,
   addMonths,
   subMonths,
+  differenceInWeeks,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -75,6 +76,7 @@ type EventCommon = {
   IsPending: boolean;
   Patients: { [id: number]: PatientInfo };
   fullName: string;
+  RecurrenceRule: string;
 };
 
 type EventObject = EventCommon & {
@@ -513,6 +515,18 @@ const EventSummary = ({
   );
 };
 
+const isEventOnDate = (e: EventObject, d: Date) => {
+  if (isEqual(e.StartTime, d)) {
+    return true;
+  }
+  const recurrenceRule = e.RecurrenceRule;
+  if (!recurrenceRule) {
+    return false;
+  }
+  const diffWeeks = differenceInWeeks(d, e.StartTime);
+  return diffWeeks > 0 && isEqual(addWeeks(e.StartTime, diffWeeks), d);
+};
+
 const DayView = () => <div>Day View is coming soon!</div>;
 
 const WeekView = ({
@@ -639,7 +653,7 @@ const WeekView = ({
                 h < workEnd
               );
               const eventsThisHour = filter(events, (e) =>
-                isEqual(e.StartTime, tdHour)
+                isEventOnDate(e, tdHour)
               );
               const openOverlay = (event?: EventObject) => (
                 e: React.MouseEvent
