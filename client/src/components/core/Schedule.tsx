@@ -52,6 +52,7 @@ import RequestFeedback from "../RequestFeedback";
 import PatientFormInput from "./PatientFormInput";
 import DownloadLink from "./DownloadLink";
 import FormModal from "./FormModal";
+import Calendar from "./Calendar";
 
 enum View {
   DAY,
@@ -345,8 +346,9 @@ const PatientDialog = React.forwardRef<
     Id: number;
     events: EventObject[];
     setEvents: (events: EventObject[]) => void;
+    birthdayRef: React.RefObject<HTMLDivElement>;
   }
->(({ Id, events, setEvents }, ref) => {
+>(({ Id, events, setEvents, birthdayRef }, ref) => {
   const handleResponse = useCallback(
     ({
       patientId,
@@ -407,6 +409,7 @@ const PatientDialog = React.forwardRef<
           placeholder: "Date of Birth (yyyy/mm/dd)",
           name: "dateOfBirth",
           type: FieldType.DATE,
+          ref: birthdayRef,
         },
       ]}
       ref={ref}
@@ -499,7 +502,9 @@ const EventSummary = ({
         evt.stopPropagation();
       }}
     >
-      <div>{e.Subject}</div>
+      <div>
+        {e.Subject.length > 10 ? `${e.Subject.substring(0, 9)}...` : e.Subject}
+      </div>
       <div>{`${format(e.StartTime, "hh:mm")} - ${format(
         e.EndTime,
         "hh:mm"
@@ -535,6 +540,7 @@ const WeekView = ({
   const workEnd = parseInt(split(workHours.end, ":")[0]);
   const eventRef = useRef<HTMLDivElement>(null);
   const patientRef = useRef<HTMLDivElement>(null);
+  const birthdayRef = useRef<HTMLDivElement>(null);
   const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
   const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
   const [isEventOpen, setIsEventOpen] = useState(false);
@@ -676,7 +682,7 @@ const WeekView = ({
       <Overlay
         isOpen={isEventOpen}
         closePortal={closeOverlay}
-        parents={[eventRef, patientRef]}
+        parents={[eventRef, patientRef, birthdayRef]}
       >
         <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
           <EventHeader>
@@ -755,6 +761,7 @@ const WeekView = ({
                   events={events}
                   setEvents={setEvents}
                   ref={patientRef}
+                  birthdayRef={birthdayRef}
                 />
               )}
           </EventContentContainer>
@@ -782,6 +789,9 @@ const Schedule = ({
   const [dataSource, setDataSource] = useState<EventObject[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState(View.WEEK);
+  const [calendarIsOpen, setCalendarIsOpen] = useState(false);
+  const [overlayTop, setOverlayTop] = useState(0);
+  const [overlayLeft, setOverlayLeft] = useState(0);
 
   const increaseCurrentDate = useCallback(() => {
     switch (currentView) {
@@ -843,6 +853,20 @@ const Schedule = ({
       )
       .finally(() => setLoadingSchedule(false));
   }, [setWorkHours, setLoadingSchedule, userId]);
+
+  const openCalendar = useCallback(
+    (e) => {
+      const {
+        x,
+        y,
+        height,
+      } = (e.target as HTMLElement).getBoundingClientRect();
+      setOverlayTop(y + height);
+      setOverlayLeft(x);
+      setCalendarIsOpen(true);
+    },
+    [setCalendarIsOpen, setOverlayTop, setOverlayLeft]
+  );
   return (
     <Container>
       {loadingSchedule ? (
@@ -857,10 +881,24 @@ const Schedule = ({
               <ToolbarIcon onClick={increaseCurrentDate}>
                 <BsChevronRight strokeWidth={3} />
               </ToolbarIcon>
-              <ToolbarButton>
+              <ToolbarButton onClick={openCalendar}>
                 {format(currentDate, "MMM dd, yyyy")}
                 <TiArrowSortedDown />
               </ToolbarButton>
+              <Overlay
+                isOpen={calendarIsOpen}
+                closePortal={() => setCalendarIsOpen(false)}
+              >
+                <Calendar
+                  value={currentDate}
+                  top={overlayTop}
+                  left={overlayLeft}
+                  onChange={(d) => {
+                    setCurrentDate(d);
+                    setCalendarIsOpen(false);
+                  }}
+                />
+              </Overlay>
               <ToolbarButton onClick={() => setCurrentDate(new Date())}>
                 TODAY
               </ToolbarButton>

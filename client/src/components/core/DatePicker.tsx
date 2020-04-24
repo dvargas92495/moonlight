@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { CalendarComponent } from "@syncfusion/ej2-react-calendars";
 import styled from "styled-components";
 import { CONTENT_COLOR, PRIMARY_COLOR } from "../../styles/colors";
 import { format } from "date-fns";
 import Overlay from "./Overlay";
+import Icon from "./Icon";
+import Calendar from "./Calendar";
 
 const Container = styled.div`
   border-color: ${CONTENT_COLOR};
@@ -31,47 +32,14 @@ const DateInput = styled.input`
   }
 `;
 
-const DateIcon = styled.span`
-  &&& {
-    margin: 0;
-    min-height: 0;
-    min-width: 0;
+const DatePicker = React.forwardRef<
+  HTMLDivElement,
+  {
+    placeholder: string;
+    displayFormat: string;
+    name: string;
   }
-`;
-
-const CalendarContainer = styled.div<{ top: number; left: number }>`
-  position: fixed;
-  top: ${(props) => props.top}px;
-  left: ${(props) => props.left}px;
-  z-index: 2000;
-
-  && {
-    min-width: 0;
-    max-width: 0;
-  }
-`;
-
-const calculateOffset = (el: HTMLElement | null) => {
-  let top = 0;
-  let left = 0;
-  let currentEl = el;
-  while (currentEl) {
-    top += currentEl.offsetTop;
-    left += currentEl.offsetLeft;
-    currentEl = currentEl.parentElement;
-  }
-  return { top, left };
-};
-
-const DatePicker = ({
-  placeholder,
-  displayFormat,
-  name,
-}: {
-  placeholder: string;
-  displayFormat: string;
-  name: string;
-}) => {
+>(({ placeholder, displayFormat, name }, ref) => {
   const [value, setValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [left, setLeft] = useState(0);
@@ -84,36 +52,31 @@ const DatePicker = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
-      <DateIcon
-        className="e-input-group-icon e-date-icon e-icons"
+      <Icon
+        type={"DATE"}
         onClick={(e) => {
-          const { top, left } = calculateOffset(
-            (e.target as HTMLElement).parentElement
-          );
-          setTop(top);
-          setLeft(left);
+          const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
+          setTop(x);
+          setLeft(y);
           setIsOpen(true);
         }}
       />
       <Overlay isOpen={isOpen} closePortal={() => setIsOpen(false)}>
-        <CalendarContainer
+        <Calendar
           top={top}
           left={left}
-          className="e-quick-popup-wrapper"
-        >
-          <CalendarComponent
-            value={new Date(value)}
-            change={(e) => {
-              if (e?.value) {
-                setValue(format(e?.value, displayFormat));
-                setIsOpen(false);
-              }
-            }}
-          />
-        </CalendarContainer>
+          ref={ref}
+          value={value === "" ? new Date() : new Date(value)}
+          onChange={(v) => {
+            if (v) {
+              setValue(format(v, displayFormat));
+              setIsOpen(false);
+            }
+          }}
+        />
       </Overlay>
     </Container>
   );
-};
+});
 
 export default DatePicker;

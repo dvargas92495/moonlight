@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, Ref } from "react";
 import styled from "styled-components";
 import Select from "react-select";
 import { useApiPost } from "../../hooks/apiClient";
@@ -32,6 +32,7 @@ export type Field = {
   type: FieldType;
   required?: boolean;
   values?: string[];
+  ref?: Ref<HTMLDivElement>;
 };
 
 type FormProps = {
@@ -138,6 +139,7 @@ const Form = ({
                 displayFormat="yyyy/MM/dd"
                 name={field.name}
                 key={field.name}
+                ref={field.ref}
               />
             );
         }

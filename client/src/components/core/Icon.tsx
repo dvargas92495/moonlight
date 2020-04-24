@@ -1,5 +1,11 @@
 import React from "react";
-import { BsTrashFill, BsX } from "react-icons/bs";
+import {
+  BsTrashFill,
+  BsX,
+  BsCalendarFill,
+  BsChevronUp,
+  BsChevronDown,
+} from "react-icons/bs";
 import styled from "styled-components";
 import {
   CONTENT_COLOR,
@@ -10,6 +16,9 @@ import {
 export const IconType = {
   DELETE: <BsTrashFill />,
   CANCEL: <BsX />,
+  DATE: <BsCalendarFill />,
+  UP: <BsChevronUp strokeWidth={3} />,
+  DOWN: <BsChevronDown strokeWidth={3} />,
 };
 
 const IconButton = styled.button`
@@ -32,7 +41,11 @@ const Icon = ({
   type: keyof typeof IconType;
   onClick: (event: React.MouseEvent) => void;
 }) => {
-  return <IconButton onClick={onClick}>{IconType[type]}</IconButton>;
+  return (
+    <IconButton type={"button"} onClick={onClick}>
+      {IconType[type]}
+    </IconButton>
+  );
 };
 
 export default Icon;
