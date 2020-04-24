@@ -582,13 +582,14 @@ const WeekView = ({
     },
     [events, setEvents, closeOverlay]
   );
-  const deleteEvent = useCallback(() => {
-    api.delete(`events/${eventSelected?.Id}`).then(() => {
+  const { loading, error, handleSubmit: deleteEvent } = useApiDelete(
+    "events",
+    () => {
       const filteredEvents = reject(events, { Id: eventSelected?.Id });
       setEvents(filteredEvents);
       closeOverlay();
-    });
-  }, [events, setEvents, eventSelected, closeOverlay]);
+    }
+  );
 
   return (
     <CalendarTable>
@@ -702,7 +703,10 @@ const WeekView = ({
         <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
           <EventHeader>
             {eventSelected && !eventSelected.IsReadonly && (
-              <Icon onClick={deleteEvent} type={"DELETE"} />
+              <Icon
+                onClick={() => deleteEvent(eventSelected?.Id)}
+                type={"DELETE"}
+              />
             )}
             <Icon onClick={closeOverlay} type={"CANCEL"} />
           </EventHeader>
@@ -779,6 +783,7 @@ const WeekView = ({
                   birthdayRef={birthdayRef}
                 />
               )}
+            <RequestFeedback loading={loading} error={error} />
           </EventContentContainer>
         </EventContainer>
       </Overlay>
