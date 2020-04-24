@@ -19,6 +19,7 @@ import {
   subDays,
   addMonths,
   subMonths,
+  differenceInWeeks,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -75,6 +76,7 @@ type EventCommon = {
   IsPending: boolean;
   Patients: { [id: number]: PatientInfo };
   fullName: string;
+  RecurrenceRule: string;
 };
 
 type EventObject = EventCommon & {
@@ -293,6 +295,7 @@ const CreatedByContainer = styled.div`
 
 const FormContainer = styled.div`
   padding-left: 16px;
+  color: ${SECONDARY_BACKGROUND_COLOR};
 `;
 
 const ActionEventContainer = styled.div`
@@ -470,7 +473,7 @@ const PatientSummary = ({
               patientId={p}
               onUploadSuccess={onUploadSuccess(p)}
               onDeleteSuccess={onDeleteSuccess(p)}
-              initialFiles={Patients[p].forms}
+              files={Patients[p].forms}
             />
           ) : (
             <FormContainer>
@@ -511,6 +514,18 @@ const EventSummary = ({
       )}`}</div>
     </EventSummaryContainer>
   );
+};
+
+const isEventOnDate = (e: EventObject, d: Date) => {
+  if (isEqual(e.StartTime, d)) {
+    return true;
+  }
+  const recurrenceRule = e.RecurrenceRule;
+  if (!recurrenceRule) {
+    return false;
+  }
+  const diffWeeks = differenceInWeeks(d, e.StartTime);
+  return diffWeeks > 0 && isEqual(addWeeks(e.StartTime, diffWeeks), d);
 };
 
 const DayView = () => <div>Day View is coming soon!</div>;
@@ -567,13 +582,14 @@ const WeekView = ({
     },
     [events, setEvents, closeOverlay]
   );
-  const deleteEvent = useCallback(() => {
-    api.delete(`events/${eventSelected?.Id}`).then(() => {
+  const { loading, error, handleSubmit: deleteEvent } = useApiDelete(
+    "events",
+    () => {
       const filteredEvents = reject(events, { Id: eventSelected?.Id });
       setEvents(filteredEvents);
       closeOverlay();
-    });
-  }, [events, setEvents, eventSelected, closeOverlay]);
+    }
+  );
 
   return (
     <CalendarTable>
@@ -639,7 +655,7 @@ const WeekView = ({
                 h < workEnd
               );
               const eventsThisHour = filter(events, (e) =>
-                isEqual(e.StartTime, tdHour)
+                isEventOnDate(e, tdHour)
               );
               const openOverlay = (event?: EventObject) => (
                 e: React.MouseEvent
@@ -687,7 +703,10 @@ const WeekView = ({
         <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
           <EventHeader>
             {eventSelected && !eventSelected.IsReadonly && (
-              <Icon onClick={deleteEvent} type={"DELETE"} />
+              <Icon
+                onClick={() => deleteEvent(eventSelected?.Id)}
+                type={"DELETE"}
+              />
             )}
             <Icon onClick={closeOverlay} type={"CANCEL"} />
           </EventHeader>
@@ -764,6 +783,7 @@ const WeekView = ({
                   birthdayRef={birthdayRef}
                 />
               )}
+            <RequestFeedback loading={loading} error={error} />
           </EventContentContainer>
         </EventContainer>
       </Overlay>

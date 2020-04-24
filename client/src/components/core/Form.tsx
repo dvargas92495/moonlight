@@ -73,6 +73,16 @@ const Form = ({
           data[k] = [v];
         }
       });
+      const fieldsRequest = reduce(
+        fields,
+        (acc, f) => {
+          if (f.type === FieldType.CHECKBOX) {
+            return { ...acc, [f.name]: formData.has(f.name) };
+          }
+          return acc;
+        },
+        {}
+      );
       if (errors.length === 0) {
         setUiError("");
         const request = reduce(
@@ -86,6 +96,7 @@ const Form = ({
         handleSubmit({
           ...request,
           ...extraProps,
+          ...fieldsRequest,
         });
       } else {
         setUiError(`Missing Required Fields: ${join(errors, ", ")}`);
