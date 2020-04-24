@@ -27,14 +27,10 @@ const Header = styled.h2`
   text-transform: uppercase;
 `;
 
-const LoginPage = () => {
+const NewPasswordPage = () => {
   const history = useHistory();
   const handleResponse = useCallback(
-    ({ id, type, idToken, Session }) => {
-      if (!id) {
-        console.log(rest);
-        return;
-      }
+    ({ id, type, idToken }) => {
       setAuth(idToken);
       history.push(`/${type}`, {
         userId: id,
@@ -46,11 +42,11 @@ const LoginPage = () => {
   return (
     <PublicPage>
       <Container>
-        <Header>Sign In</Header>
+        <Header>Set New Password</Header>
         <FormContainer>
           <Form
             handleResponse={handleResponse}
-            label="log in"
+            label="set password"
             path="signin"
             fields={[
               {
@@ -73,4 +69,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default NewPasswordPage;

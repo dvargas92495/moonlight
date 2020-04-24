@@ -1,11 +1,16 @@
 import AWS from "aws-sdk";
 import { Client } from "pg";
 import { createHmac } from "crypto";
+import axios, { AxiosResponse } from "axios";
+import JWT from "jsonwebtoken";
+import jwkToPem, { JWK } from "jwk-to-pem";
+import { find } from "lodash";
 
 export const ClientId = process.env.REACT_APP_USER_CLIENT_ID || "";
 export const region = "us-east-1";
 export const envName = process.env.REACT_APP_ENVIRONMENT_NAME || "";
 export const domain = `${envName.replace(/-/g, ".")}.com`;
+export const UserPoolId = process.env.REACT_APP_USER_POOL_ID || "";
 
 AWS.config = new AWS.Config({ region });
 
@@ -31,3 +36,67 @@ export const connectRdsClient = () => {
   client.connect();
   return client;
 };
+
+type JwtPayload = {
+  sub: string;
+  aud: string;
+  email_verified: boolean;
+  event_id: string;
+  token_use: string;
+  auth_time: number;
+  iss: string;
+  "cognito:username": string;
+  exp: number;
+  iat: number;
+  email: string;
+};
+
+type DecodeResult = {
+  header: {
+    kid: string;
+    alg: string;
+  };
+  payload: JwtPayload;
+  signature: string;
+};
+
+const expectedIss = `https://cognito-idp.${region}.amazonaws.com/${UserPoolId}`;
+export const verify = (token: string, response: AxiosResponse) => {
+  const {
+    header: { kid },
+  } = JWT.decode(token, {
+    complete: true,
+  }) as DecodeResult;
+  return JWT.verify(token, jwkToPem(find(response.data.keys, { kid }) as JWK), {
+    algorithms: ["RS256"],
+  }) as JwtPayload;
+};
+
+export const verifyToken = (idToken: string) =>
+  axios.get(`${expectedIss}/.well-known/jwks.json`).then((response) => {
+    const { sub, aud, iss, token_use, exp } = verify(idToken, response);
+
+    const expirationDate = new Date(exp * 1000);
+    if (expirationDate < new Date()) {
+      throw new Error(`Log in has expired on ${expirationDate}`);
+    }
+
+    if (aud !== ClientId) {
+      throw new Error(
+        `Log in returned incorrect audience ${aud}, expected ClientId ${ClientId}`
+      );
+    }
+
+    if (iss !== expectedIss) {
+      throw new Error(
+        `Log in returned incorrect iss ${iss}, expected ${expectedIss}`
+      );
+    }
+
+    if (token_use !== "id") {
+      throw new Error(
+        `Log in returned incorrect token use ${token_use}, expected id`
+      );
+    }
+    return sub;
+  });

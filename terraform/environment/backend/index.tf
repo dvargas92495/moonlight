@@ -43,6 +43,10 @@ locals {
     "signup/post"
   ]
 
+  job_lambdas = [
+    "create-support-user"
+  ]
+
   lambda_parts = {
      for method in local.lambdas:
      method => split("/", method)
@@ -182,6 +186,13 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
       for bucket in var.app_storage_arns: "${bucket}/*"
     ]
   }
+
+  statement {
+    actions = [
+      "cognito-idp:AdminCreateUser"
+    ]
+    resources = [var.cognito_pool_arn]
+  }
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -235,6 +246,27 @@ resource "aws_lambda_function" "lambda_function" {
   function_name = "${var.env_name}-${local.method_names[each.value]}"
   role          = aws_iam_role.lambda_role.arn
   handler       = "${local.method_names[each.value]}.handler"
+  filename      = data.archive_file.dummy.output_path
+  runtime       = "nodejs12.x"
+  publish       = false
+
+  environment {
+    variables = {
+      HOME = "/"
+    }
+  }
+
+  tags = {
+    Application = "Emdeo"
+  }
+}
+
+resource "aws_lambda_function" "lambda_job_function" {
+  for_each      = toset(local.job_lambdas)
+
+  function_name = "${var.env_name}-${each.value}"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "${each.value}.handler"
   filename      = data.archive_file.dummy.output_path
   runtime       = "nodejs12.x"
   publish       = false

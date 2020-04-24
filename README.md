@@ -58,7 +58,7 @@ is currently possible to run the front end and backend locally, while using the 
 ## Directory Structure
 
 We want to keep the root directory as clean as possible. Besides the subdirectories, you'll only find this readme, the gitignore, the
-travis spec that we need to fun jobs (could this move to `travis`?), and `pre-commit-config.yaml` config needed to be able to run our
+travis spec that we need to run jobs (could this move to `travis`?), and `pre-commit-config.yaml` config needed to be able to run our
 precommit hook (to be moved to a `precommit` directory once we have multiple hooks to run). Each of the subsequent sub folders control
 a separate domain of the app, which will have their own READMEs for more information.
 
