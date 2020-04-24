@@ -472,7 +472,7 @@ const PatientSummary = ({
               patientId={p}
               onUploadSuccess={onUploadSuccess(p)}
               onDeleteSuccess={onDeleteSuccess(p)}
-              initialFiles={Patients[p].forms}
+              files={Patients[p].forms}
             />
           ) : (
             <FormContainer>

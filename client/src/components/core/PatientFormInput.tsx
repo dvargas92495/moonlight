@@ -61,47 +61,29 @@ const PatientFormInput = ({
   patientId,
   onUploadSuccess,
   onDeleteSuccess,
-  initialFiles,
+  files,
 }: {
   patientId: number;
   onUploadSuccess: (f: FileProps) => void;
   onDeleteSuccess: (name: string) => void;
-  initialFiles: FileProps[];
-}) => {
-  const [files, setFiles] = useState(initialFiles);
-  const onUpload = useCallback(
-    (f: FileProps) => {
-      onUploadSuccess(f);
-      setFiles([...files, f]);
-    },
-    [files, setFiles, onUploadSuccess]
-  );
-  const onDelete = useCallback(
-    (name: string) => {
-      onDeleteSuccess(name);
-      const rest = reject(files, { name });
-      setFiles(rest);
-    },
-    [setFiles, onDeleteSuccess, files]
-  );
-  return (
-    <FileInput
-      browseButtonText={"Add Patient Form..."}
-      url={`patients/${patientId}/form`}
-      onUploadSuccess={onUpload}
-    >
-      <FilesContainer>
-        {map(files, (f) => (
-          <FileItem
-            key={f.name}
-            item={f}
-            onDelete={onDelete}
-            patientId={patientId}
-          />
-        ))}
-      </FilesContainer>
-    </FileInput>
-  );
-};
+  files: FileProps[];
+}) => (
+  <FileInput
+    browseButtonText={"Add Patient Form..."}
+    url={`patients/${patientId}/form`}
+    onUploadSuccess={onUploadSuccess}
+  >
+    <FilesContainer>
+      {map(files, (f) => (
+        <FileItem
+          key={f.name}
+          item={f}
+          onDelete={onDeleteSuccess}
+          patientId={patientId}
+        />
+      ))}
+    </FilesContainer>
+  </FileInput>
+);
 
 export default PatientFormInput;
