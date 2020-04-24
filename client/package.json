@@ -3,12 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@syncfusion/ej2-react-buttons": "17.4.49",
-    "@syncfusion/ej2-react-calendars": "17.4.49",
-    "@syncfusion/ej2-react-dropdowns": "17.4.49",
-    "@syncfusion/ej2-react-inputs": "17.4.51",
-    "@syncfusion/ej2-react-popups": "17.4.51",
-    "@syncfusion/ej2-react-schedule": "17.4.47",
     "@testing-library/jest-dom": "4.2.4",
     "@testing-library/react": "9.3.2",
     "@testing-library/user-event": "7.1.2",
