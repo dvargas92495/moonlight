@@ -20,6 +20,7 @@ import {
   addMonths,
   subMonths,
   differenceInWeeks,
+  getDay,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -218,20 +219,16 @@ const TimeCell = styled(TableCell)`
 `;
 
 const HourCell = styled(TableCell)<{
-  selected: boolean;
   isUnavailable?: boolean;
 }>`
   background: ${(props) =>
-    `${CONTENT_COLOR}${
-      props.selected ? "" : props.isUnavailable ? HALF_OPAQUE : QUARTER_OPAQUE
-    }`};
+    `${CONTENT_COLOR}${props.isUnavailable ? HALF_OPAQUE : QUARTER_OPAQUE}`};
   padding: 1px;
   height: 36px;
   text-align: left;
 
   &:hover {
-    background: ${(props) =>
-      !props.selected && `${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
+    background: ${`${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
   }
 `;
 
@@ -240,6 +237,7 @@ const EventHeader = styled.div`
   padding: 5px;
   display: flex;
   justify-content: flex-end;
+  color: ${CONTENT_COLOR};
 `;
 
 const SubjectHeader = styled.div`
@@ -304,12 +302,12 @@ const ActionEventContainer = styled.div`
 
 const ActionEvent = ({
   eventId,
-  closeOverlay,
+  closeEventOverlay,
   events,
   setEvents,
 }: {
   eventId: number;
-  closeOverlay: () => void;
+  closeEventOverlay: () => void;
   events: EventObject[];
   setEvents: (events: EventObject[]) => void;
 }) => {
@@ -320,7 +318,7 @@ const ActionEvent = ({
   } = useApiPost("accept", (e: EventResponse) => {
     const otherEvents = reject(events, { Id: e.Id });
     setEvents([...otherEvents, formatEventResponse(e)]);
-    closeOverlay();
+    closeEventOverlay();
   });
   const {
     error: rejectError,
@@ -329,7 +327,7 @@ const ActionEvent = ({
   } = useApiDelete("events", () => {
     const otherEvents = reject(events, { Id: eventId });
     setEvents(otherEvents);
-    closeOverlay();
+    closeEventOverlay();
   });
   return (
     <ActionEventContainer>
@@ -491,25 +489,32 @@ const PatientSummary = ({
 };
 
 const EventSummary = ({
-  e,
+  event,
   setEventSelected,
+  openEventOverlay,
 }: {
-  e: EventObject;
-  setEventSelected: (e: EventObject) => (evt: React.MouseEvent) => void;
+  event: EventObject;
+  setEventSelected: (e: EventObject) => void;
+  openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
 }) => {
+  const onClick = (e: React.MouseEvent) => {
+    const { x, y, width } = (e.target as HTMLElement).getBoundingClientRect();
+    openEventOverlay({
+      x: getDay(event.StartTime) < 3 ? x + width : x - 300,
+      y,
+    });
+    setEventSelected(event);
+    e.stopPropagation();
+  };
   return (
-    <EventSummaryContainer
-      hours={1}
-      onClick={(evt) => {
-        setEventSelected(e)(evt);
-        evt.stopPropagation();
-      }}
-    >
+    <EventSummaryContainer hours={1} onClick={onClick}>
       <div>
-        {e.Subject.length > 10 ? `${e.Subject.substring(0, 9)}...` : e.Subject}
+        {event.Subject.length > 10
+          ? `${event.Subject.substring(0, 9)}...`
+          : event.Subject}
       </div>
-      <div>{`${format(e.StartTime, "hh:mm")} - ${format(
-        e.EndTime,
+      <div>{`${format(event.StartTime, "hh:mm")} - ${format(
+        event.EndTime,
         "hh:mm"
       )}`}</div>
     </EventSummaryContainer>
@@ -531,15 +536,16 @@ const isEventOnDate = (e: EventObject, d: Date) => {
 const DayView = () => <div>Day View is coming soon!</div>;
 
 const WeekView = ({
-  userId,
-  viewUserId,
+  personal,
   currentDate,
   workHours,
   events,
-  setEvents,
+  openEventOverlay,
+  setSelectedHour,
+  setSelectedEndHour,
+  setEventSelected,
 }: {
-  userId: number;
-  viewUserId: number;
+  personal: boolean;
   currentDate: Date;
   workHours: {
     start: string;
@@ -547,67 +553,79 @@ const WeekView = ({
     days: number[];
   };
   events: EventObject[];
-  setEvents: (events: EventObject[]) => void;
+  openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
+  setSelectedHour: (d: Date) => void;
+  setSelectedEndHour: (d: Date) => void;
+  setEventSelected: (e: EventObject) => void;
 }) => {
-  const personal = userId === viewUserId;
   const start = startOfWeek(currentDate);
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
-  const eventRef = useRef<HTMLDivElement>(null);
-  const patientRef = useRef<HTMLDivElement>(null);
-  const birthdayRef = useRef<HTMLDivElement>(null);
-  const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
-  const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
-  const [isEventOpen, setIsEventOpen] = useState(false);
-  const [overlayTop, setOverlayTop] = useState(0);
-  const [overlayLeft, setOverlayLeft] = useState(0);
-  const [eventSelected, setEventSelected] = useState<EventObject>();
-
-  const closeOverlay = useCallback(() => {
-    setSelectedHour(new Date(0));
-    setEventSelected(undefined);
-    setIsEventOpen(false);
-  }, [setIsEventOpen, setEventSelected]);
-  const handleEventCreate = useCallback(
-    (e: EventObject) => {
-      setEvents([
-        ...events,
-        {
-          ...e,
-          StartTime: new Date(e.StartTime),
-          EndTime: new Date(e.EndTime),
-        },
-      ]);
-      closeOverlay();
-    },
-    [events, setEvents, closeOverlay]
-  );
-  const { loading, error, handleSubmit: deleteEvent } = useApiDelete(
-    "events",
-    () => {
-      const filteredEvents = reject(events, { Id: eventSelected?.Id });
-      setEvents(filteredEvents);
-      closeOverlay();
-    }
-  );
 
   return (
-    <CalendarTable>
-      <tbody>
-        <HeaderTableRow>
-          <TimeCell />
+    <tbody>
+      <HeaderTableRow>
+        <TimeCell />
+        {map(range(0, 7), (i) => {
+          const tdDate = startOfDay(addDays(start, i));
+          const eventsThisDay = filter(
+            events,
+            (e) =>
+              isEqual(e.StartTime, tdDate) &&
+              isEqual(e.EndTime, addDays(tdDate, 1))
+          );
+
+          const onClick = (e: React.MouseEvent) => {
+            if (!personal) {
+              return;
+            }
+            const {
+              x,
+              y,
+              width,
+            } = (e.target as HTMLElement).getBoundingClientRect();
+            openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
+            setSelectedHour(tdDate);
+            setSelectedEndHour(addDays(tdDate, 1));
+          };
+          return (
+            <TableCell key={i}>
+              <HeaderCell
+                isToday={isEqual(getDate(currentDate), getDate(tdDate))}
+                onClick={onClick}
+              >
+                <span>{format(tdDate, "iii")}</span>
+                <span>{format(tdDate, "dd")}</span>
+                {map(eventsThisDay, (e) => (
+                  <EventSummary
+                    event={e}
+                    key={e.Id}
+                    setEventSelected={setEventSelected}
+                    openEventOverlay={openEventOverlay}
+                  />
+                ))}
+              </HeaderCell>
+            </TableCell>
+          );
+        })}
+      </HeaderTableRow>
+      {map(range(6, 21), (h) => (
+        <TableRow key={h}>
+          <TimeCell>
+            {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
+          </TimeCell>
           {map(range(0, 7), (i) => {
-            const tdDate = startOfDay(addDays(start, i));
-            const eventsThisDay = filter(
-              events,
-              (e) =>
-                isEqual(e.StartTime, tdDate) &&
-                isEqual(e.EndTime, addDays(tdDate, 1))
+            const tdHour = setHours(startOfHour(addDays(start, i)), h);
+            const isUnavailable = !(
+              includes(workHours.days, i) &&
+              h >= workStart &&
+              h < workEnd
             );
-            const openOverlay = (event?: EventObject) => (
-              e: React.MouseEvent
-            ) => {
-              if (!personal) {
+            const eventsThisHour = filter(events, (e) =>
+              isEventOnDate(e, tdHour)
+            );
+            const onClick = (e: React.MouseEvent) => {
+              if (isUnavailable && !personal) {
                 return;
               }
               const {
@@ -615,179 +633,30 @@ const WeekView = ({
                 y,
                 width,
               } = (e.target as HTMLElement).getBoundingClientRect();
-              setOverlayTop(y);
-              setOverlayLeft(i < 3 ? x + width : x - 300);
-              setSelectedHour(tdDate);
-              setSelectedEndHour(addDays(tdDate, 1));
-              setIsEventOpen(true);
-              setEventSelected(event);
+              openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
+              setSelectedHour(tdHour);
+              setSelectedEndHour(addHours(tdHour, 1));
             };
             return (
-              <TableCell key={i}>
-                <HeaderCell
-                  isToday={isEqual(getDate(currentDate), getDate(tdDate))}
-                  onClick={openOverlay()}
-                >
-                  <span>{format(tdDate, "iii")}</span>
-                  <span>{format(tdDate, "dd")}</span>
-                  {map(eventsThisDay, (e) => (
-                    <EventSummary
-                      e={e}
-                      key={e.Id}
-                      setEventSelected={openOverlay}
-                    />
-                  ))}
-                </HeaderCell>
-              </TableCell>
+              <HourCell
+                key={tdHour.valueOf()}
+                isUnavailable={isUnavailable}
+                onClick={onClick}
+              >
+                {map(eventsThisHour, (e) => (
+                  <EventSummary
+                    event={e}
+                    key={e.Id}
+                    setEventSelected={setEventSelected}
+                    openEventOverlay={openEventOverlay}
+                  />
+                ))}
+              </HourCell>
             );
           })}
-        </HeaderTableRow>
-        {map(range(6, 21), (h) => (
-          <TableRow key={h}>
-            <TimeCell>
-              {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
-            </TimeCell>
-            {map(range(0, 7), (i) => {
-              const tdHour = setHours(startOfHour(addDays(start, i)), h);
-              const isUnavailable = !(
-                includes(workHours.days, i) &&
-                h >= workStart &&
-                h < workEnd
-              );
-              const eventsThisHour = filter(events, (e) =>
-                isEventOnDate(e, tdHour)
-              );
-              const openOverlay = (event?: EventObject) => (
-                e: React.MouseEvent
-              ) => {
-                if (isUnavailable && !personal) {
-                  return;
-                }
-                const {
-                  x,
-                  y,
-                  width,
-                } = (e.target as HTMLElement).getBoundingClientRect();
-                setOverlayTop(y);
-                setOverlayLeft(i < 3 ? x + width : x - 300);
-                setSelectedHour(tdHour);
-                setSelectedEndHour(addHours(tdHour, 1));
-                setIsEventOpen(true);
-                setEventSelected(event);
-              };
-              return (
-                <HourCell
-                  key={tdHour.valueOf()}
-                  isUnavailable={isUnavailable}
-                  selected={isEqual(selectedHour, tdHour)}
-                  onClick={openOverlay()}
-                >
-                  {map(eventsThisHour, (e) => (
-                    <EventSummary
-                      e={e}
-                      key={e.Id}
-                      setEventSelected={openOverlay}
-                    />
-                  ))}
-                </HourCell>
-              );
-            })}
-          </TableRow>
-        ))}
-      </tbody>
-      <Overlay
-        isOpen={isEventOpen}
-        closePortal={closeOverlay}
-        parents={[eventRef, patientRef, birthdayRef]}
-      >
-        <EventContainer top={overlayTop} left={overlayLeft} ref={eventRef}>
-          <EventHeader>
-            {eventSelected && !eventSelected.IsReadonly && (
-              <Icon
-                onClick={() => deleteEvent(eventSelected?.Id)}
-                type={"DELETE"}
-              />
-            )}
-            <Icon onClick={closeOverlay} type={"CANCEL"} />
-          </EventHeader>
-          {eventSelected && (
-            <SubjectHeader>{eventSelected.Subject}</SubjectHeader>
-          )}
-          <EventContentContainer>
-            {!eventSelected && (
-              <Form
-                path={"/events"}
-                handleResponse={handleEventCreate}
-                fields={[
-                  {
-                    type: personal ? FieldType.TEXT : FieldType.DROPDOWN,
-                    name: "Subject",
-                    placeholder: "Event Subject",
-                    values: ["Request Booking"],
-                    required: true,
-                  },
-                  {
-                    type: FieldType.CHECKBOX,
-                    name: "isWeekly",
-                    placeholder: "Repeat Weekly",
-                  },
-                ]}
-                extraProps={{
-                  StartTime: selectedHour.toJSON(),
-                  EndTime: selectedEndHour.toJSON(),
-                  userId: userId,
-                  createdBy: viewUserId,
-                }}
-              />
-            )}
-            {eventSelected && !eventSelected.IsReadonly && (
-              <div>
-                <CreatedByContainer>
-                  Created by {eventSelected.fullName}
-                </CreatedByContainer>
-                <BsCalendarFill />
-                <span>{`${format(
-                  eventSelected.StartTime,
-                  "MMMM dd, yyyy"
-                )} (${format(eventSelected.StartTime, "hh:mm a")} - ${format(
-                  eventSelected.EndTime,
-                  "hh:mm a"
-                )})`}</span>
-              </div>
-            )}
-            {eventSelected?.IsPending && personal && (
-              <ActionEvent
-                eventId={eventSelected.Id}
-                closeOverlay={closeOverlay}
-                events={events}
-                setEvents={setEvents}
-              />
-            )}
-            {eventSelected && (
-              <PatientSummary
-                Patients={eventSelected.Patients}
-                CreatedBy={eventSelected.CreatedBy}
-                viewUserId={viewUserId}
-                events={events}
-                setEvents={setEvents}
-              />
-            )}
-            {!eventSelected?.IsPending &&
-              viewUserId === eventSelected?.CreatedBy &&
-              eventSelected?.Id && (
-                <PatientDialog
-                  Id={eventSelected.Id}
-                  events={events}
-                  setEvents={setEvents}
-                  ref={patientRef}
-                  birthdayRef={birthdayRef}
-                />
-              )}
-            <RequestFeedback loading={loading} error={error} />
-          </EventContentContainer>
-        </EventContainer>
-      </Overlay>
-    </CalendarTable>
+        </TableRow>
+      ))}
+    </tbody>
   );
 };
 
@@ -800,18 +669,43 @@ const Schedule = ({
   userId: number;
   viewUserId: number;
 }) => {
+  const personal = userId === viewUserId;
+
   const [workHours, setWorkHours] = useState({
     start: "09:00",
     end: "17:00",
     days: [1, 2, 3, 4, 5],
   });
   const [loadingSchedule, setLoadingSchedule] = useState(true);
-  const [dataSource, setDataSource] = useState<EventObject[]>([]);
+  const [events, setEvents] = useState<EventObject[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState(View.WEEK);
   const [calendarIsOpen, setCalendarIsOpen] = useState(false);
   const [overlayTop, setOverlayTop] = useState(0);
   const [overlayLeft, setOverlayLeft] = useState(0);
+  const [isEventOpen, setIsEventOpen] = useState(false);
+  const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
+  const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
+  const [eventSelected, setEventSelected] = useState<EventObject>();
+
+  const eventRef = useRef<HTMLDivElement>(null);
+  const patientRef = useRef<HTMLDivElement>(null);
+  const birthdayRef = useRef<HTMLDivElement>(null);
+
+  const openEventOverlay = useCallback(
+    ({ y, x }) => {
+      setOverlayTop(y);
+      setOverlayLeft(x);
+      setIsEventOpen(true);
+    },
+    [setOverlayTop, setOverlayLeft, setIsEventOpen]
+  );
+  const closeEventOverlay = useCallback(() => {
+    setSelectedHour(new Date(0));
+    setSelectedEndHour(new Date(60));
+    setEventSelected(undefined);
+    setIsEventOpen(false);
+  }, [setIsEventOpen, setEventSelected]);
 
   const increaseCurrentDate = useCallback(() => {
     switch (currentView) {
@@ -839,6 +733,28 @@ const Schedule = ({
         break;
     }
   }, [setCurrentDate, currentDate, currentView]);
+  const handleEventCreate = useCallback(
+    (e: EventObject) => {
+      setEvents([
+        ...events,
+        {
+          ...e,
+          StartTime: new Date(e.StartTime),
+          EndTime: new Date(e.EndTime),
+        },
+      ]);
+      closeEventOverlay();
+    },
+    [events, setEvents, closeEventOverlay]
+  );
+  const { loading, error, handleSubmit: deleteEvent } = useApiDelete(
+    "events",
+    () => {
+      const filteredEvents = reject(events, { Id: eventSelected?.Id });
+      setEvents(filteredEvents);
+      closeEventOverlay();
+    }
+  );
 
   useEffect(() => {
     const { startTime, endTime } = getScheduleBounds(currentDate, currentView);
@@ -852,7 +768,7 @@ const Schedule = ({
         },
       })
       .then((e) =>
-        setDataSource(
+        setEvents(
           map(e.data, (e) => ({
             ...e,
             StartTime: new Date(e.StartTime),
@@ -860,7 +776,7 @@ const Schedule = ({
           }))
         )
       );
-  }, [userId, viewUserId, currentDate, currentView, setDataSource]);
+  }, [userId, viewUserId, currentDate, currentView, setEvents]);
   useEffect(() => {
     api
       .get("availability", { params: { userId } })
@@ -935,20 +851,118 @@ const Schedule = ({
               ))}
             </div>
           </ToolbarContainer>
-          <div>
+          <CalendarTable>
             {currentView === View.DAY && <DayView />}
             {currentView === View.WEEK && (
               <WeekView
-                userId={userId}
-                viewUserId={viewUserId}
+                personal={personal}
+                events={events}
                 currentDate={currentDate}
                 workHours={workHours}
-                events={dataSource}
-                setEvents={setDataSource}
+                openEventOverlay={openEventOverlay}
+                setSelectedHour={setSelectedHour}
+                setSelectedEndHour={setSelectedEndHour}
+                setEventSelected={setEventSelected}
               />
             )}
             {currentView === View.MONTH && <MonthView />}
-          </div>
+            <Overlay
+              isOpen={isEventOpen}
+              closePortal={closeEventOverlay}
+              parents={[eventRef, patientRef, birthdayRef]}
+            >
+              <EventContainer
+                top={overlayTop}
+                left={overlayLeft}
+                ref={eventRef}
+              >
+                <EventHeader>
+                  {eventSelected && !eventSelected.IsReadonly && (
+                    <Icon
+                      onClick={() => deleteEvent(eventSelected?.Id)}
+                      type={"DELETE"}
+                    />
+                  )}
+                  <Icon onClick={closeEventOverlay} type={"CANCEL"} />
+                </EventHeader>
+                {eventSelected && (
+                  <SubjectHeader>{eventSelected.Subject}</SubjectHeader>
+                )}
+                <EventContentContainer>
+                  {!eventSelected && (
+                    <Form
+                      path={"/events"}
+                      handleResponse={handleEventCreate}
+                      fields={[
+                        {
+                          type: personal ? FieldType.TEXT : FieldType.DROPDOWN,
+                          name: "Subject",
+                          placeholder: "Event Subject",
+                          values: ["Request Booking"],
+                          required: true,
+                        },
+                        {
+                          type: FieldType.CHECKBOX,
+                          name: "isWeekly",
+                          placeholder: "Repeat Weekly",
+                        },
+                      ]}
+                      extraProps={{
+                        StartTime: selectedHour.toJSON(),
+                        EndTime: selectedEndHour.toJSON(),
+                        userId: userId,
+                        createdBy: viewUserId,
+                      }}
+                    />
+                  )}
+                  {eventSelected && !eventSelected.IsReadonly && (
+                    <div>
+                      <CreatedByContainer>
+                        Created by {eventSelected.fullName}
+                      </CreatedByContainer>
+                      <BsCalendarFill />
+                      <span>{`${format(
+                        eventSelected.StartTime,
+                        "MMMM dd, yyyy"
+                      )} (${format(
+                        eventSelected.StartTime,
+                        "hh:mm a"
+                      )} - ${format(eventSelected.EndTime, "hh:mm a")})`}</span>
+                    </div>
+                  )}
+                  {eventSelected?.IsPending && personal && (
+                    <ActionEvent
+                      eventId={eventSelected.Id}
+                      closeEventOverlay={closeEventOverlay}
+                      events={events}
+                      setEvents={setEvents}
+                    />
+                  )}
+                  {eventSelected && (
+                    <PatientSummary
+                      Patients={eventSelected.Patients}
+                      CreatedBy={eventSelected.CreatedBy}
+                      viewUserId={viewUserId}
+                      events={events}
+                      setEvents={setEvents}
+                    />
+                  )}
+                  {!eventSelected?.IsPending &&
+                    viewUserId === eventSelected?.CreatedBy &&
+                    eventSelected?.Id && (
+                      <PatientDialog
+                        Id={eventSelected.Id}
+                        events={events}
+                        setEvents={setEvents}
+                        ref={patientRef}
+                        birthdayRef={birthdayRef}
+                      />
+                    )}
+                  <RequestFeedback loading={loading} error={error} />
+                </EventContentContainer>
+              </EventContainer>
+            </Overlay>
+          </CalendarTable>
           <RestOfContainer />
         </>
       )}
