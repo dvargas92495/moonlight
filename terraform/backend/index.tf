@@ -2,6 +2,10 @@ variable "env_name" {
   type = string
 }
 
+variable "cognito_pool_arn" {
+  type = string
+}
+
 locals {
   lambdas = [
     "accept/post",
@@ -25,6 +29,12 @@ locals {
     "user/{id}/photo/post"
   ]
 
+  public_lambdas = [
+    "confirm-signup/post",
+    "signin/post",
+    "signup/post"
+  ]
+
   lambda_parts = {
      for method in local.lambdas:
      method => split("/", method)
@@ -43,6 +53,11 @@ locals {
   lambda_paths = {
     for method in local.lambdas:
     method => join("/", local.lambda_path_parts[method])
+  }
+
+  lambda_authorization = {
+    for method in local.lambdas:
+    method => contains(local.public_lambdas, method) ? "NONE" : "COGNITO_USER_POOLS"
   }
 
   resources = distinct([
@@ -101,6 +116,15 @@ resource "aws_api_gateway_rest_api" "rest_api" {
   binary_media_types = [
     "multipart/form-data",
     "application/octet-stream"
+  ]
+}
+
+resource "aws_api_gateway_authorizer" "cognito" {
+  name                   = "cognito"
+  rest_api_id            = aws_api_gateway_rest_api.demo.id
+  type                   = "COGNITO_USER_POOLS"
+  provider_arns          = [
+    var.cognito_pool_arn
   ]
 }
 
@@ -178,10 +202,12 @@ resource "aws_api_gateway_method" "method" {
   rest_api_id   = aws_api_gateway_rest_api.rest_api.id
   resource_id   = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 4 ? aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubsubresource[local.lambda_paths[each.value]].id
   http_method   = upper(local.methods[each.value])
-  authorization = "NONE"
+  authorization = local.lambda_authorization[each.value]
+  authorizer_id = local.lambda_authorization[each.value] == "NONE" ? null : aws_api_gateway_authorizer.cognito.id
 
   request_parameters = {
     "method.request.header.Accept" = true
+    "method.request.header.Authorization" = local.lambda_authorization[each.value] == "NONE"
     "method.request.header.Content-Type" = true
   }
 }

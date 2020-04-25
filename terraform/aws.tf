@@ -457,4 +457,5 @@ module "backend" {
   source = "./backend"
 
   env_name = local.env_name
+  cognito_pool_arn = aws_cognito_user_pool.pool.arn
 }
