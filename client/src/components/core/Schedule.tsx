@@ -21,6 +21,8 @@ import {
   subMonths,
   differenceInWeeks,
   getDay,
+  getYear,
+  getMonth,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -37,7 +39,6 @@ import { BsChevronLeft, BsChevronRight, BsCalendarFill } from "react-icons/bs";
 import { TiArrowSortedDown } from "react-icons/ti";
 import {
   map,
-  values,
   filter,
   range,
   includes,
@@ -213,7 +214,7 @@ const HeaderCell = styled.div<{ isToday?: boolean }>`
 `;
 
 const TimeCell = styled(TableCell)`
-  max-width: 85px;
+  width: 120px;
   border-left-width: 0px;
   text-align: center;
 `;
@@ -230,6 +231,29 @@ const HourCell = styled(TableCell)<{
   &:hover {
     background: ${`${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
   }
+`;
+
+const DayCell = styled(TableCell)<{
+  isUnavailable?: boolean;
+}>`
+  background: ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  padding: 1px;
+  height: 126px;
+  text-align: left;
+
+  &:hover {
+    background: ${`${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
+  }
+`;
+
+const DayCellEventContainer = styled.div`
+  height: 36px;
+  padding: 1px 0;
+`;
+
+const DayCellContainer = styled.div`
+  height: 18px;
+  font-size: 14px;
 `;
 
 const EventHeader = styled.div`
@@ -533,7 +557,113 @@ const isEventOnDate = (e: EventObject, d: Date) => {
   return diffWeeks > 0 && isEqual(addWeeks(e.StartTime, diffWeeks), d);
 };
 
-const DayView = () => <div>Day View is coming soon!</div>;
+const DayView = ({
+  personal,
+  currentDate,
+  workHours,
+  events,
+  openEventOverlay,
+  setSelectedHour,
+  setSelectedEndHour,
+  setEventSelected,
+}: {
+  personal: boolean;
+  currentDate: Date;
+  workHours: {
+    start: string;
+    end: string;
+    days: number[];
+  };
+  events: EventObject[];
+  openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
+  setSelectedHour: (d: Date) => void;
+  setSelectedEndHour: (d: Date) => void;
+  setEventSelected: (e: EventObject) => void;
+}) => {
+  const workStart = parseInt(split(workHours.start, ":")[0]);
+  const workEnd = parseInt(split(workHours.end, ":")[0]);
+
+  const eventsThisDay = filter(
+    events,
+    (e) =>
+      isEqual(e.StartTime, currentDate) &&
+      isEqual(e.EndTime, addDays(currentDate, 1))
+  );
+
+  const onClick = (e: React.MouseEvent) => {
+    if (!personal) {
+      return;
+    }
+    const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
+    openEventOverlay({ x, y });
+    setSelectedHour(currentDate);
+    setSelectedEndHour(addDays(currentDate, 1));
+  };
+
+  return (
+    <tbody>
+      <HeaderTableRow>
+        <TimeCell />
+        <TableCell>
+          <HeaderCell
+            isToday={isEqual(getDate(currentDate), getDate(new Date()))}
+            onClick={onClick}
+          >
+            <span>{format(currentDate, "iii")}</span>
+            <span>{format(currentDate, "dd")}</span>
+            {map(eventsThisDay, (e) => (
+              <EventSummary
+                event={e}
+                key={e.Id}
+                setEventSelected={setEventSelected}
+                openEventOverlay={openEventOverlay}
+              />
+            ))}
+          </HeaderCell>
+        </TableCell>
+      </HeaderTableRow>
+      {map(range(6, 21), (h) => {
+        const tdHour = setHours(startOfHour(currentDate), h);
+        const isUnavailable = !(
+          includes(workHours.days, getDay(currentDate)) &&
+          h >= workStart &&
+          h < workEnd
+        );
+        const eventsThisHour = filter(events, (e) => isEventOnDate(e, tdHour));
+        const onClick = (e: React.MouseEvent) => {
+          if (isUnavailable && !personal) {
+            return;
+          }
+          const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
+          openEventOverlay({ x, y });
+          setSelectedHour(tdHour);
+          setSelectedEndHour(addHours(tdHour, 1));
+        };
+        return (
+          <TableRow key={h}>
+            <TimeCell>
+              {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
+            </TimeCell>
+            <HourCell
+              key={tdHour.valueOf()}
+              isUnavailable={isUnavailable}
+              onClick={onClick}
+            >
+              {map(eventsThisHour, (e) => (
+                <EventSummary
+                  event={e}
+                  key={e.Id}
+                  setEventSelected={setEventSelected}
+                  openEventOverlay={openEventOverlay}
+                />
+              ))}
+            </HourCell>
+          </TableRow>
+        );
+      })}
+    </tbody>
+  );
+};
 
 const WeekView = ({
   personal,
@@ -591,7 +721,7 @@ const WeekView = ({
           return (
             <TableCell key={i}>
               <HeaderCell
-                isToday={isEqual(getDate(currentDate), getDate(tdDate))}
+                isToday={isEqual(getDate(new Date()), getDate(tdDate))}
                 onClick={onClick}
               >
                 <span>{format(tdDate, "iii")}</span>
@@ -660,7 +790,93 @@ const WeekView = ({
   );
 };
 
-const MonthView = () => <div>Month View is coming soon!</div>;
+const MonthView = ({
+  currentDate,
+  events,
+  openEventOverlay,
+  setSelectedHour,
+  setSelectedEndHour,
+  setEventSelected,
+}: {
+  currentDate: Date;
+  events: EventObject[];
+  openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
+  setSelectedHour: (d: Date) => void;
+  setSelectedEndHour: (d: Date) => void;
+  setEventSelected: (e: EventObject) => void;
+}) => {
+  const start = startOfWeek(startOfMonth(currentDate));
+  const numWeeks = differenceInWeeks(endOfMonth(currentDate), start) + 1;
+
+  return (
+    <tbody>
+      <HeaderTableRow>
+        {map(range(0, 7), (i) => (
+          <TableCell key={i}>
+            <HeaderCell>
+              <span>{format(addDays(start, i), "iiii")}</span>
+            </HeaderCell>
+          </TableCell>
+        ))}
+      </HeaderTableRow>
+      {map(range(numWeeks), (w) => (
+        <TableRow key={w}>
+          {map(range(0, 7), (i) => {
+            const td = startOfDay(addWeeks(addDays(start, i), w));
+            const eventsToday = filter(events, (e) =>
+              isEqual(startOfDay(e.StartTime), td)
+            );
+            const onClick = (e: React.MouseEvent) => {
+              const {
+                x,
+                y,
+                width,
+              } = (e.target as HTMLElement).getBoundingClientRect();
+              openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
+              setSelectedHour(td);
+              setSelectedEndHour(addDays(td, 1));
+            };
+            return (
+              <DayCell key={td.valueOf()} onClick={onClick}>
+                <DayCellContainer>{format(td, "d")}</DayCellContainer>
+                {map(eventsToday, (e) => (
+                  <DayCellEventContainer key={e.Id}>
+                    <EventSummary
+                      event={e}
+                      setEventSelected={setEventSelected}
+                      openEventOverlay={openEventOverlay}
+                    />
+                  </DayCellEventContainer>
+                ))}
+              </DayCell>
+            );
+          })}
+        </TableRow>
+      ))}
+    </tbody>
+  );
+};
+
+const getFormattedDateRange = (d: Date, v: View) => {
+  if (v === View.DAY) {
+    return format(d, "MMM dd, yyyy");
+  } else if (v === View.WEEK) {
+    const start = startOfWeek(d);
+    const end = endOfWeek(d);
+    const startFormat =
+      getYear(start) === getYear(end) ? "MMM dd" : "MMM dd, yyyy";
+    const endFormat =
+      getMonth(start) === getMonth(end) ? "dd, yyyy" : "MMM dd, yyyy";
+    return `${format(startOfWeek(d), startFormat)} - ${format(
+      endOfWeek(d),
+      endFormat
+    )}`;
+  } else if (v === View.MONTH) {
+    return format(d, "MMMM yyyy");
+  } else {
+    return d.toString();
+  }
+};
 
 const Schedule = ({
   userId,
@@ -818,7 +1034,7 @@ const Schedule = ({
                 <BsChevronRight strokeWidth={3} />
               </ToolbarIcon>
               <ToolbarButton onClick={openCalendar}>
-                {format(currentDate, "MMM dd, yyyy")}
+                {getFormattedDateRange(currentDate, currentView)}
                 <TiArrowSortedDown />
               </ToolbarButton>
               <Overlay
@@ -840,19 +1056,41 @@ const Schedule = ({
               </ToolbarButton>
             </div>
             <div>
-              {map(reject(values(View), isNaN), (v) => (
+              <TimeToolbarButton
+                onClick={() => setCurrentView(View.DAY)}
+                selected={currentView === View.DAY}
+              >
+                DAY
+              </TimeToolbarButton>
+              <TimeToolbarButton
+                onClick={() => setCurrentView(View.WEEK)}
+                selected={currentView === View.WEEK}
+              >
+                WEEK
+              </TimeToolbarButton>
+              {personal && (
                 <TimeToolbarButton
-                  key={v as View}
-                  onClick={() => setCurrentView(v as View)}
-                  selected={currentView === v}
+                  onClick={() => setCurrentView(View.MONTH)}
+                  selected={currentView === View.MONTH}
                 >
-                  {View[v as View]}
+                  MONTH
                 </TimeToolbarButton>
-              ))}
+              )}
             </div>
           </ToolbarContainer>
           <CalendarTable>
-            {currentView === View.DAY && <DayView />}
+            {currentView === View.DAY && (
+              <DayView
+                personal={personal}
+                events={events}
+                currentDate={currentDate}
+                workHours={workHours}
+                openEventOverlay={openEventOverlay}
+                setSelectedHour={setSelectedHour}
+                setSelectedEndHour={setSelectedEndHour}
+                setEventSelected={setEventSelected}
+              />
+            )}
             {currentView === View.WEEK && (
               <WeekView
                 personal={personal}
@@ -865,7 +1103,16 @@ const Schedule = ({
                 setEventSelected={setEventSelected}
               />
             )}
-            {currentView === View.MONTH && <MonthView />}
+            {currentView === View.MONTH && (
+              <MonthView
+                events={events}
+                currentDate={currentDate}
+                openEventOverlay={openEventOverlay}
+                setSelectedHour={setSelectedHour}
+                setSelectedEndHour={setSelectedEndHour}
+                setEventSelected={setEventSelected}
+              />
+            )}
             <Overlay
               isOpen={isEventOpen}
               closePortal={closeEventOverlay}
