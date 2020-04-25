@@ -2,14 +2,55 @@ variable "ATLAS_WORKSPACE_NAME" {}
 variable "RDS_MASTER_USER_PASSWORD" {}
 
 locals {
-  env_name     = replace(replace(var.ATLAS_WORKSPACE_NAME, "terraform-", ""), "moonlight-health", "emdeo")
-  domain       = "${replace(local.env_name, "-", ".")}.com"
-  s3_origin_id = "S3-${local.env_name}"
-  is_prod      = local.env_name == "emdeo"
+  env_name      = replace(replace(var.ATLAS_WORKSPACE_NAME, "terraform-", ""), "moonlight-health", "emdeo")
+  domain        = "${replace(local.env_name, "-", ".")}.com"
+  camelcase_env = replace(title(replace(local.env_name, "-"," ")), " ", "")
+  s3_origin_id  = "S3-${local.env_name}"
+  is_prod       = local.env_name == "emdeo"
+  is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
 }
 
 provider "aws" {
   region = "us-east-1"
+}
+
+resource "aws_waf_ipset" "ipset" {
+  name        = "ip${local.camelcase_env}"
+
+  ip_set_descriptors {
+    type  = "IPV4"
+    value = "70.19.82.56/32"
+  }
+}
+
+resource "aws_waf_rule" "waf_rule" {
+  name        = "rule${local.camelcase_env}"
+  metric_name = "rule${local.camelcase_env}"
+
+  predicates {
+    data_id = aws_waf_ipset.ipset.id
+    negated = false
+    type    = "IPMatch"
+  }
+}
+
+resource "aws_waf_web_acl" "waf_acl" {
+  name        = "acl${local.camelcase_env}"
+  metric_name = "acl${local.camelcase_env}"
+
+  default_action {
+    type = "BLOCK"
+  }
+
+  rules {
+    action {
+      type = "ALLOW"
+    }
+
+    priority = 1
+    rule_id  = aws_waf_rule.waf_rule.id
+    type     = "REGULAR"
+  }
 }
 
 resource "aws_s3_bucket" "client" {
@@ -198,6 +239,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     response_code = 200
     response_page_path = "/index.html"
   }
+
+  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
 }
 
 resource "aws_route53_record" "A" {
@@ -295,6 +338,8 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
     response_code = 200
     response_page_path = "/index.html"
   }
+
+  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
 }
 
 resource "aws_route53_record" "www-A" {
