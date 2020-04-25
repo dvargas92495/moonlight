@@ -578,7 +578,7 @@ const DayView = ({
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
   setSelectedHour: (d: Date) => void;
   setSelectedEndHour: (d: Date) => void;
-  setEventSelected: (e: EventObject) => void;
+  setEventSelected: (e?: EventObject) => void;
 }) => {
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
@@ -598,6 +598,7 @@ const DayView = ({
     openEventOverlay({ x, y });
     setSelectedHour(currentDate);
     setSelectedEndHour(addDays(currentDate, 1));
+    setEventSelected(undefined);
   };
 
   return (
@@ -638,6 +639,7 @@ const DayView = ({
           openEventOverlay({ x, y });
           setSelectedHour(tdHour);
           setSelectedEndHour(addHours(tdHour, 1));
+          setEventSelected(undefined);
         };
         return (
           <TableRow key={h}>
@@ -686,7 +688,7 @@ const WeekView = ({
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
   setSelectedHour: (d: Date) => void;
   setSelectedEndHour: (d: Date) => void;
-  setEventSelected: (e: EventObject) => void;
+  setEventSelected: (e?: EventObject) => void;
 }) => {
   const start = startOfWeek(currentDate);
   const workStart = parseInt(split(workHours.start, ":")[0]);
@@ -717,6 +719,7 @@ const WeekView = ({
             openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
             setSelectedHour(tdDate);
             setSelectedEndHour(addDays(tdDate, 1));
+            setEventSelected(undefined);
           };
           return (
             <TableCell key={i}>
@@ -766,6 +769,7 @@ const WeekView = ({
               openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
               setSelectedHour(tdHour);
               setSelectedEndHour(addHours(tdHour, 1));
+              setEventSelected(undefined);
             };
             return (
               <HourCell
@@ -803,7 +807,7 @@ const MonthView = ({
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
   setSelectedHour: (d: Date) => void;
   setSelectedEndHour: (d: Date) => void;
-  setEventSelected: (e: EventObject) => void;
+  setEventSelected: (e?: EventObject) => void;
 }) => {
   const start = startOfWeek(startOfMonth(currentDate));
   const numWeeks = differenceInWeeks(endOfMonth(currentDate), start) + 1;
@@ -835,6 +839,7 @@ const MonthView = ({
               openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
               setSelectedHour(td);
               setSelectedEndHour(addDays(td, 1));
+              setEventSelected(undefined);
             };
             return (
               <DayCell key={td.valueOf()} onClick={onClick}>
@@ -904,6 +909,7 @@ const Schedule = ({
   const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
   const [eventSelected, setEventSelected] = useState<EventObject>();
 
+  const tableRef = useRef<HTMLTableElement>(null);
   const eventRef = useRef<HTMLDivElement>(null);
   const patientRef = useRef<HTMLDivElement>(null);
   const birthdayRef = useRef<HTMLDivElement>(null);
@@ -1078,7 +1084,7 @@ const Schedule = ({
               )}
             </div>
           </ToolbarContainer>
-          <CalendarTable>
+          <CalendarTable ref={tableRef}>
             {currentView === View.DAY && (
               <DayView
                 personal={personal}
@@ -1116,7 +1122,7 @@ const Schedule = ({
             <Overlay
               isOpen={isEventOpen}
               closePortal={closeEventOverlay}
-              parents={[eventRef, patientRef, birthdayRef]}
+              parents={[eventRef, patientRef, birthdayRef, tableRef]}
             >
               <EventContainer
                 top={overlayTop}
