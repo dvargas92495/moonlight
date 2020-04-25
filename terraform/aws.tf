@@ -19,7 +19,7 @@ resource "aws_waf_ipset" "ipset" {
 
   ip_set_descriptors {
     type  = "IPV4"
-    value = local.is_dev ? "70.19.82.56/32" : "0.0.0.0/0"
+    value = "70.19.82.56/32"
   }
 }
 
@@ -240,7 +240,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = aws_waf_web_acl.waf_acl.id
+  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
 }
 
 resource "aws_route53_record" "A" {
@@ -339,7 +339,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = aws_waf_web_acl.waf_acl.id
+  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
 }
 
 resource "aws_route53_record" "www-A" {
