@@ -2,6 +2,10 @@ variable "env_name" {
   type = string
 }
 
+variable "domain" {
+  type = string
+}
+
 variable "cognito_pool_arn" {
   type = string
 }
@@ -55,9 +59,14 @@ locals {
     method => join("/", local.lambda_path_parts[method])
   }
 
+  lambda_is_public = {
+    for method in local.lambdas:
+    method => contains(local.public_lambdas, method)
+  }
+
   lambda_authorization = {
     for method in local.lambdas:
-    method => contains(local.public_lambdas, method) ? "NONE" : "COGNITO_USER_POOLS"
+    method => local.lambda_is_public[method] ? "NONE" : "COGNITO_USER_POOLS"
   }
 
   resources = distinct([
@@ -121,7 +130,7 @@ resource "aws_api_gateway_rest_api" "rest_api" {
 
 resource "aws_api_gateway_authorizer" "cognito" {
   name                   = "cognito"
-  rest_api_id            = aws_api_gateway_rest_api.demo.id
+  rest_api_id            = aws_api_gateway_rest_api.rest_api.id
   type                   = "COGNITO_USER_POOLS"
   provider_arns          = [
     var.cognito_pool_arn
@@ -203,11 +212,11 @@ resource "aws_api_gateway_method" "method" {
   resource_id   = local.lambda_levels[each.value] == 2 ? aws_api_gateway_resource.resource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 3 ? aws_api_gateway_resource.subresource[local.lambda_paths[each.value]].id : local.lambda_levels[each.value] == 4 ? aws_api_gateway_resource.subsubresource[local.lambda_paths[each.value]].id : aws_api_gateway_resource.subsubsubresource[local.lambda_paths[each.value]].id
   http_method   = upper(local.methods[each.value])
   authorization = local.lambda_authorization[each.value]
-  authorizer_id = local.lambda_authorization[each.value] == "NONE" ? null : aws_api_gateway_authorizer.cognito.id
+  authorizer_id = local.lambda_is_public[each.value] ? null : aws_api_gateway_authorizer.cognito.id
 
   request_parameters = {
     "method.request.header.Accept" = true
-    "method.request.header.Authorization" = local.lambda_authorization[each.value] == "NONE"
+    "method.request.header.Authorization" = !local.lambda_is_public[each.value]
     "method.request.header.Content-Type" = true
   }
 }
@@ -275,9 +284,9 @@ resource "aws_api_gateway_method_response" "mock" {
   }
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true,
-    "method.response.header.Access-Control-Allow-Methods" = true,
-    "method.response.header.Access-Control-Allow-Origin"  = true 
+    "method.response.header.Access-Control-Allow-Headers"     = true,
+    "method.response.header.Access-Control-Allow-Methods"     = true,
+    "method.response.header.Access-Control-Allow-Origin"      = true
   }
 }
 
@@ -290,16 +299,16 @@ resource "aws_api_gateway_integration_response" "mock" {
   status_code = aws_api_gateway_method_response.mock[each.value].status_code
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,DELETE,OPTIONS,POST,PUT'",
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'" 
+    "method.response.header.Access-Control-Allow-Headers"     = "'Authorization, Content-Type'",
+    "method.response.header.Access-Control-Allow-Methods"     = "'GET,DELETE,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Origin"      = "'https://${var.domain}'"
   }
 }
 
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.108.1"
+  stage_description = "2020.117.6"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 

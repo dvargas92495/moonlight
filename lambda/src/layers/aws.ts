@@ -5,6 +5,7 @@ import { createHmac } from "crypto";
 export const ClientId = process.env.REACT_APP_USER_CLIENT_ID || "";
 export const region = "us-east-1";
 export const envName = process.env.REACT_APP_ENVIRONMENT_NAME || "";
+export const domain = `${envName.replace(/-/g, ".")}.com`;
 
 AWS.config = new AWS.Config({
   region,

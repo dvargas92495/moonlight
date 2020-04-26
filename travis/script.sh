@@ -3,7 +3,6 @@
 set -e
 
 ENV_NAME=${TF_WORKSPACE/moonlight-health/emdeo}
-DOMAIN="${ENV_NAME//-/.}.com"
 
 if [ -z "$(ls -A travis/manual)" ]; then
    echo "No manual migrations to run"
@@ -42,20 +41,7 @@ npm install
 npm run migrate
 
 cd ../lambda
-npm install
-npm run build
-
-for filename in build/*.js; do
-    ./deploy.sh $(basename "$filename" .js)
-done
+./deploy.sh all
 
 cd ../client
-npm install
-npm run build
-aws s3 sync --delete build "s3://${ENV_NAME}"
-
-CLOUDFRONT_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{Alias:Aliases.Items[0],Id:Id}[?Alias=='${DOMAIN}'].Id" --output text)
-aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"
-
-WWW_CLOUDFRONT_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{Alias:Aliases.Items[0],Id:Id}[?Alias=='www.${DOMAIN}'].Id" --output text)
-aws cloudfront create-invalidation --distribution-id $WWW_CLOUDFRONT_ID --paths "/*"
+./deploy.sh
