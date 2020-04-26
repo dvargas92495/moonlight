@@ -2,9 +2,26 @@ import axios from "axios";
 import { noop } from "lodash";
 import { useState, useCallback } from "react";
 
+const authorizationToken = localStorage.getItem("Authorization");
+
 export const api = axios.create({
   baseURL: process.env.REACT_APP_API_GATEWAY_INVOKE_URL,
+  headers: authorizationToken
+    ? {
+        Authorization: authorizationToken,
+      }
+    : {},
 });
+
+export const setAuth = (idToken: string) => {
+  localStorage.setItem("Authorization", idToken);
+  api.defaults.headers.common["Authorization"] = idToken;
+};
+
+export const clearAuth = () => {
+  localStorage.removeItem("Authorization");
+  api.defaults.headers.common["Authorization"] = null;
+};
 
 const useApi = (apiMethod: (request: any) => Promise<any>) => {
   const [error, setError] = useState("");

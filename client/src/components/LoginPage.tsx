@@ -4,6 +4,7 @@ import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
 import { PRIMARY_COLOR } from "../styles/colors";
+import { setAuth } from "../hooks/apiClient";
 
 const Container = styled.div`
   max-width: 450px;
@@ -29,7 +30,8 @@ const Header = styled.h2`
 const LoginPage = () => {
   const history = useHistory();
   const handleResponse = useCallback(
-    ({ id, type }) => {
+    ({ id, type, idToken }) => {
+      setAuth(idToken);
       history.push(`/${type}`, {
         userId: id,
         type,

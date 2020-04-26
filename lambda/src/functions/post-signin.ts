@@ -119,9 +119,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
                 client.end();
                 const { id, type } = res.rows[0];
                 const uType = getFieldByValue(userType, type);
+
                 return okResponse({
                   id,
                   type: uType,
+                  idToken,
                 });
               });
           });
