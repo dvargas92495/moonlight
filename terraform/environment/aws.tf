@@ -10,6 +10,16 @@ locals {
   is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
 }
 
+terraform {
+    backend "remote" {
+        hostname = "app.terraform.io"
+        organization = "Moonlight"
+        workspaces {
+            prefix = "terraform-"
+        }
+    }
+}
+
 provider "aws" {
   region = "us-east-1"
 }
