@@ -14,7 +14,7 @@ fi
 
 cd terraform
 ./terraform init
-./terraform apply -auto-approve
+./terraform apply -auto-approve environement
 cd ..
 
 if [ -z $AWS_SECRET_ACCESS_KEY ]; then
