@@ -12,10 +12,10 @@ else
     done
 fi
 
-cd terraform
+cd terraform/environment
 ./terraform init
 ./terraform apply -auto-approve
-cd ..
+cd ../..
 
 if [ -z $AWS_SECRET_ACCESS_KEY ]; then
   AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)

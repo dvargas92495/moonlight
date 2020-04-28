@@ -8,10 +8,28 @@ locals {
   s3_origin_id  = "S3-${local.env_name}"
   is_prod       = local.env_name == "emdeo"
   is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
+  app_storage   = [
+    "patient-forms",
+    "profile-photos"
+  ]
+}
+
+terraform {
+    backend "remote" {
+        hostname = "app.terraform.io"
+        organization = "Moonlight"
+        workspaces {
+            prefix = "terraform-"
+        }
+    }
 }
 
 provider "aws" {
   region = "us-east-1"
+}
+
+data "aws_iam_user" "admin" {
+  user_name = "emdeo-admin"
 }
 
 resource "aws_waf_ipset" "ipset" {
@@ -57,38 +75,6 @@ resource "aws_s3_bucket" "client" {
   bucket = local.env_name
   force_destroy = true
   acl    = "private"
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "RestrictedWriteObjects",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::643537615676:user/moonlight-health-admin"
-      },
-      "Action": ["s3:PutObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::${local.env_name}/*"
-    },
-    {
-      "Sid": "RestrictedReadBuckets",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::643537615676:user/moonlight-health-admin"
-      },
-      "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::${local.env_name}"
-    },
-    {
-      "Sid": "PublicReadObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${local.env_name}/*"
-    }
-  ]
-}
-POLICY
 
   tags = {
     Application = "Emdeo"
@@ -98,6 +84,43 @@ POLICY
     index_document = "index.html"
     error_document = "index.html"
   }
+}
+
+data "aws_iam_policy_document" "client" {
+  statement {
+    sid = "RestrictedWriteObjects"
+    principals {
+      type = "AWS"
+      identifiers = [data.aws_iam_user.admin.arn]
+    }
+    actions = ["s3:PutObject", "s3:DeleteObject"]
+    resources = ["${aws_s3_bucket.client.arn}/*"]
+  }
+
+  statement {
+    sid = "RestrictedReadBuckets"
+    principals {
+      type = "AWS"
+      identifiers = [data.aws_iam_user.admin.arn]
+    }
+    actions = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.client.arn]
+  }
+
+  statement {
+    sid = "PublicReadObject"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.client.arn}/*"]
+  }
+}
+
+resource "aws_s3_bucket_policy" "client" {
+  bucket = aws_s3_bucket.client.id
+  policy = data.aws_iam_policy_document.client.json
 }
 
 resource "aws_s3_bucket" "www" {
@@ -423,34 +446,35 @@ resource "aws_db_instance" "default" {
 }
 
 resource "aws_s3_bucket" "app_storage" {
-  for_each = toset([
-    "patient-forms",
-    "profile-photos"
-  ])
+  for_each = toset(local.app_storage)
 
   bucket = "${local.env_name}-${each.value}"
   acl    = "private"
   force_destroy = true
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "RestrictedActions",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::643537615676:user/moonlight-health-admin"
-      },
-      "Action": ["s3:PutObject", "s3:DeleteObject", "s3:GetObject"],
-      "Resource": "arn:aws:s3:::${local.env_name}-${each.value}/*"
-    }
-  ]
-}
-POLICY
 
   tags = {
     Application = "Emdeo"
   }
+}
+
+data "aws_iam_policy_document" "app_storage" {
+  for_each = toset(local.app_storage)
+  
+  statement {
+    sid = "RestrictedActions"
+    principals {
+      type = "AWS"
+      identifiers = [data.aws_iam_user.admin.arn]
+    }
+    actions = ["s3:PutObject", "s3:DeleteObject", "s3:GetObject"]
+    resources = ["${aws_s3_bucket.app_storage[each.value].arn}/*"]
+  }
+}
+
+resource "aws_s3_bucket_policy" "app_storage" {
+  for_each = toset(local.app_storage)
+  bucket = aws_s3_bucket.app_storage[each.value].id
+  policy = data.aws_iam_policy_document.app_storage[each.value].json
 }
 
 module "backend" {
