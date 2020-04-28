@@ -69,6 +69,10 @@ resource "aws_waf_web_acl" "waf_acl" {
     rule_id  = aws_waf_rule.waf_rule.id
     type     = "REGULAR"
   }
+
+  tags = {
+    Application = "Emdeo"
+  }
 }
 
 resource "aws_s3_bucket" "client" {
