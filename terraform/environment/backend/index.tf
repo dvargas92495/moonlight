@@ -184,11 +184,6 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
   }
 }
 
-# legacy
-data "aws_iam_role" "lambda_execution_role" {
-  name = "Moonlight-Lambda-Execution"
-}
-
 resource "aws_iam_role" "lambda_role" {
   name = "${var.env_name}-lambda-execution"
   assume_role_policy = data.aws_iam_policy_document.assume_lambda_policy.json
