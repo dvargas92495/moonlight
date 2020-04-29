@@ -185,12 +185,8 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
 }
 
 # legacy
-resource "aws_iam_role" "lambda_execution_role" {
+data "aws_iam_role" "lambda_execution_role" {
   name = "Moonlight-Lambda-Execution"
-  assume_role_policy = data.aws_iam_policy_document.assume_lambda_policy.json
-  tags = {
-    Application = "Emdeo"
-  }
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -199,12 +195,6 @@ resource "aws_iam_role" "lambda_role" {
   tags = {
     Application = "Emdeo"
   }
-}
-
-#legacy
-resource "aws_iam_role_policy" "lambda_execution_policy" { 
-  role = aws_iam_role.lambda_execution_role.id
-  policy = data.aws_iam_policy_document.lambda_execution_policy.json
 }
 
 resource "aws_iam_role_policy" "lambda_policy" { 
