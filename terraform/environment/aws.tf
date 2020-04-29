@@ -461,30 +461,11 @@ resource "aws_s3_bucket" "app_storage" {
   }
 }
 
-data "aws_iam_policy_document" "app_storage" {
-  for_each = toset(local.app_storage)
-  
-  statement {
-    sid = "RestrictedActions"
-    principals {
-      type = "AWS"
-      identifiers = [data.aws_iam_user.admin.arn]
-    }
-    actions = ["s3:PutObject", "s3:DeleteObject", "s3:GetObject"]
-    resources = ["${aws_s3_bucket.app_storage[each.value].arn}/*"]
-  }
-}
-
-resource "aws_s3_bucket_policy" "app_storage" {
-  for_each = toset(local.app_storage)
-  bucket = aws_s3_bucket.app_storage[each.value].id
-  policy = data.aws_iam_policy_document.app_storage[each.value].json
-}
-
 module "backend" {
   source = "./backend"
 
   env_name = local.env_name
   domain   = local.domain
   cognito_pool_arn = aws_cognito_user_pool.pool.arn
+  app_storage_arns = values(aws_s3_bucket.app_storage)[*].arn
 }
