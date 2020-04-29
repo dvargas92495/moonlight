@@ -10,6 +10,10 @@ variable "cognito_pool_arn" {
   type = string
 }
 
+variable "app_storage_arns" {
+  type = list(string)
+}
+
 locals {
   lambdas = [
     "accept/post",
@@ -148,8 +152,54 @@ data "archive_file" "dummy" {
   }
 }
 
+data "aws_iam_policy_document" "assume_lambda_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "lambda_execution_policy" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "s3:PutObject", 
+      "s3:DeleteObject", 
+      "s3:GetObject"
+    ]
+    resources = [
+      for bucket in var.app_storage_arns: "${bucket}/*"
+    ]
+  }
+}
+
+# legacy
 data "aws_iam_role" "lambda_execution_role" {
   name = "Moonlight-Lambda-Execution"
+}
+
+resource "aws_iam_role" "lambda_role" {
+  name = "${var.env_name}-lambda-execution"
+  assume_role_policy = data.aws_iam_policy_document.assume_lambda_policy.json
+  tags = {
+    Application = "Emdeo"
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_policy" { 
+  role = aws_iam_role.lambda_role.id
+  policy = data.aws_iam_policy_document.lambda_execution_policy.json
 }
 
 resource "aws_api_gateway_resource" "resource" {
@@ -188,7 +238,7 @@ resource "aws_lambda_function" "lambda_function" {
   for_each      = toset(local.lambdas)
 
   function_name = "${var.env_name}-${local.method_names[each.value]}"
-  role          = data.aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_role.arn
   handler       = "${local.method_names[each.value]}.handler"
   filename      = data.archive_file.dummy.output_path
   runtime       = "nodejs12.x"
