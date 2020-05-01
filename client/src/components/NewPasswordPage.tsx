@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from "react";
-import { useHistory } from "react-router-dom";
+import React, { useCallback } from "react";
+import { useHistory, useLocation } from "react-router-dom";
 import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
@@ -27,48 +27,53 @@ const Header = styled.h2`
   text-transform: uppercase;
 `;
 
-const LoginPage = () => {
+const NewPasswordPage = () => {
   const history = useHistory();
-  const [username, setUsername] = useState("");
+  const {
+    state: { Session, username },
+  } = useLocation();
   const handleResponse = useCallback(
-    ({ id, type, idToken, Session }) => {
-      if (!id) {
-        history.push("/password", {
-          Session,
-          username,
-        });
-      } else {
-        setAuth(idToken);
-        history.push(`/${type}`, {
-          userId: id,
-          type,
-        });
-      }
+    ({ id, type, idToken }) => {
+      setAuth(idToken);
+      history.push(`/${type}`, {
+        userId: id,
+        type,
+      });
     },
-    [history, username]
+    [history]
   );
   return (
     <PublicPage>
       <Container>
-        <Header>Sign In</Header>
+        <Header>Set New Password</Header>
         <FormContainer>
           <Form
             handleResponse={handleResponse}
-            label="log in"
-            path="signin"
+            label="set password"
+            path="password"
+            onValidate={(data) => {
+              if (data.password !== data.confirmPassword) {
+                return ["Passwords must match!"];
+              }
+              return [];
+            }}
+            extraProps={{
+              Session,
+              username,
+            }}
             fields={[
-              {
-                placeholder: "Email",
-                name: "username",
-                type: FieldType.TEXT,
-                required: true,
-                onChange: setUsername,
-              },
               {
                 placeholder: "Password",
                 name: "password",
                 type: FieldType.PASSWORD,
                 required: true,
+              },
+              {
+                placeholder: "Confirm Password",
+                name: "confirmPassword",
+                type: FieldType.PASSWORD,
+                required: true,
+                skip: true,
               },
             ]}
           />
@@ -78,4 +83,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default NewPasswordPage;

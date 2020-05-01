@@ -8,6 +8,7 @@ export const patientIdentifiers = {
 export const userType = {
   DENTIST: 1,
   SPECIALIST: 2,
+  SUPPORT: 3,
 };
 
 export const eventFrequency = {

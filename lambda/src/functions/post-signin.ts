@@ -1,52 +1,14 @@
-import JWT from "jsonwebtoken";
-import jwkToPem, { JWK } from "jwk-to-pem";
-import { find, isEmpty } from "lodash";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import axios, { AxiosResponse } from "axios";
 import {
   ClientId,
   createSecretHash,
   cognitoIdentityServiceProvider,
-  region,
   connectRdsClient,
+  verifyToken,
 } from "../layers/aws";
 import { okResponse, userErrorResponse, getFieldByValue } from "../layers/util";
 import { userType } from "../layers/enums";
-
-type JwtPayload = {
-  sub: string;
-  aud: string;
-  email_verified: boolean;
-  event_id: string;
-  token_use: string;
-  auth_time: number;
-  iss: string;
-  "cognito:username": string;
-  exp: number;
-  iat: number;
-  email: string;
-};
-
-type DecodeResult = {
-  header: {
-    kid: string;
-    alg: string;
-  };
-  payload: JwtPayload;
-  signature: string;
-};
-
-const expectedIss = `https://cognito-idp.${region}.amazonaws.com/${process.env.REACT_APP_USER_POOL_ID}`;
-const verify = (token: string, response: AxiosResponse) => {
-  const {
-    header: { kid },
-  } = JWT.decode(token, {
-    complete: true,
-  }) as DecodeResult;
-  return JWT.verify(token, jwkToPem(find(response.data.keys, { kid }) as JWK), {
-    algorithms: ["RS256"],
-  }) as JwtPayload;
-};
+import { isEmpty } from "lodash";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { username: USERNAME, password: PASSWORD } = JSON.parse(event.body);
@@ -61,40 +23,21 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       },
     })
     .promise()
-    .then(({ AuthenticationResult }) => {
-      const idToken = AuthenticationResult?.IdToken || "";
-      const refreshToken = AuthenticationResult?.RefreshToken || "";
-      if (!isEmpty(idToken)) {
-        return axios
-          .get(`${expectedIss}/.well-known/jwks.json`)
-          .then((response) => {
-            const { sub, aud, iss, token_use, exp } = verify(idToken, response);
-
-            const expirationDate = new Date(exp * 1000);
-            if (expirationDate < new Date()) {
-              return userErrorResponse(
-                `Log in has expired on ${expirationDate}`
-              );
-            }
-
-            if (aud !== ClientId) {
-              return userErrorResponse(
-                `Log in returned incorrect audience ${aud}, expected ClientId ${ClientId}`
-              );
-            }
-
-            if (iss !== expectedIss) {
-              return userErrorResponse(
-                `Log in returned incorrect iss ${iss}, expected ${expectedIss}`
-              );
-            }
-
-            if (token_use !== "id") {
-              return userErrorResponse(
-                `Log in returned incorrect token use ${token_use}, expected id`
-              );
-            }
-
+    .then(
+      ({
+        AuthenticationResult,
+        ChallengeName,
+        ChallengeParameters,
+        Session,
+      }) => {
+        const idToken = AuthenticationResult?.IdToken || "";
+        const refreshToken = AuthenticationResult?.RefreshToken || "";
+        if (ChallengeName === "NEW_PASSWORD_REQUIRED") {
+          return okResponse({
+            Session,
+          });
+        } else if (!isEmpty(idToken)) {
+          return verifyToken(idToken).then((sub: string) => {
             const client = connectRdsClient();
             return client
               .query(
@@ -127,8 +70,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
                 });
               });
           });
+        }
+        return userErrorResponse("Missing IdToken from sign in");
       }
-      return userErrorResponse("Missing IdToken from sign in");
-    })
+    )
     .catch((e) => userErrorResponse(e.message));
 };

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { getProfile } from "../hooks/apiClient";
+import { getProfile, clearAuth } from "../hooks/apiClient";
 import Form from "./core/Form";
 import Input from "./core/Input";
 import { useUserId } from "../hooks/router";
@@ -22,13 +22,12 @@ const DeleteUserContainer = styled.div`
 const ProfileContent = () => {
   const userId = useUserId();
   const history = useHistory();
-  const handleResponse = useCallback(
-    () =>
-      history.push("/", {
-        userId: 0,
-      }),
-    [history]
-  );
+  const handleResponse = useCallback(() => {
+    clearAuth();
+    history.push("/", {
+      userId: 0,
+    });
+  }, [history]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const handleProfileCallback = useCallback(

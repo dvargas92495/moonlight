@@ -8,6 +8,8 @@ import SignupPage from "./components/SignupPage";
 import SpecialistPage from "./components/SpecialistPage";
 import { SECONDARY_BACKGROUND_COLOR } from "./styles/colors";
 import AboutPage from "./components/AboutPage";
+import NewPasswordPage from "./components/NewPasswordPage";
+import SupportPage from "./components/SupportPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -38,8 +40,10 @@ const App: React.FC = () => (
       <Route path="/about" component={AboutPage} />
       <Route path="/dentist" component={DentistPage} />
       <Route path="/specialist" component={SpecialistPage} />
+      <Route path="/support" component={SupportPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/signup/:type" component={SignupPage} />
+      <Route path="/password" component={NewPasswordPage} />
     </Switch>
   </BrowserRouter>
 );
