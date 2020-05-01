@@ -24,6 +24,7 @@ locals {
     "events/post",
     "events/{id}/delete",
     "events/{id}/patient/post",
+    "password/post",
     "patients/{id}/form/post",
     "patients/{id}/form/{name}/get",
     "patients/{id}/form/{name}/delete",
@@ -39,6 +40,7 @@ locals {
 
   public_lambdas = [
     "confirm-signup/post",
+    "password/post",
     "signin/post",
     "signup/post"
   ]
@@ -385,7 +387,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.117.6"
+  stage_description = "2020.121.0"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 

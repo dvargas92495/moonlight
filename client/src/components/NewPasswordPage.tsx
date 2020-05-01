@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
@@ -29,6 +29,9 @@ const Header = styled.h2`
 
 const NewPasswordPage = () => {
   const history = useHistory();
+  const {
+    state: { Session, username },
+  } = useLocation();
   const handleResponse = useCallback(
     ({ id, type, idToken }) => {
       setAuth(idToken);
@@ -47,19 +50,30 @@ const NewPasswordPage = () => {
           <Form
             handleResponse={handleResponse}
             label="set password"
-            path="signin"
+            path="password"
+            onValidate={(data) => {
+              if (data.password !== data.confirmPassword) {
+                return ["Passwords must match!"];
+              }
+              return [];
+            }}
+            extraProps={{
+              Session,
+              username,
+            }}
             fields={[
-              {
-                placeholder: "Email",
-                name: "username",
-                type: FieldType.TEXT,
-                required: true,
-              },
               {
                 placeholder: "Password",
                 name: "password",
                 type: FieldType.PASSWORD,
                 required: true,
+              },
+              {
+                placeholder: "Confirm Password",
+                name: "confirmPassword",
+                type: FieldType.PASSWORD,
+                required: true,
+                skip: true,
               },
             ]}
           />

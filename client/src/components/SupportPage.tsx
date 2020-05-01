@@ -14,7 +14,24 @@ const UserManagementContent = () => {
       <Form
         path={"users"}
         fields={[
-          { type: FieldType.TEXT, name: "username", placeholder: "username" },
+          {
+            type: FieldType.TEXT,
+            name: "username",
+            placeholder: "Username",
+            required: true,
+          },
+          {
+            type: FieldType.TEXT,
+            name: "firstName",
+            placeholder: "First Name",
+            required: true,
+          },
+          {
+            type: FieldType.TEXT,
+            name: "lastName",
+            placeholder: "Last Name",
+            required: true,
+          },
         ]}
         handleResponse={() => {}}
       />

@@ -1,13 +1,7 @@
-import React from "react";
+import React, { InputHTMLAttributes } from "react";
 import styled from "styled-components";
 import { CONTENT_COLOR, PRIMARY_COLOR } from "../../styles/colors";
-
-type InputProps = {
-  type?: string;
-  placeholder: string;
-  name?: string;
-  defaultValue?: string;
-};
+import { noop } from "lodash";
 
 const StyledInput = styled.input`
   width: 100%;
@@ -34,13 +28,15 @@ const Input = ({
   placeholder,
   name,
   defaultValue = "",
-}: InputProps) => (
+  onChange = noop,
+}: InputHTMLAttributes<HTMLInputElement>) => (
   <div>
     <StyledInput
       type={type}
       placeholder={placeholder}
       name={name}
       defaultValue={defaultValue}
+      onChange={onChange}
     />
   </div>
 );

@@ -4,7 +4,7 @@ import Select from "react-select";
 import { useApiPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 import Button from "./Button";
-import { map, reduce, find, join } from "lodash";
+import { map, reduce, find, join, omit, filter } from "lodash";
 import Input from "./Input";
 import Checkbox from "./Checkbox";
 import DatePicker from "./DatePicker";
@@ -33,6 +33,8 @@ export type Field = {
   required?: boolean;
   values?: string[];
   ref?: Ref<HTMLDivElement>;
+  skip?: boolean;
+  onChange?: (value: string) => void;
 };
 
 type FormProps = {
@@ -44,6 +46,7 @@ type FormProps = {
   extraProps?: object;
   fields?: Field[];
   width?: number;
+  onValidate?: (data: any) => string[];
 };
 
 const Form = ({
@@ -54,6 +57,7 @@ const Form = ({
   className,
   extraProps = {},
   fields = [],
+  onValidate = () => [],
   width = 240,
 }: FormProps) => {
   const [uiError, setUiError] = useState("");
@@ -78,13 +82,23 @@ const Form = ({
         (acc, f) => {
           if (f.type === FieldType.CHECKBOX) {
             return { ...acc, [f.name]: formData.has(f.name) };
+          } else if (
+            f.type === FieldType.PASSWORD ||
+            f.type === FieldType.TEXT
+          ) {
+            return { ...acc, [f.name]: formData.get(f.name) };
           }
           return acc;
         },
         {}
       );
+      errors.push(...onValidate(fieldsRequest));
       if (errors.length === 0) {
         setUiError("");
+        const omitFieldsFromRequest = map(
+          filter(fields, { skip: true }),
+          "name"
+        );
         const request = reduce(
           Object.keys(data),
           (acc, k) => ({
@@ -96,7 +110,7 @@ const Form = ({
         handleSubmit({
           ...request,
           ...extraProps,
-          ...fieldsRequest,
+          ...omit(fieldsRequest, omitFieldsFromRequest),
         });
       } else {
         setUiError(`Missing Required Fields: ${join(errors, ", ")}`);
@@ -115,6 +129,9 @@ const Form = ({
                 placeholder={field.placeholder}
                 name={field.name}
                 key={field.name}
+                onChange={(e) =>
+                  field.onChange && field.onChange(e.target.value)
+                }
               />
             );
           case FieldType.PASSWORD:

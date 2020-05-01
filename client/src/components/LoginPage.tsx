@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useHistory } from "react-router-dom";
 import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
@@ -29,19 +29,23 @@ const Header = styled.h2`
 
 const LoginPage = () => {
   const history = useHistory();
+  const [username, setUsername] = useState("");
   const handleResponse = useCallback(
     ({ id, type, idToken, Session }) => {
       if (!id) {
-        console.log(rest);
-        return;
+        history.push("/password", {
+          Session,
+          username,
+        });
+      } else {
+        setAuth(idToken);
+        history.push(`/${type}`, {
+          userId: id,
+          type,
+        });
       }
-      setAuth(idToken);
-      history.push(`/${type}`, {
-        userId: id,
-        type,
-      });
     },
-    [history]
+    [history, username]
   );
   return (
     <PublicPage>
@@ -58,6 +62,7 @@ const LoginPage = () => {
                 name: "username",
                 type: FieldType.TEXT,
                 required: true,
+                onChange: setUsername,
               },
               {
                 placeholder: "Password",
