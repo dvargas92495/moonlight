@@ -70,7 +70,7 @@ const Form = ({
       formData.forEach((v, k) => {
         const field = find(fields, { name: k });
         if (!v && field?.required) {
-          errors.push(field.placeholder);
+          errors.push(`Missing Required Field - ${field.placeholder}`);
         } else if (data[k]) {
           data[k].push(v);
         } else {
@@ -113,11 +113,11 @@ const Form = ({
           ...omit(fieldsRequest, omitFieldsFromRequest),
         });
       } else {
-        setUiError(`Missing Required Fields: ${join(errors, ", ")}`);
+        setUiError(join(errors, ", "));
       }
       event.preventDefault();
     },
-    [extraProps, handleSubmit, setUiError, fields]
+    [extraProps, handleSubmit, setUiError, fields, onValidate]
   );
   return (
     <StyledForm onSubmit={onSubmit} className={className} width={width}>

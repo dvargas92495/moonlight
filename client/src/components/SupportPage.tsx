@@ -43,9 +43,9 @@ const SupportPage = () => (
   <>
     <UserPage
       header="Your Support Dashboard"
-      initialTab="userManagement"
+      initialTab="users"
       tabContent={{
-        userManagement: <UserManagementContent />,
+        users: <UserManagementContent />,
       }}
     />
   </>
