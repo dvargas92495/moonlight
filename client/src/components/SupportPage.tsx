@@ -12,7 +12,7 @@ const UserManagementContent = () => {
   return (
     <Content>
       <Form
-        path={"users"}
+        path={"user"}
         fields={[
           {
             type: FieldType.TEXT,
@@ -30,6 +30,13 @@ const UserManagementContent = () => {
             type: FieldType.TEXT,
             name: "lastName",
             placeholder: "Last Name",
+            required: true,
+          },
+          {
+            type: FieldType.DROPDOWN,
+            name: "type",
+            placeholder: "User Type",
+            values: ["specialist", "dentist", "support"],
             required: true,
           },
         ]}
