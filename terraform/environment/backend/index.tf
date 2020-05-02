@@ -17,6 +17,8 @@ variable "app_storage_arns" {
 locals {
   lambdas = [
     "accept/post",
+    "application/{type}/post",
+    "applications/get",
     "availability/get",
     "availability/post",
     "confirm-signup/post",
@@ -40,6 +42,7 @@ locals {
   ]
 
   public_lambdas = [
+    "application/{type}/post",
     "confirm-signup/post",
     "password/post",
     "signin/post",
@@ -388,7 +391,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.123.0"
+  stage_description = "2020.123.1"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 
