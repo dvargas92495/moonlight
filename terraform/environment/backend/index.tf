@@ -23,7 +23,6 @@ locals {
     "applications/get",
     "availability/get",
     "availability/post",
-    "confirm-signup/post",
     "events/get",
     "events/post",
     "events/{id}/delete",
@@ -35,7 +34,6 @@ locals {
     "profile/get",
     "profile/post",
     "signin/post",
-    "signup/post",
     "specialist-views/get",
     "user/{id}/delete",
     "user/{id}/photo/get",
@@ -45,10 +43,8 @@ locals {
 
   public_lambdas = [
     "application/{type}/post",
-    "confirm-signup/post",
     "password/post",
-    "signin/post",
-    "signup/post"
+    "signin/post"
   ]
 
   job_lambdas = [
@@ -393,7 +389,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.123.2"
+  stage_description = "2020.123.3"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 
