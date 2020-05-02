@@ -17,3 +17,9 @@ export const eventFrequency = {
   MONTHLY: 2,
   YEARLY: 3,
 };
+
+export const applicationStatus = {
+  PENDING: 0,
+  ACCEPTED: 1,
+  REJECTED: 2,
+};

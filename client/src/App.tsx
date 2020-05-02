@@ -4,12 +4,12 @@ import { createGlobalStyle } from "styled-components";
 import HomePage from "./components/HomePage";
 import DentistPage from "./components/DentistPage";
 import LoginPage from "./components/LoginPage";
-import SignupPage from "./components/SignupPage";
 import SpecialistPage from "./components/SpecialistPage";
 import { SECONDARY_BACKGROUND_COLOR } from "./styles/colors";
 import AboutPage from "./components/AboutPage";
 import NewPasswordPage from "./components/NewPasswordPage";
 import SupportPage from "./components/SupportPage";
+import ApplyPage from "./components/ApplyPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -42,7 +42,7 @@ const App: React.FC = () => (
       <Route path="/specialist" component={SpecialistPage} />
       <Route path="/support" component={SupportPage} />
       <Route path="/login" component={LoginPage} />
-      <Route path="/signup/:type" component={SignupPage} />
+      <Route path="/apply/:type" component={ApplyPage} />
       <Route path="/password" component={NewPasswordPage} />
     </Switch>
   </BrowserRouter>
