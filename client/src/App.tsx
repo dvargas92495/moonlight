@@ -4,7 +4,6 @@ import { createGlobalStyle } from "styled-components";
 import HomePage from "./components/HomePage";
 import DentistPage from "./components/DentistPage";
 import LoginPage from "./components/LoginPage";
-import SignupPage from "./components/SignupPage";
 import SpecialistPage from "./components/SpecialistPage";
 import { SECONDARY_BACKGROUND_COLOR } from "./styles/colors";
 import AboutPage from "./components/AboutPage";

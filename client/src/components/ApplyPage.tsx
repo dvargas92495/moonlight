@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import Form, { FieldType } from "./core/Form";
 import { PRIMARY_COLOR } from "../styles/colors";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PublicPage from "./PublicPage";
 import { isEmpty } from "lodash";
 
