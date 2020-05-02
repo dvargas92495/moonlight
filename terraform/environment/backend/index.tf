@@ -35,7 +35,8 @@ locals {
     "specialist-views/get",
     "user/{id}/delete",
     "user/{id}/photo/get",
-    "user/{id}/photo/post"
+    "user/{id}/photo/post",
+    "user/post"
   ]
 
   public_lambdas = [
@@ -387,7 +388,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.121.0"
+  stage_description = "2020.123.0"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 
