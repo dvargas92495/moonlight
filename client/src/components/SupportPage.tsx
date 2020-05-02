@@ -21,6 +21,12 @@ const ApplicationContainer = styled.div`
   display: flex;
 `;
 
+enum ApplicationStatus {
+  PENDING,
+  ACCEPTED,
+  REJECTED,
+}
+
 const Application = ({
   username,
   firstName,
@@ -32,33 +38,53 @@ const Application = ({
   lastName: string;
   type: string;
 }) => {
+  const [status, setStatus] = useState(ApplicationStatus.PENDING);
   const {
     loading: acceptLoading,
     error: acceptError,
     handleSubmit: acceptUser,
-  } = useApiPost("application/accept");
+  } = useApiPost("application/accept", () =>
+    setStatus(ApplicationStatus.ACCEPTED)
+  );
   const {
     loading: rejectLoading,
     error: rejectError,
     handleSubmit: rejectUser,
-  } = useApiPost("application/reject");
-  return (
-    <ApplicationContainer>
-      <div>
-        <span>{`${firstName} ${lastName} applied as ${type}`}</span>
-      </div>
-      <div>
-        <Button onClick={() => acceptUser({ username })} isPrimary>
-          Accept
-        </Button>
-        <RequestFeedback loading={acceptLoading} error={acceptError} />
-      </div>
-      <div>
-        <Button onClick={() => rejectUser({ username })}>Reject</Button>
-        <RequestFeedback loading={rejectLoading} error={rejectError} />
-      </div>
-    </ApplicationContainer>
+  } = useApiPost("application/reject", () =>
+    setStatus(ApplicationStatus.REJECTED)
   );
+  switch (status) {
+    case ApplicationStatus.PENDING:
+      return (
+        <ApplicationContainer>
+          <div>
+            <span>{`${firstName} ${lastName} applied as ${type}`}</span>
+          </div>
+          <div>
+            <Button onClick={() => acceptUser({ username })} isPrimary>
+              Accept
+            </Button>
+            <RequestFeedback loading={acceptLoading} error={acceptError} />
+          </div>
+          <div>
+            <Button onClick={() => rejectUser({ username })}>Reject</Button>
+            <RequestFeedback loading={rejectLoading} error={rejectError} />
+          </div>
+        </ApplicationContainer>
+      );
+    case ApplicationStatus.ACCEPTED:
+      return (
+        <ApplicationContainer>
+          {`Application for ${username} was accepted.`}
+        </ApplicationContainer>
+      );
+    case ApplicationStatus.REJECTED:
+      return (
+        <ApplicationContainer>
+          {`Application for ${username} was rejected.`}
+        </ApplicationContainer>
+      );
+  }
 };
 
 const Applications = () => {
