@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { includes, map, range } from "lodash";
 import UserPage from "./UserPage";
 import { getAvailablity } from "../hooks/apiClient";
-import Input from "./core/Input";
-import Checkbox from "./core/Checkbox";
-import Form from "./core/Form";
+import Form, { FieldType } from "./core/Form";
 import ProfileContent from "./ProfileContent";
 import { useUserId } from "../hooks/router";
 import Schedule from "./core/Schedule";
@@ -15,7 +13,7 @@ const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const range7 = range(0, 7);
 const initialWorkDays = map(range7, () => false);
 
-const CheckboxContainer = styled.div`
+const SettingsContainer = styled.div`
   color: ${CONTENT_COLOR};
 `;
 
@@ -24,6 +22,7 @@ const SettingsContent = () => {
   const [workHoursStart, setWorkHoursStart] = useState("");
   const [workHoursEnd, setWorkHoursEnd] = useState("");
   const [workDays, setWorkDays] = useState(initialWorkDays);
+  const [loading, setLoading] = useState(true);
   const handleAvailabilityCallback = useCallback(
     ({ workHoursStart, workHoursEnd, workDays }) => {
       setWorkHoursStart(workHoursStart);
@@ -37,36 +36,46 @@ const SettingsContent = () => {
       .then(handleAvailabilityCallback)
       .catch((e) => {
         console.log(`TODO - Display error somewhere: ${e.message}`);
-      });
-  }, [userId, handleAvailabilityCallback]);
-  return (
-    <Form
-      handleResponse={handleAvailabilityCallback}
-      path="availability"
-      extraProps={{ userId }}
-    >
-      <Input
-        placeholder="Start of Working Hours"
-        defaultValue={workHoursStart}
-        name="workHoursStart"
+      })
+      .finally(() => setLoading(false));
+  }, [userId, handleAvailabilityCallback, setLoading]);
+  return loading ? (
+    <SettingsContainer>Loading...</SettingsContainer>
+  ) : (
+    <SettingsContainer>
+      <Form
+        handleResponse={handleAvailabilityCallback}
+        path="availability"
+        extraProps={{ userId }}
+        onValidate={(data) => {
+          if (data.workHoursStart > data.workHoursEnd) {
+            return ["End Hours must be after Start Hours"];
+          }
+          return [];
+        }}
+        fields={[
+          {
+            type: FieldType.TIME,
+            placeholder: "Start of Working Hours",
+            name: "workHoursStart",
+            defaultValue: workHoursStart,
+          },
+          {
+            type: FieldType.TIME,
+            placeholder: "End of Working Hours",
+            name: "workHoursEnd",
+            defaultValue: workHoursEnd,
+          },
+          {
+            type: FieldType.CHECKBOXES,
+            placeholder: "Work Days",
+            name: "workDays",
+            defaultValue: JSON.stringify(workDays),
+            values: days,
+          },
+        ]}
       />
-      <Input
-        placeholder="End of Working Hours"
-        defaultValue={workHoursEnd}
-        name="workHoursEnd"
-      />
-      <CheckboxContainer>
-        {map(days, (d, i) => (
-          <Checkbox
-            label={d}
-            key={i}
-            name="workDays"
-            value={i.toString()}
-            defaultChecked={workDays[i]}
-          />
-        ))}
-      </CheckboxContainer>
-    </Form>
+    </SettingsContainer>
   );
 };
 
