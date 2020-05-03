@@ -5,10 +5,11 @@ import { S3 } from "aws-sdk";
 
 export const handler = async (e: APIGatewayProxyEvent) => {
   const { id, name } = e.pathParameters;
+  const filename = decodeURIComponent(name);
   return s3
     .getObject({
       Bucket: `${envName}-patient-forms`,
-      Key: `patient${id}/${name}`,
+      Key: `patient${id}/${filename}`,
     })
     .promise()
     .then(({ Body, ContentType, LastModified }: S3.GetObjectOutput) => {
@@ -17,7 +18,7 @@ export const handler = async (e: APIGatewayProxyEvent) => {
         headers: {
           ...headers,
           "Content-Type": ContentType,
-          "Content-Disposition": `attachment; filename=${name}`,
+          "Content-Disposition": `attachment; filename=${filename}`,
           "Last-Modified": LastModified,
           "Access-Control-Expose-Headers": "Content-Disposition",
         },
