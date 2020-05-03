@@ -46,6 +46,7 @@ import {
   reject,
   find,
   keys,
+  isEmpty,
 } from "lodash";
 import Overlay from "./Overlay";
 import Icon from "./Icon";
@@ -371,9 +372,10 @@ const PatientDialog = React.forwardRef<
     Id: number;
     events: EventObject[];
     setEvents: (events: EventObject[]) => void;
+    setIndex: (index: number) => void;
     birthdayRef: React.RefObject<HTMLDivElement>;
   }
->(({ Id, events, setEvents, birthdayRef }, ref) => {
+>(({ Id, events, setEvents, setIndex, birthdayRef }, ref) => {
   const handleResponse = useCallback(
     ({
       patientId,
@@ -402,6 +404,7 @@ const PatientDialog = React.forwardRef<
           dateOfBirth,
           forms: [] as FileProps[],
         };
+        setIndex(keys(event.Patients).length - 1);
         // spreading to force a rerender
         setEvents([...events]);
       }
@@ -431,7 +434,7 @@ const PatientDialog = React.forwardRef<
           type: FieldType.TEXT,
         },
         {
-          placeholder: "Date of Birth (yyyy/mm/dd)",
+          placeholder: "Date of Birth (mm/dd/yyyy)",
           name: "dateOfBirth",
           type: FieldType.DATE,
           ref: birthdayRef,
@@ -444,19 +447,22 @@ const PatientDialog = React.forwardRef<
   );
 });
 
-const PatientSummary = ({
-  Patients,
-  CreatedBy,
-  viewUserId,
-  events,
-  setEvents,
-}: {
-  Patients: { [id: string]: PatientInfo };
-  viewUserId: number;
-  CreatedBy: number;
-  events: EventObject[];
-  setEvents: (events: EventObject[]) => void;
-}) => {
+const PatientSummary = React.forwardRef<
+  HTMLDivElement,
+  {
+    eventSelected: EventObject;
+    viewUserId: number;
+    events: EventObject[];
+    setEvents: (events: EventObject[]) => void;
+    birthdayRef: React.RefObject<HTMLDivElement>;
+  }
+>(({ eventSelected, viewUserId, events, setEvents, birthdayRef }, ref) => {
+  const [index, setIndex] = useState(0);
+  const currentPatientId =
+    !isEmpty(eventSelected.Patients) &&
+    parseInt(Object.keys(eventSelected.Patients).sort()[index]);
+  const currentPatient =
+    currentPatientId && eventSelected.Patients[currentPatientId];
   const onUploadSuccess = useCallback(
     (p: number) => (f: FileProps) => {
       const eventsWithPatient = filter(events, (e) => !!e.Patients[p]);
@@ -479,38 +485,67 @@ const PatientSummary = ({
   );
   return (
     <PatientSummaryContainer>
-      {map(keys(Patients), (p: number) => (
-        <div key={p}>
+      {currentPatientId && currentPatient && (
+        <div>
           <div>
-            {`${Patients[p].identifiers.firstName} ${
-              Patients[p].identifiers.lastName
-            } - ${format(new Date(Patients[p].dateOfBirth), "yyyy/MM/dd")}`}
+            <Icon
+              type={"LEFT"}
+              onClick={() => setIndex(index - 1)}
+              disabled={index === 0}
+            />
+            <Icon
+              type={"RIGHT"}
+              onClick={() => setIndex(index + 1)}
+              disabled={index === keys(eventSelected.Patients).length - 1}
+            />
           </div>
-          <div>{`Email: ${Patients[p].identifiers.email || "None"}`}</div>
           <div>
-            {`Phone Number: ${Patients[p].identifiers.phoneNumber || "None"}`}
+            {`${currentPatient.identifiers.firstName} ${
+              currentPatient.identifiers.lastName
+            } - ${format(new Date(currentPatient.dateOfBirth), "yyyy/MM/dd")}`}
           </div>
-          {viewUserId === CreatedBy ? (
+          <div>{`Email: ${currentPatient.identifiers.email || "None"}`}</div>
+          <div>
+            {`Phone Number: ${
+              currentPatient.identifiers.phoneNumber || "None"
+            }`}
+          </div>
+          {viewUserId === eventSelected.CreatedBy ? (
             <PatientFormInput
-              patientId={p}
-              onUploadSuccess={onUploadSuccess(p)}
-              onDeleteSuccess={onDeleteSuccess(p)}
-              files={Patients[p].forms}
+              patientId={currentPatientId}
+              onUploadSuccess={onUploadSuccess(currentPatientId)}
+              onDeleteSuccess={onDeleteSuccess(currentPatientId)}
+              files={currentPatient.forms}
             />
           ) : (
             <FormContainer>
-              {map(Patients[p].forms, ({ name }, i) => (
-                <DownloadLink key={i} href={`patients/${p}/form/${name}`}>
+              {map(currentPatient.forms, ({ name }, i) => (
+                <DownloadLink
+                  key={i}
+                  href={`patients/${currentPatientId}/form/${name}`}
+                >
                   {name}
                 </DownloadLink>
               ))}
             </FormContainer>
           )}
         </div>
-      ))}
+      )}
+      {!eventSelected?.IsPending &&
+        viewUserId === eventSelected?.CreatedBy &&
+        eventSelected?.Id && (
+          <PatientDialog
+            Id={eventSelected.Id}
+            events={events}
+            setEvents={setEvents}
+            setIndex={setIndex}
+            ref={ref}
+            birthdayRef={birthdayRef}
+          />
+        )}
     </PatientSummaryContainer>
   );
-};
+});
 
 const EventSummary = ({
   event,
@@ -522,7 +557,11 @@ const EventSummary = ({
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
 }) => {
   const onClick = (e: React.MouseEvent) => {
-    const { x, y, width } = (e.target as HTMLElement).getBoundingClientRect();
+    const {
+      x,
+      y,
+      width,
+    } = (e.currentTarget as HTMLElement).getBoundingClientRect();
     openEventOverlay({
       x: getDay(event.StartTime) < 3 ? x + width : x - 300,
       y,
@@ -1193,24 +1232,14 @@ const Schedule = ({
                   )}
                   {eventSelected && (
                     <PatientSummary
-                      Patients={eventSelected.Patients}
-                      CreatedBy={eventSelected.CreatedBy}
+                      eventSelected={eventSelected}
                       viewUserId={viewUserId}
                       events={events}
                       setEvents={setEvents}
+                      ref={patientRef}
+                      birthdayRef={birthdayRef}
                     />
                   )}
-                  {!eventSelected?.IsPending &&
-                    viewUserId === eventSelected?.CreatedBy &&
-                    eventSelected?.Id && (
-                      <PatientDialog
-                        Id={eventSelected.Id}
-                        events={events}
-                        setEvents={setEvents}
-                        ref={patientRef}
-                        birthdayRef={birthdayRef}
-                      />
-                    )}
                   <RequestFeedback loading={loading} error={error} />
                 </EventContentContainer>
               </EventContainer>
