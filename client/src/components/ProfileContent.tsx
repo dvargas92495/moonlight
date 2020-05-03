@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { getProfile, clearAuth } from "../hooks/apiClient";
-import Form from "./core/Form";
-import Input from "./core/Input";
+import Form, { FieldType } from "./core/Form";
 import { useUserId } from "../hooks/router";
 import styled from "styled-components";
 import PhotoInput from "./core/PhotoInput";
@@ -48,18 +47,21 @@ const ProfileContent = () => {
           handleResponse={handleProfileCallback}
           path="profile"
           extraProps={{ userId }}
-        >
-          <Input
-            defaultValue={firstName}
-            placeholder="First Name"
-            name="firstName"
-          />
-          <Input
-            defaultValue={lastName}
-            placeholder="Last Name"
-            name="lastName"
-          />
-        </Form>
+          fields={[
+            {
+              defaultValue: firstName,
+              placeholder: "First Name",
+              name: "firstName",
+              type: FieldType.TEXT,
+            },
+            {
+              defaultValue: lastName,
+              placeholder: "Last Name",
+              name: "lastName",
+              type: FieldType.TEXT,
+            },
+          ]}
+        />
       </div>
       <DeleteUserContainer>
         <DeletionModal

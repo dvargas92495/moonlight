@@ -39,6 +39,11 @@ resource "aws_waf_ipset" "ipset" {
     type  = "IPV4"
     value = "70.19.82.56/32"
   }
+
+  ip_set_descriptors {
+    type  = "IPV4"
+    value = "173.2.120.75/32"
+  }
 }
 
 resource "aws_waf_rule" "waf_rule" {

@@ -4,7 +4,7 @@ import Select from "react-select";
 import { useApiPost } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 import Button from "./Button";
-import { map, reduce, find, join, omit, filter } from "lodash";
+import { map, reduce, join, omit, filter } from "lodash";
 import Input from "./Input";
 import Checkbox from "./Checkbox";
 import DatePicker from "./DatePicker";
@@ -24,6 +24,8 @@ export enum FieldType {
   CHECKBOX,
   DROPDOWN,
   DATE,
+  TIME,
+  CHECKBOXES,
 }
 
 export type Field = {
@@ -35,6 +37,7 @@ export type Field = {
   ref?: Ref<HTMLDivElement>;
   skip?: boolean;
   onChange?: (value: string) => void;
+  defaultValue?: string;
 };
 
 type FormProps = {
@@ -65,18 +68,6 @@ const Form = ({
   const onSubmit = useCallback(
     (event) => {
       const formData = new FormData(event.target);
-      const data: { [key: string]: FormDataEntryValue[] } = {};
-      const errors: string[] = [];
-      formData.forEach((v, k) => {
-        const field = find(fields, { name: k });
-        if (!v && field?.required) {
-          errors.push(`Missing Required Field - ${field.placeholder}`);
-        } else if (data[k]) {
-          data[k].push(v);
-        } else {
-          data[k] = [v];
-        }
-      });
       const fieldsRequest = reduce(
         fields,
         (acc, f) => {
@@ -84,13 +75,22 @@ const Form = ({
             return { ...acc, [f.name]: formData.has(f.name) };
           } else if (
             f.type === FieldType.PASSWORD ||
-            f.type === FieldType.TEXT
+            f.type === FieldType.TEXT ||
+            f.type === FieldType.TIME ||
+            f.type === FieldType.DATE ||
+            f.type === FieldType.DROPDOWN
           ) {
             return { ...acc, [f.name]: formData.get(f.name) };
+          } else if (f.type === FieldType.CHECKBOXES) {
+            return { ...acc, [f.name]: formData.getAll(f.name) };
           }
           return acc;
         },
         {}
+      ) as { [key: string]: string | string[] | boolean };
+      const errors = map(
+        filter(fields, (f) => f.required && !fieldsRequest[f.name]) as Field[],
+        (f: Field) => `Missing Required Field - ${f.placeholder}`
       );
       errors.push(...onValidate(fieldsRequest));
       if (errors.length === 0) {
@@ -99,16 +99,7 @@ const Form = ({
           filter(fields, { skip: true }),
           "name"
         );
-        const request = reduce(
-          Object.keys(data),
-          (acc, k) => ({
-            ...acc,
-            [k]: data[k].length === 1 ? data[k][0] : data[k],
-          }),
-          {}
-        );
         handleSubmit({
-          ...request,
           ...extraProps,
           ...omit(fieldsRequest, omitFieldsFromRequest),
         });
@@ -132,6 +123,7 @@ const Form = ({
                 onChange={(e) =>
                   field.onChange && field.onChange(e.target.value)
                 }
+                defaultValue={field.defaultValue}
               />
             );
           case FieldType.PASSWORD:
@@ -151,6 +143,21 @@ const Form = ({
                 key={field.name}
               />
             );
+          case FieldType.CHECKBOXES:
+            const defaultValues = JSON.parse(field.defaultValue || "[]");
+            return (
+              <div key={field.name}>
+                {map(field.values, (d, i) => (
+                  <Checkbox
+                    label={d}
+                    key={i}
+                    name={field.name}
+                    value={i.toString()}
+                    defaultChecked={defaultValues[i]}
+                  />
+                ))}
+              </div>
+            );
           case FieldType.DROPDOWN:
             return (
               <Select
@@ -168,6 +175,16 @@ const Form = ({
                 name={field.name}
                 key={field.name}
                 ref={field.ref}
+              />
+            );
+          case FieldType.TIME:
+            return (
+              <Input
+                type={"time"}
+                placeholder={field.placeholder}
+                name={field.name}
+                key={field.name}
+                defaultValue={field.defaultValue}
               />
             );
         }
