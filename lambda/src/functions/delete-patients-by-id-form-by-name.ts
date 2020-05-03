@@ -4,6 +4,7 @@ import { serverErrorResponse, emptyResponse } from "../layers/util";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { id, name } = event.pathParameters;
+  const filename = decodeURIComponent(name);
   const client = connectRdsClient();
   return client
     .query("BEGIN")
@@ -11,14 +12,14 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       client.query(
         `DELETE FROM patient_forms
         WHERE patient_id=$1 AND name=$2`,
-        [id, name]
+        [id, filename]
       )
     )
     .then(() =>
       s3
         .deleteObject({
           Bucket: process.env.REACT_APP_S3_PATIENT_FORM_BUCKET,
-          Key: `patient${id}/${name}`,
+          Key: `patient${id}/${filename}`,
         })
         .promise()
     )
