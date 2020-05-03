@@ -20,6 +20,7 @@ const Container = styled.div<{ highlight: boolean }>`
 
 const InputContainer = styled.div`
   padding: 4px;
+  color: ${CONTENT_COLOR};
 `;
 
 const InputFileType = styled.input`

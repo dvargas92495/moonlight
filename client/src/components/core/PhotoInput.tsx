@@ -3,6 +3,18 @@ import { useUserId } from "../../hooks/router";
 import FileInput, { FileProps } from "./FileInput";
 import api from "../../hooks/apiClient";
 import defaultProfilePhoto from "../../images/defaultProfilePhoto.jpg";
+import styled from "styled-components";
+
+const ImageContainer = styled.div`
+  width: 320px;
+  height: 320px;
+`;
+
+const Image = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+`;
 
 const PhotoInput = () => {
   const userId = useUserId();
@@ -26,9 +38,11 @@ const PhotoInput = () => {
       accept="image/*"
     >
       {src ? (
-        <img src={src} alt={"Failed to load"} width={320} height={320} />
+        <ImageContainer>
+          <Image src={src} alt={"Failed to load"} />
+        </ImageContainer>
       ) : (
-        <div>Loading...</div>
+        <ImageContainer>Loading...</ImageContainer>
       )}
     </FileInput>
   );
