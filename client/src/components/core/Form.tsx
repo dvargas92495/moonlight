@@ -164,7 +164,7 @@ const Form = ({
             return (
               <DatePicker
                 placeholder={field.placeholder}
-                displayFormat="yyyy/MM/dd"
+                displayFormat="MM/dd/yyyy"
                 name={field.name}
                 key={field.name}
                 ref={field.ref}
