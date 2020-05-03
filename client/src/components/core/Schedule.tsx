@@ -409,7 +409,7 @@ const PatientDialog = React.forwardRef<
         setEvents([...events]);
       }
     },
-    [Id, events, setEvents]
+    [Id, events, setEvents, setIndex]
   );
   return (
     <FormModal
