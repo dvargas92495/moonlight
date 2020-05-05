@@ -10,6 +10,7 @@ import AboutPage from "./components/AboutPage";
 import NewPasswordPage from "./components/NewPasswordPage";
 import SupportPage from "./components/SupportPage";
 import ApplyPage from "./components/ApplyPage";
+import PasswordResetPage from "./components/PasswordResetPage";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -44,6 +45,7 @@ const App: React.FC = () => (
       <Route path="/login" component={LoginPage} />
       <Route path="/apply/:type" component={ApplyPage} />
       <Route path="/password" component={NewPasswordPage} />
+      <Route path="/reset" component={PasswordResetPage} />
     </Switch>
   </BrowserRouter>
 );

@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
-import { PRIMARY_COLOR } from "../styles/colors";
+import { PRIMARY_COLOR, CONTENT_COLOR } from "../styles/colors";
 import { setAuth } from "../hooks/apiClient";
 
 const Container = styled.div`
@@ -25,6 +25,10 @@ const FormContainer = styled.div`
 const Header = styled.h2`
   color: ${PRIMARY_COLOR};
   text-transform: uppercase;
+`;
+
+const ResetLink = styled(Link)`
+  color: ${CONTENT_COLOR};
 `;
 
 const LoginPage = () => {
@@ -73,6 +77,7 @@ const LoginPage = () => {
             ]}
           />
         </FormContainer>
+        <ResetLink to={"/reset"}>Forgot Password?</ResetLink>
       </Container>
     </PublicPage>
   );
