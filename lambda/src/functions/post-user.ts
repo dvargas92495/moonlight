@@ -21,6 +21,16 @@ export const handler = (event: APIGatewayProxyEvent) => {
     .adminCreateUser({
       UserPoolId,
       Username,
+      UserAttributes: [
+        {
+          Name: "email_verified",
+          Value: "true",
+        },
+        {
+          Name: "email",
+          Value: Username,
+        },
+      ],
     })
     .promise()
     .then(({ User: { Attributes } }) => {

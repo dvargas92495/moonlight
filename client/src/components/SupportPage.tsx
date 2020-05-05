@@ -6,11 +6,13 @@ import { map } from "lodash";
 import Button from "./core/Button";
 import api, { useApiPost } from "../hooks/apiClient";
 import RequestFeedback from "./RequestFeedback";
+import DeleteUserModal from "./core/DeleteUserModal";
 
 const Content = styled.div`
   display: flex;
   width: 100%;
   flex-direction: column;
+  justify-content: space-between;
 `;
 
 const ApplicationsContainer = styled.div`
@@ -143,6 +145,7 @@ const UserManagementContent = () => {
         handleResponse={() => {}}
       />
       <Applications />
+      <DeleteUserModal />
     </Content>
   );
 };

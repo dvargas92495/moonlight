@@ -11,6 +11,16 @@ export const handler = ({ Username }: { Username: string }) => {
     .adminCreateUser({
       UserPoolId,
       Username,
+      UserAttributes: [
+        {
+          Name: "email_verified",
+          Value: "true",
+        },
+        {
+          Name: "email",
+          Value: Username,
+        },
+      ],
     })
     .promise()
     .then(({ User: { Attributes } }) => {
