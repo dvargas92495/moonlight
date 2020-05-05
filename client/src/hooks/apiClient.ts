@@ -6,11 +6,13 @@ const authorizationToken = localStorage.getItem("Authorization");
 
 export const api = axios.create({
   baseURL: process.env.REACT_APP_API_GATEWAY_INVOKE_URL,
-  headers: authorizationToken
-    ? {
-        Authorization: authorizationToken,
-      }
-    : {},
+  headers: {
+    common: authorizationToken
+      ? {
+          Authorization: authorizationToken,
+        }
+      : {},
+  },
 });
 
 export const setAuth = (idToken: string) => {
