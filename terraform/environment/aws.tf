@@ -8,6 +8,12 @@ locals {
   s3_origin_id  = "S3-${local.env_name}"
   is_prod       = local.env_name == "emdeo"
   is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
+  dev_ip        = "70.19.82.56/32"
+  ips           = toset(local.is_dev ? [local.dev_ip] : [
+    local.dev_ip,
+    "72.66.88.213/32", // Ryan's IP
+    "10.0.1.58/32"     // Raj's IP
+  ])
   app_storage   = [
     "patient-forms",
     "profile-photos"
@@ -35,14 +41,12 @@ data "aws_iam_user" "admin" {
 resource "aws_waf_ipset" "ipset" {
   name        = "ip${local.camelcase_env}"
 
-  ip_set_descriptors {
-    type  = "IPV4"
-    value = "70.19.82.56/32"
-  }
-
-  ip_set_descriptors {
-    type  = "IPV4"
-    value = "173.2.120.75/32"
+  dynamic "ip_set_descriptors" {
+    for_each = local.ips
+    content {
+      type  = "IPV4"
+      value = ip_set_descriptors.value
+    }
   }
 }
 
@@ -272,7 +276,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
+  web_acl_id = local.is_prod ? null : aws_waf_web_acl.waf_acl.id
 }
 
 resource "aws_route53_record" "A" {
@@ -371,7 +375,7 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = local.is_dev ? aws_waf_web_acl.waf_acl.id : null
+  web_acl_id = local.is_prod ? null : aws_waf_web_acl.waf_acl.id
 }
 
 resource "aws_route53_record" "www-A" {
