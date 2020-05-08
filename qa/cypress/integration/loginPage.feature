@@ -13,7 +13,7 @@ Feature: Login Page
 
   Scenario: Successfully Logging In as Specialist
     Given I open login page
-    And I type "testuser92495@gmail.com" into first input
+    And I type "testemail92495@gmail.com" into first input
     And I type "asdfASDF1234!@#$" into second input
 
     When I click button with text "LOG IN"
