@@ -4,7 +4,6 @@ Feature: Specialist Page
   
   Scenario: Save Availability
     Given I am already logged in
-    And I click link with text "SPECIALISTS"
     And I click SETTINGS
     
     When I type "08:00" into "Start of Working Hours" input
@@ -19,4 +18,4 @@ Feature: Specialist Page
     And I click button with text "SAVE"
     And I click SCHEDULE
 
-    # Work on verify
+    Then I should be available from '8:00 AM' to '4:00 PM' on '2,3,4'

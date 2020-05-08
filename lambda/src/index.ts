@@ -25,7 +25,7 @@ const transformHandler = (
   }>
 ) => (req: Request<ParamsDictionary>, res: Response<any>) => {
   const event = {
-    body: req.body,
+    body: JSON.stringify(req.body),
     headers: reduce(
       reject(keys(req.headers), (header) => isArray(req.headers[header])),
       (acc, header) => ({ ...acc, [header]: req.headers[header] }),
