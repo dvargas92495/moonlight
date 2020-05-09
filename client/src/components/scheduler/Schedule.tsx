@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { FileProps } from "./FileInput";
+import { FileProps } from "../core/FileInput";
 import {
   startOfDay,
   endOfDay,
@@ -48,15 +48,15 @@ import {
   keys,
   isEmpty,
 } from "lodash";
-import Overlay from "./Overlay";
-import Icon from "./Icon";
-import Form, { FieldType } from "./Form";
-import Button from "./Button";
+import Overlay from "../core/Overlay";
+import Icon from "../core/Icon";
+import Form, { FieldType } from "../core/Form";
+import Button from "../core/Button";
 import RequestFeedback from "../RequestFeedback";
-import PatientFormInput from "./PatientFormInput";
-import DownloadLink from "./DownloadLink";
-import FormModal from "./FormModal";
-import Calendar from "./Calendar";
+import PatientFormInput from "../core/PatientFormInput";
+import DownloadLink from "../core/DownloadLink";
+import FormModal from "../core/FormModal";
+import Calendar from "../core/Calendar";
 
 enum View {
   DAY,

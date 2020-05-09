@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserPage from "./UserPage";
-import Schedule from "./core/Schedule";
+import Schedule from "./scheduler/Schedule";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
