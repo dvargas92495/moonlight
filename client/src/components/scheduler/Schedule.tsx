@@ -34,6 +34,7 @@ import {
   max,
   isSameDay,
   getHours,
+  differenceInHours,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -71,6 +72,7 @@ import Calendar from "../core/Calendar";
 import DateRange from "./DateRange";
 
 const EVENT_OVERLAY_WIDTH = 400;
+const ROW_HEIGHT = 36;
 const DEFAULT_DATE = new Date(0);
 
 enum View {
@@ -196,7 +198,7 @@ const CalendarTable = styled.table`
 const TableRow = styled.tr`
   border-collapse: separate;
   border-spacing: 0;
-  height: 36px;
+  height: ${ROW_HEIGHT}px;
 `;
 
 const HeaderTableRow = styled(TableRow)`
@@ -248,8 +250,8 @@ const HourCell = styled(TableCell)<{
         ? HALF_OPAQUE
         : QUARTER_OPAQUE
     }`};
-  padding: 1px;
-  height: 36px;
+  padding: 0;
+  height: ${ROW_HEIGHT}px;
   text-align: left;
 
   &:hover {
@@ -273,7 +275,7 @@ const DayCell = styled(TableCell)<{
 `;
 
 const DayCellEventContainer = styled.div`
-  height: 36px;
+  height: ${ROW_HEIGHT}px;
   padding: 1px 0;
 `;
 
@@ -318,7 +320,7 @@ const EventContentContainer = styled.div`
 const EventSummaryContainer = styled.div<{ hours: number }>`
   position: relative;
   width: 90%;
-  height: ${(props) => props.hours * 100}%;
+  height: ${(props) => (props.hours * ROW_HEIGHT * 100) / (ROW_HEIGHT - 1)}%;
   background: ${SECONDARY_BACKGROUND_COLOR};
   color: ${CONTENT_COLOR};
   font-size: 13px;
@@ -594,16 +596,22 @@ const EventSummary = ({
     setEventSelected(event);
     e.stopPropagation();
   };
+  const totalDiff = differenceInHours(event.EndTime, event.StartTime);
+  const eodDiff =
+    differenceInHours(endOfDay(event.StartTime), event.StartTime) + 1;
   return (
-    <EventSummaryContainer hours={1} onClick={onClick}>
+    <EventSummaryContainer
+      hours={Math.min(totalDiff, eodDiff)}
+      onClick={onClick}
+    >
       <div>
         {event.Subject.length > 10
           ? `${event.Subject.substring(0, 9)}...`
           : event.Subject}
       </div>
-      <div>{`${format(event.StartTime, "hh:mm")} - ${format(
+      <div>{`${format(event.StartTime, "hh:mm a")} - ${format(
         event.EndTime,
-        "hh:mm"
+        "hh:mm a"
       )}`}</div>
     </EventSummaryContainer>
   );
@@ -774,7 +782,7 @@ const DayView = ({
 }) => {
   const [anchor, setAnchor] = useState(DEFAULT_DATE);
   const tdHours = useMemo(
-    () => map(range(6, 21), (h) => setHours(startOfHour(currentDate), h)),
+    () => map(range(3, 24), (h) => setHours(startOfHour(currentDate), h)),
     [currentDate]
   );
 
@@ -878,6 +886,13 @@ const WeekView = ({
   const workEnd = parseInt(split(workHours.end, ":")[0]);
   const [anchor, setAnchor] = useState(DEFAULT_DATE);
 
+  const documentMouseUp = useCallback(() => {
+    setAnchor(DEFAULT_DATE);
+    setSelectedHour(DEFAULT_DATE);
+    setSelectedEndHour(new Date(60));
+    document.removeEventListener("mouseup", documentMouseUp);
+  }, [setAnchor, setSelectedHour, setSelectedEndHour]);
+
   return (
     <tbody>
       <HeaderTableRow>
@@ -929,7 +944,7 @@ const WeekView = ({
           );
         })}
       </HeaderTableRow>
-      {map(range(6, 21), (h) => (
+      {map(range(3, 24), (h) => (
         <TableRow key={h}>
           <TimeCell>
             {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
@@ -945,12 +960,6 @@ const WeekView = ({
             const eventsThisHour = filter(events, (e) =>
               isEventOnDate(e, tdHour)
             );
-            const documentMouseUp = (e: MouseEvent) => {
-              setAnchor(DEFAULT_DATE);
-              setSelectedHour(DEFAULT_DATE);
-              setSelectedEndHour(new Date(60));
-              document.removeEventListener("mouseup", documentMouseUp);
-            };
             const onMouseDown = () => {
               if (!personal && isUnavailable) {
                 return;

@@ -1,11 +1,12 @@
 import AWS from "aws-sdk";
-import { Client } from "pg";
+import { Client, types } from "pg";
 import { createHmac } from "crypto";
 import axios, { AxiosResponse } from "axios";
 import JWT from "jsonwebtoken";
 import jwkToPem, { JWK } from "jwk-to-pem";
 import { find } from "lodash";
 
+types.setTypeParser(1114, (str) => `${str}Z`); // timestamps to parse correctly in local env -.-
 export const ClientId = process.env.REACT_APP_USER_CLIENT_ID || "";
 export const region = "us-east-1";
 export const envName = process.env.REACT_APP_ENVIRONMENT_NAME || "";
