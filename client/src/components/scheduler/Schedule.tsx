@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { FileProps } from "../core/FileInput";
 import {
   startOfDay,
@@ -23,6 +29,12 @@ import {
   getDay,
   getYear,
   getMonth,
+  isBefore,
+  min,
+  max,
+  isSameDay,
+  getHours,
+  differenceInHours,
 } from "date-fns";
 import { api, useApiDelete, useApiPost } from "../../hooks/apiClient";
 import styled from "styled-components";
@@ -35,7 +47,7 @@ import {
   SECONDARY_COLOR,
   PRIMARY_COLOR,
 } from "../../styles/colors";
-import { BsChevronLeft, BsChevronRight, BsCalendarFill } from "react-icons/bs";
+import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { TiArrowSortedDown } from "react-icons/ti";
 import {
   map,
@@ -57,6 +69,11 @@ import PatientFormInput from "../core/PatientFormInput";
 import DownloadLink from "../core/DownloadLink";
 import FormModal from "../core/FormModal";
 import Calendar from "../core/Calendar";
+import DateRange from "./DateRange";
+
+const EVENT_OVERLAY_WIDTH = 400;
+const ROW_HEIGHT = 36;
+const DEFAULT_DATE = new Date(0);
 
 enum View {
   DAY,
@@ -181,7 +198,7 @@ const CalendarTable = styled.table`
 const TableRow = styled.tr`
   border-collapse: separate;
   border-spacing: 0;
-  height: 36px;
+  height: ${ROW_HEIGHT}px;
 `;
 
 const HeaderTableRow = styled(TableRow)`
@@ -221,16 +238,26 @@ const TimeCell = styled(TableCell)`
 `;
 
 const HourCell = styled(TableCell)<{
+  personal?: boolean;
   isUnavailable?: boolean;
+  selected: boolean;
 }>`
   background: ${(props) =>
-    `${CONTENT_COLOR}${props.isUnavailable ? HALF_OPAQUE : QUARTER_OPAQUE}`};
-  padding: 1px;
-  height: 36px;
+    `${CONTENT_COLOR}${
+      props.selected
+        ? THREE_QUARTER_OPAQUE
+        : props.isUnavailable
+        ? HALF_OPAQUE
+        : QUARTER_OPAQUE
+    }`};
+  padding: 0;
+  height: ${ROW_HEIGHT}px;
   text-align: left;
 
   &:hover {
-    background: ${`${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
+    background: ${(props) =>
+      (props.personal || !props.isUnavailable) &&
+      `${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
   }
 `;
 
@@ -248,7 +275,7 @@ const DayCell = styled(TableCell)<{
 `;
 
 const DayCellEventContainer = styled.div`
-  height: 36px;
+  height: ${ROW_HEIGHT}px;
   padding: 1px 0;
 `;
 
@@ -276,7 +303,7 @@ const EventContainer = styled.div<{ top: number; left: number }>`
   position: fixed;
   top: ${(props) => props.top}px;
   left: ${(props) => props.left}px;
-  width: 300px;
+  width: ${EVENT_OVERLAY_WIDTH}px;
   background: white;
   border-radius: 2px;
   box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14),
@@ -293,7 +320,7 @@ const EventContentContainer = styled.div`
 const EventSummaryContainer = styled.div<{ hours: number }>`
   position: relative;
   width: 90%;
-  height: ${(props) => props.hours * 100}%;
+  height: ${(props) => (props.hours * ROW_HEIGHT * 100) / (ROW_HEIGHT - 1)}%;
   background: ${SECONDARY_BACKGROUND_COLOR};
   color: ${CONTENT_COLOR};
   font-size: 13px;
@@ -563,22 +590,28 @@ const EventSummary = ({
       width,
     } = (e.currentTarget as HTMLElement).getBoundingClientRect();
     openEventOverlay({
-      x: getDay(event.StartTime) < 3 ? x + width : x - 300,
+      x: getDay(event.StartTime) < 3 ? x + width : x - EVENT_OVERLAY_WIDTH,
       y,
     });
     setEventSelected(event);
     e.stopPropagation();
   };
+  const totalDiff = differenceInHours(event.EndTime, event.StartTime);
+  const eodDiff =
+    differenceInHours(endOfDay(event.StartTime), event.StartTime) + 1;
   return (
-    <EventSummaryContainer hours={1} onClick={onClick}>
+    <EventSummaryContainer
+      hours={Math.min(totalDiff, eodDiff)}
+      onClick={onClick}
+    >
       <div>
         {event.Subject.length > 10
           ? `${event.Subject.substring(0, 9)}...`
           : event.Subject}
       </div>
-      <div>{`${format(event.StartTime, "hh:mm")} - ${format(
+      <div>{`${format(event.StartTime, "hh:mm a")} - ${format(
         event.EndTime,
-        "hh:mm"
+        "hh:mm a"
       )}`}</div>
     </EventSummaryContainer>
   );
@@ -596,18 +629,146 @@ const isEventOnDate = (e: EventObject, d: Date) => {
   return diffWeeks > 0 && isEqual(addWeeks(e.StartTime, diffWeeks), d);
 };
 
+const DayHourView = ({
+  tdHour,
+  events,
+  workHours,
+  personal,
+  anchor,
+  openEventOverlay,
+  documentMouseUp,
+  setAnchor,
+  setSelectedHour,
+  setSelectedEndHour,
+  setEventSelected,
+  selectedHour,
+  selectedEndHour,
+}: {
+  tdHour: Date;
+  events: EventObject[];
+  workHours: {
+    start: string;
+    end: string;
+    days: number[];
+  };
+  personal: boolean;
+  anchor: Date;
+  openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
+  documentMouseUp: () => void;
+  setSelectedEndHour: (d: Date) => void;
+  setSelectedHour: (d: Date) => void;
+  setAnchor: (d: Date) => void;
+  setEventSelected: (e?: EventObject) => void;
+  selectedHour: Date;
+  selectedEndHour: Date;
+}) => {
+  const workStart = parseInt(split(workHours.start, ":")[0]);
+  const workEnd = parseInt(split(workHours.end, ":")[0]);
+  const endTdHour = addHours(tdHour, 1);
+  const isUnavailable = !(
+    includes(workHours.days, getDay(tdHour)) &&
+    getHours(tdHour) >= workStart &&
+    getHours(tdHour) < workEnd
+  );
+  const eventsThisHour = filter(events, (e) => isEventOnDate(e, tdHour));
+  const onMouseDown = useCallback(() => {
+    if (!personal && isUnavailable) {
+      return;
+    }
+    setAnchor(tdHour);
+    setSelectedHour(tdHour);
+    setSelectedEndHour(endTdHour);
+    setEventSelected(undefined);
+    document.addEventListener("mouseup", documentMouseUp);
+  }, [
+    personal,
+    setSelectedHour,
+    setSelectedEndHour,
+    setEventSelected,
+    setAnchor,
+    documentMouseUp,
+    tdHour,
+    endTdHour,
+    isUnavailable,
+  ]);
+
+  const onMouseOver = useCallback(
+    (e: React.MouseEvent) => {
+      if (!personal && isUnavailable) {
+        return;
+      }
+      if (e.buttons === 1) {
+        setSelectedHour(min([anchor, tdHour]));
+        setSelectedEndHour(max([addHours(anchor, 1), endTdHour]));
+      }
+    },
+    [
+      setSelectedHour,
+      setSelectedEndHour,
+      personal,
+      isUnavailable,
+      anchor,
+      tdHour,
+      endTdHour,
+    ]
+  );
+
+  const onMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      if (!personal && isUnavailable) {
+        return;
+      }
+      const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
+      openEventOverlay({ x, y });
+      setAnchor(DEFAULT_DATE);
+      document.removeEventListener("mouseup", documentMouseUp);
+      e.nativeEvent.stopImmediatePropagation();
+    },
+    [openEventOverlay, personal, isUnavailable, setAnchor, documentMouseUp]
+  );
+  return (
+    <TableRow>
+      <TimeCell>{format(tdHour, "h:mm aa")}</TimeCell>
+      <HourCell
+        key={tdHour.valueOf()}
+        personal={personal}
+        isUnavailable={isUnavailable}
+        selected={
+          isBefore(tdHour, selectedEndHour) && !isBefore(tdHour, selectedHour)
+        }
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        onMouseOver={onMouseOver}
+      >
+        {map(eventsThisHour, (e) => (
+          <EventSummary
+            event={e}
+            key={e.Id}
+            setEventSelected={setEventSelected}
+            openEventOverlay={openEventOverlay}
+          />
+        ))}
+      </HourCell>
+    </TableRow>
+  );
+};
+
 const DayView = ({
   personal,
   currentDate,
   workHours,
   events,
   openEventOverlay,
+  selectedHour,
+  selectedEndHour,
   setSelectedHour,
   setSelectedEndHour,
   setEventSelected,
 }: {
   personal: boolean;
   currentDate: Date;
+  selectedHour: Date;
+  selectedEndHour: Date;
   workHours: {
     start: string;
     end: string;
@@ -619,8 +780,11 @@ const DayView = ({
   setSelectedEndHour: (d: Date) => void;
   setEventSelected: (e?: EventObject) => void;
 }) => {
-  const workStart = parseInt(split(workHours.start, ":")[0]);
-  const workEnd = parseInt(split(workHours.end, ":")[0]);
+  const [anchor, setAnchor] = useState(DEFAULT_DATE);
+  const tdHours = useMemo(
+    () => map(range(3, 24), (h) => setHours(startOfHour(currentDate), h)),
+    [currentDate]
+  );
 
   const eventsThisDay = filter(
     events,
@@ -639,6 +803,12 @@ const DayView = ({
     setSelectedEndHour(addDays(currentDate, 1));
     setEventSelected(undefined);
   };
+  const documentMouseUp = useCallback(() => {
+    setAnchor(DEFAULT_DATE);
+    setSelectedHour(DEFAULT_DATE);
+    setSelectedEndHour(new Date(60));
+    document.removeEventListener("mouseup", documentMouseUp);
+  }, [setAnchor, setSelectedHour, setSelectedEndHour]);
 
   return (
     <tbody>
@@ -662,46 +832,24 @@ const DayView = ({
           </HeaderCell>
         </TableCell>
       </HeaderTableRow>
-      {map(range(6, 21), (h) => {
-        const tdHour = setHours(startOfHour(currentDate), h);
-        const isUnavailable = !(
-          includes(workHours.days, getDay(currentDate)) &&
-          h >= workStart &&
-          h < workEnd
-        );
-        const eventsThisHour = filter(events, (e) => isEventOnDate(e, tdHour));
-        const onClick = (e: React.MouseEvent) => {
-          if (isUnavailable && !personal) {
-            return;
-          }
-          const { x, y } = (e.target as HTMLElement).getBoundingClientRect();
-          openEventOverlay({ x, y });
-          setSelectedHour(tdHour);
-          setSelectedEndHour(addHours(tdHour, 1));
-          setEventSelected(undefined);
-        };
-        return (
-          <TableRow key={h}>
-            <TimeCell>
-              {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
-            </TimeCell>
-            <HourCell
-              key={tdHour.valueOf()}
-              isUnavailable={isUnavailable}
-              onClick={onClick}
-            >
-              {map(eventsThisHour, (e) => (
-                <EventSummary
-                  event={e}
-                  key={e.Id}
-                  setEventSelected={setEventSelected}
-                  openEventOverlay={openEventOverlay}
-                />
-              ))}
-            </HourCell>
-          </TableRow>
-        );
-      })}
+      {map(tdHours, (tdHour, h) => (
+        <DayHourView
+          tdHour={tdHour}
+          workHours={workHours}
+          events={events}
+          personal={personal}
+          selectedHour={selectedHour}
+          selectedEndHour={selectedEndHour}
+          anchor={anchor}
+          openEventOverlay={openEventOverlay}
+          documentMouseUp={documentMouseUp}
+          setAnchor={setAnchor}
+          setSelectedHour={setSelectedHour}
+          setSelectedEndHour={setSelectedEndHour}
+          setEventSelected={setEventSelected}
+          key={h}
+        />
+      ))}
     </tbody>
   );
 };
@@ -712,12 +860,16 @@ const WeekView = ({
   workHours,
   events,
   openEventOverlay,
+  selectedHour,
+  selectedEndHour,
   setSelectedHour,
   setSelectedEndHour,
   setEventSelected,
 }: {
   personal: boolean;
   currentDate: Date;
+  selectedHour: Date;
+  selectedEndHour: Date;
   workHours: {
     start: string;
     end: string;
@@ -732,6 +884,14 @@ const WeekView = ({
   const start = startOfWeek(currentDate);
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
+  const [anchor, setAnchor] = useState(DEFAULT_DATE);
+
+  const documentMouseUp = useCallback(() => {
+    setAnchor(DEFAULT_DATE);
+    setSelectedHour(DEFAULT_DATE);
+    setSelectedEndHour(new Date(60));
+    document.removeEventListener("mouseup", documentMouseUp);
+  }, [setAnchor, setSelectedHour, setSelectedEndHour]);
 
   return (
     <tbody>
@@ -755,7 +915,10 @@ const WeekView = ({
               y,
               width,
             } = (e.target as HTMLElement).getBoundingClientRect();
-            openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
+            openEventOverlay({
+              x: i < 3 ? x + width : x - EVENT_OVERLAY_WIDTH,
+              y,
+            });
             setSelectedHour(tdDate);
             setSelectedEndHour(addDays(tdDate, 1));
             setEventSelected(undefined);
@@ -781,13 +944,14 @@ const WeekView = ({
           );
         })}
       </HeaderTableRow>
-      {map(range(6, 21), (h) => (
+      {map(range(3, 24), (h) => (
         <TableRow key={h}>
           <TimeCell>
             {format(setHours(startOfHour(new Date()), h), "h:mm aa")}
           </TimeCell>
           {map(range(0, 7), (i) => {
             const tdHour = setHours(startOfHour(addDays(start, i)), h);
+            const endTdHour = addHours(tdHour, 1);
             const isUnavailable = !(
               includes(workHours.days, i) &&
               h >= workStart &&
@@ -796,8 +960,29 @@ const WeekView = ({
             const eventsThisHour = filter(events, (e) =>
               isEventOnDate(e, tdHour)
             );
-            const onClick = (e: React.MouseEvent) => {
-              if (isUnavailable && !personal) {
+            const onMouseDown = () => {
+              if (!personal && isUnavailable) {
+                return;
+              }
+              setAnchor(tdHour);
+              setSelectedHour(tdHour);
+              setSelectedEndHour(endTdHour);
+              setEventSelected(undefined);
+              document.addEventListener("mouseup", documentMouseUp);
+            };
+
+            const onMouseOver = (e: React.MouseEvent) => {
+              if (
+                e.buttons === 1 &&
+                (personal || (!isUnavailable && isSameDay(anchor, tdHour)))
+              ) {
+                setSelectedHour(min([anchor, tdHour]));
+                setSelectedEndHour(max([addHours(anchor, 1), endTdHour]));
+              }
+            };
+
+            const onMouseUp = (e: React.MouseEvent) => {
+              if (!personal && isUnavailable) {
                 return;
               }
               const {
@@ -805,16 +990,26 @@ const WeekView = ({
                 y,
                 width,
               } = (e.target as HTMLElement).getBoundingClientRect();
-              openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
-              setSelectedHour(tdHour);
-              setSelectedEndHour(addHours(tdHour, 1));
-              setEventSelected(undefined);
+              openEventOverlay({
+                x: i < 3 ? x + width : x - EVENT_OVERLAY_WIDTH,
+                y,
+              });
+              setAnchor(DEFAULT_DATE);
+              document.removeEventListener("mouseup", documentMouseUp);
+              e.nativeEvent.stopImmediatePropagation();
             };
             return (
               <HourCell
                 key={tdHour.valueOf()}
                 isUnavailable={isUnavailable}
-                onClick={onClick}
+                personal={personal}
+                selected={
+                  isBefore(tdHour, selectedEndHour) &&
+                  !isBefore(tdHour, selectedHour)
+                }
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp}
+                onMouseOver={onMouseOver}
               >
                 {map(eventsThisHour, (e) => (
                   <EventSummary
@@ -875,7 +1070,10 @@ const MonthView = ({
                 y,
                 width,
               } = (e.target as HTMLElement).getBoundingClientRect();
-              openEventOverlay({ x: i < 3 ? x + width : x - 300, y });
+              openEventOverlay({
+                x: i < 3 ? x + width : x - EVENT_OVERLAY_WIDTH,
+                y,
+              });
               setSelectedHour(td);
               setSelectedEndHour(addDays(td, 1));
               setEventSelected(undefined);
@@ -944,7 +1142,7 @@ const Schedule = ({
   const [overlayTop, setOverlayTop] = useState(0);
   const [overlayLeft, setOverlayLeft] = useState(0);
   const [isEventOpen, setIsEventOpen] = useState(false);
-  const [selectedHour, setSelectedHour] = useState<Date>(new Date(0));
+  const [selectedHour, setSelectedHour] = useState<Date>(DEFAULT_DATE);
   const [selectedEndHour, setSelectedEndHour] = useState<Date>(new Date(60));
   const [eventSelected, setEventSelected] = useState<EventObject>();
 
@@ -962,7 +1160,7 @@ const Schedule = ({
     [setOverlayTop, setOverlayLeft, setIsEventOpen]
   );
   const closeEventOverlay = useCallback(() => {
-    setSelectedHour(new Date(0));
+    setSelectedHour(DEFAULT_DATE);
     setSelectedEndHour(new Date(60));
     setEventSelected(undefined);
     setIsEventOpen(false);
@@ -1131,6 +1329,8 @@ const Schedule = ({
                 currentDate={currentDate}
                 workHours={workHours}
                 openEventOverlay={openEventOverlay}
+                selectedHour={selectedHour}
+                selectedEndHour={selectedEndHour}
                 setSelectedHour={setSelectedHour}
                 setSelectedEndHour={setSelectedEndHour}
                 setEventSelected={setEventSelected}
@@ -1143,6 +1343,8 @@ const Schedule = ({
                 currentDate={currentDate}
                 workHours={workHours}
                 openEventOverlay={openEventOverlay}
+                selectedHour={selectedHour}
+                selectedEndHour={selectedEndHour}
                 setSelectedHour={setSelectedHour}
                 setSelectedEndHour={setSelectedEndHour}
                 setEventSelected={setEventSelected}
@@ -1185,6 +1387,7 @@ const Schedule = ({
                     <Form
                       path={"/events"}
                       handleResponse={handleEventCreate}
+                      width={320}
                       fields={[
                         {
                           type: personal ? FieldType.TEXT : FieldType.DROPDOWN,
@@ -1205,21 +1408,22 @@ const Schedule = ({
                         userId: userId,
                         createdBy: viewUserId,
                       }}
-                    />
+                    >
+                      <DateRange
+                        startTime={selectedHour}
+                        endTime={selectedEndHour}
+                      />
+                    </Form>
                   )}
                   {eventSelected && !eventSelected.IsReadonly && (
                     <div>
                       <CreatedByContainer>
                         Created by {eventSelected.fullName}
                       </CreatedByContainer>
-                      <BsCalendarFill />
-                      <span>{`${format(
-                        eventSelected.StartTime,
-                        "MMMM dd, yyyy"
-                      )} (${format(
-                        eventSelected.StartTime,
-                        "hh:mm a"
-                      )} - ${format(eventSelected.EndTime, "hh:mm a")})`}</span>
+                      <DateRange
+                        startTime={eventSelected.StartTime}
+                        endTime={eventSelected.EndTime}
+                      />
                     </div>
                   )}
                   {eventSelected?.IsPending && personal && (

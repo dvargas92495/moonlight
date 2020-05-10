@@ -9,7 +9,7 @@ import fs from "fs";
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.raw());
+app.use(bodyParser.json());
 
 const transformHandler = (
   handler: (
@@ -98,8 +98,9 @@ lambdas.forEach((lambda) => {
     slice(lambdaParts, 1, lambdaParts.length),
     "/"
   )}`;
-  const path = pathWithBy.replace(/\/by\//g, "/:");
+  const p = pathWithBy.replace(/\/by\//g, "/:");
   import("./functions/" + lambda).then((m) => {
+    const path = p === "/api/specialist/views" ? "/api/specialist-views" : p; // GROSS ANTI PATTERN
     switch (method) {
       case "get":
         app.get(path, transformHandler(m.handler));

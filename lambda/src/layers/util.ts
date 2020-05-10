@@ -2,7 +2,7 @@ import { findKey, split, map, join } from "lodash";
 import { domain } from "./aws";
 
 export const headers = {
-  "Access-Control-Allow-Origin": `https://${domain}`,
+  "Access-Control-Allow-Origin": domain,
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
 };
 

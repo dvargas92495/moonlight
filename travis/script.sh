@@ -3,6 +3,7 @@
 set -e
 
 ENV_NAME=${TF_WORKSPACE/moonlight-health/emdeo}
+DOMAIN="https://${ENV_NAME//-/.}.com"
 
 if [ -z "$(ls -A travis/manual)" ]; then
    echo "No manual migrations to run"
@@ -34,6 +35,7 @@ REACT_APP_USER_CLIENT_SECRET=${REACT_APP_USER_CLIENT_SECRET}
 REACT_APP_RDS_MASTER_USER_PASSWORD=${TF_VAR_RDS_MASTER_USER_PASSWORD}
 REACT_APP_RDS_MASTER_HOST=${RDS_MASTER_HOST}
 REACT_APP_ENVIRONMENT_NAME=${ENV_NAME}
+REACT_APP_ORIGIN_DOMAIN=${DOMAIN}
 " > client/.env.local
 
 cd db
