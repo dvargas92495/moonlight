@@ -40,8 +40,8 @@ export const handler = (event: APIGatewayProxyEvent) => {
         .query("BEGIN")
         .then(() =>
           client.query(
-            "INSERT INTO users(uuid, type) VALUES ($1, $2) RETURNING id",
-            [sub, inputUserType]
+            "INSERT INTO users(uuid, type, username) VALUES ($1, $2, $3) RETURNING id",
+            [sub, inputUserType, Username]
           )
         )
         .then((res) =>

@@ -27,10 +27,10 @@ export const handler = ({ Username }: { Username: string }) => {
       const sub = find(Attributes, { Name: "sub" })?.Value;
       const client = connectRdsClient();
       return client
-        .query("INSERT INTO users(uuid, type) VALUES ($1, $2) RETURNING id", [
-          sub,
-          userType.SUPPORT,
-        ])
+        .query(
+          "INSERT INTO users(uuid, type, username) VALUES ($1, $2, $3) RETURNING id",
+          [sub, userType.SUPPORT, Username]
+        )
         .then(() => {
           client.end();
           return `Successfully created user ${Username}`;

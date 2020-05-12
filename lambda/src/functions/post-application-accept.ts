@@ -33,8 +33,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         .then(({ User: { Attributes } }) => {
           const sub = find(Attributes, { Name: "sub" })?.Value;
           return client.query(
-            "INSERT INTO users(uuid, type) VALUES ($1, $2) RETURNING id",
-            [sub, application.type]
+            "INSERT INTO users(uuid, type, username) VALUES ($1, $2, $3) RETURNING id",
+            [sub, application.type, username]
           );
         })
         .then((user) =>
