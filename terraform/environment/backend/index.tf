@@ -14,6 +14,10 @@ variable "app_storage_arns" {
   type = list(string)
 }
 
+variable "ses_identity_arn" {
+  type = string
+}
+
 locals {
   lambdas = [
     "accept/post",
@@ -200,6 +204,13 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
       "cognito-idp:AdminCreateUser"
     ]
     resources = [var.cognito_pool_arn]
+  }
+
+  statement {
+    actions = [
+      "ses:SendEmail"
+    ]
+    resources = [var.ses_identity_arn]
   }
 }
 

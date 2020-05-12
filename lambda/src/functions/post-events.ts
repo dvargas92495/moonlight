@@ -55,14 +55,17 @@ export const handler = async (event: APIGatewayProxyEvent) => {
               `
             SELECT u.username, u.id, p.first_name, p.last_name
             FROM users u
-            INNER JOIN profiles p ON p.user_id = u.id
+            INNER JOIN profile p ON p.user_id = u.id
             WHERE u.id IN ($1, $2)
           `,
               [userId, createdBy]
             )
             .then((sel) => {
               client.end();
-              const ToAddresses = find(sel.rows, { id: userId })?.username;
+              const ToAddresses = map(
+                filter(sel.rows, { id: userId }),
+                "username"
+              );
               const creator = find(sel.rows, { id: createdBy });
               const Data = `A new event ${Subject} was created by ${creator.first_name} ${creator.last_name} on your schedule from ${StartTime} to ${EndTime}.`;
               return ses

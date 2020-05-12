@@ -537,4 +537,5 @@ module "backend" {
   domain   = local.domain
   cognito_pool_arn = aws_cognito_user_pool.pool.arn
   app_storage_arns = values(aws_s3_bucket.app_storage)[*].arn
+  ses_identity_arn = aws_ses_domain_identity.emailer.arn
 }
