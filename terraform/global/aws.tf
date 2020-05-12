@@ -21,8 +21,26 @@ resource "aws_route53_zone" "primary" {
   }
 }
 
+data "aws_iam_policy_document" "admin_policy" {
+  statement {
+    actions = [
+      "ses:VerifyDomainIdentity",
+      "ses:GetIdentityVerificationAttributes",
+      "ses:DeleteIdentity"
+    ]
+
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_group" "admin" {
   name = "emdeo-admin"
+}
+
+resource "aws_iam_group_policy" "admin_policy" {
+  name   = "emdeo-admin-policy"
+  group  = aws_iam_group.admin.id
+  policy = data.aws_iam_policy_document.admin_policy.json
 }
 
 resource "aws_iam_user" "admin" {

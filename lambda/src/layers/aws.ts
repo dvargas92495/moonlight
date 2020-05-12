@@ -10,7 +10,8 @@ types.setTypeParser(1114, (str) => `${str}Z`); // timestamps to parse correctly 
 export const ClientId = process.env.REACT_APP_USER_CLIENT_ID || "";
 export const region = "us-east-1";
 export const envName = process.env.REACT_APP_ENVIRONMENT_NAME || "";
-export const domain = process.env.REACT_APP_ORIGIN_DOMAIN || "";
+export const domain = `${envName.replace(/-/g, ".")}.com`;
+export const origin = process.env.REACT_APP_ORIGIN_DOMAIN || "";
 export const UserPoolId = process.env.REACT_APP_USER_POOL_ID || "";
 
 AWS.config = new AWS.Config({ region });
@@ -25,6 +26,8 @@ export const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProv
 );
 
 export const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+
+export const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 
 export const connectRdsClient = () => {
   const client = new Client({

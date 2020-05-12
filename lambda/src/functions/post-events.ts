@@ -1,7 +1,8 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { okResponse, serverErrorResponse } from "../layers/util";
 import { eventFrequency } from "../layers/enums";
-import { connectRdsClient } from "../layers/aws";
+import { connectRdsClient, ses, domain } from "../layers/aws";
+import { filter, map, find } from "lodash";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const {
@@ -36,10 +37,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       })
       .then((res) => client.query("COMMIT").then(() => res))
       .then((res) => {
-        client.end();
         const { id: Id } = res.rows[0];
         const RecurrenceRule = isWeekly ? "FREQ=WEEKLY;INTERVAL=1" : null;
-        return okResponse({
+        const response = okResponse({
           userId,
           createdBy,
           Subject,
@@ -49,6 +49,55 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           Id,
           RecurrenceRule,
         });
+        if (userId != createdBy) {
+          return client
+            .query(
+              `
+            SELECT u.username, u.id, p.first_name, p.last_name
+            FROM users u
+            INNER JOIN profiles p ON p.user_id = u.id
+            WHERE u.id IN ($1, $2)
+          `,
+              [userId, createdBy]
+            )
+            .then((sel) => {
+              client.end();
+              const ToAddresses = find(sel.rows, { id: userId })?.username;
+              const creator = find(sel.rows, { id: createdBy });
+              const Data = `A new event ${Subject} was created by ${creator.first_name} ${creator.last_name} on your schedule from ${StartTime} to ${EndTime}.`;
+              return ses
+                .sendEmail({
+                  Destination: {
+                    ToAddresses,
+                  },
+                  Message: {
+                    Body: {
+                      Html: {
+                        Charset: "UTF-8",
+                        Data,
+                      },
+                      Text: {
+                        Charset: "UTF-8",
+                        Data,
+                      },
+                    },
+                    Subject: {
+                      Charset: "UTF-8",
+                      Data: "New Event Created on Emdeo",
+                    },
+                  },
+                  Source: `no-reply@${domain}`,
+                })
+                .promise();
+            })
+            .then(() => {
+              console.log("Email SENT!");
+              return response;
+            });
+        } else {
+          client.end();
+          return response;
+        }
       })
       .catch((e) => serverErrorResponse(e.message))
   );

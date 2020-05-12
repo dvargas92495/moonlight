@@ -444,6 +444,24 @@ resource "aws_route53_record" "www-AAAA" {
   }
 }
 
+resource "aws_ses_domain_identity" "emailer" {
+  domain = local.domain
+}
+
+resource "aws_route53_record" "emailer_record" {
+  zone_id = data.aws_route53_zone.primary.zone_id
+  name    = "_amazonses.${local.domain}"
+  type    = "TXT"
+  ttl     = "600"
+  records = [aws_ses_domain_identity.emailer.verification_token]
+}
+
+resource "aws_ses_domain_identity_verification" "email_verification" {
+  domain = aws_ses_domain_identity.emailer.id
+
+  depends_on = [aws_route53_record.emailer_record]
+}
+
 resource "aws_cognito_user_pool" "pool" {
   name                       = local.env_name
   username_attributes        = ["email"]
