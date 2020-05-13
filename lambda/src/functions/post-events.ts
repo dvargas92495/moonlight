@@ -93,10 +93,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
                 })
                 .promise();
             })
-            .then(() => {
-              console.log("Email SENT!");
-              return response;
-            });
+            .then(() => response);
         } else {
           client.end();
           return response;
