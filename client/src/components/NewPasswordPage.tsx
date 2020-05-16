@@ -1,10 +1,11 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
 import { PRIMARY_COLOR } from "../styles/colors";
-import { setAuth } from "../hooks/apiClient";
+import api, { setAuth } from "../hooks/apiClient";
+import queryString from "query-string";
 
 const Container = styled.div`
   max-width: 450px;
@@ -29,9 +30,40 @@ const Header = styled.h2`
 
 const NewPasswordPage = () => {
   const history = useHistory();
-  const {
-    state: { Session, username },
-  } = useLocation();
+  const { state, search } = useLocation();
+  const [username, setUsername] = useState(state?.username);
+  const [session, setSession] = useState(state?.Session);
+  const [loading, setLoading] = useState(!session);
+  const [error, setError] = useState("");
+  const usernameFromQuery = queryString.parse(search)?.username;
+  const temporaryPassword = queryString.parse(search)?.temporary;
+  useEffect(() => {
+    if (loading) {
+      api
+        .post("signin", {
+          username: usernameFromQuery,
+          password: temporaryPassword,
+        })
+        .then((res) => {
+          setUsername(usernameFromQuery);
+          setSession(res.data.Session);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+          setError(
+            "Temporary link failed, contact Support to retrieve another link"
+          );
+        });
+    }
+  }, [
+    loading,
+    usernameFromQuery,
+    temporaryPassword,
+    setSession,
+    setUsername,
+    setLoading,
+  ]);
   const handleResponse = useCallback(
     ({ id, type, idToken }) => {
       setAuth(idToken);
@@ -42,7 +74,11 @@ const NewPasswordPage = () => {
     },
     [history]
   );
-  return (
+  return loading ? (
+    <div>Loading...</div>
+  ) : error ? (
+    <div>{error}</div>
+  ) : (
     <PublicPage>
       <Container>
         <Header>Set New Password</Header>
@@ -58,7 +94,7 @@ const NewPasswordPage = () => {
               return [];
             }}
             extraProps={{
-              Session,
+              Session: session,
               username,
             }}
             fields={[

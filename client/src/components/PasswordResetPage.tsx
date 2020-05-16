@@ -3,6 +3,8 @@ import Form, { FieldType } from "./core/Form";
 import PublicPage from "./PublicPage";
 import styled from "styled-components";
 import { PRIMARY_COLOR } from "../styles/colors";
+import queryString from "query-string";
+import { useLocation } from "react-router-dom";
 
 const Container = styled.div`
   max-width: 450px;
@@ -26,75 +28,52 @@ const Header = styled.h2`
 `;
 
 const PasswordResetPage = () => {
-  const [sent, setSent] = useState(false);
   const [passwordSet, setPasswordSet] = useState(false);
-  const [username, setUsername] = useState("");
-  const handleResponse = useCallback(() => setSent(true), [setSent]);
   const handlePasswordResponse = useCallback(() => setPasswordSet(true), [
     setPasswordSet,
   ]);
+  const query = useLocation()?.search;
+  const { confirm } = queryString.parse(query);
   return (
     <PublicPage>
-      {sent ? (
+      {passwordSet ? (
         <Container>
-          <Header>
-            {passwordSet
-              ? "Password successfully reset! Click above to log in"
-              : "Check your email for a confirmation code and enter your new password below."}
-          </Header>
-          {!passwordSet && (
-            <FormContainer>
-              <Form
-                handleResponse={handlePasswordResponse}
-                label="set password"
-                path="password/confirm"
-                extraProps={{ username }}
-                onValidate={(data) => {
-                  if (data.password !== data.confirmPassword) {
-                    return ["Passwords must match"];
-                  }
-                  return [];
-                }}
-                fields={[
-                  {
-                    placeholder: "Confirmation Code",
-                    name: "confirmationCode",
-                    type: FieldType.TEXT,
-                    required: true,
-                  },
-                  {
-                    placeholder: "New Password",
-                    name: "password",
-                    type: FieldType.PASSWORD,
-                    required: true,
-                  },
-                  {
-                    placeholder: "Confirm Password",
-                    name: "confirmPassword",
-                    type: FieldType.PASSWORD,
-                    required: true,
-                    skip: true,
-                  },
-                ]}
-              />
-            </FormContainer>
-          )}
+          <Header>Password successfully reset! Click above to log in</Header>
         </Container>
       ) : (
         <Container>
-          <Header>Reset Password</Header>
+          <Header>Enter your new password below</Header>
           <FormContainer>
             <Form
-              handleResponse={handleResponse}
-              label="reset password"
-              path="password/reset"
+              handleResponse={handlePasswordResponse}
+              label="set password"
+              path="password/confirm"
+              extraProps={{ confirmationCode: confirm }}
+              onValidate={(data) => {
+                if (data.password !== data.confirmPassword) {
+                  return ["Passwords must match"];
+                }
+                return [];
+              }}
               fields={[
                 {
                   placeholder: "Email",
                   name: "username",
                   type: FieldType.TEXT,
                   required: true,
-                  onChange: setUsername,
+                },
+                {
+                  placeholder: "New Password",
+                  name: "password",
+                  type: FieldType.PASSWORD,
+                  required: true,
+                },
+                {
+                  placeholder: "Confirm Password",
+                  name: "confirmPassword",
+                  type: FieldType.PASSWORD,
+                  required: true,
+                  skip: true,
                 },
               ]}
             />
