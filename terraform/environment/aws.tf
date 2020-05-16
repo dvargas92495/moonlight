@@ -466,8 +466,16 @@ resource "aws_cognito_user_pool" "pool" {
   name                       = local.env_name
   username_attributes        = ["email"]
   auto_verified_attributes   = ["email"]
-  email_verification_subject = "Your Emdeo verification code"
-  email_verification_message = "Your Emdeo verification code is {####}."
+  email_verification_subject = "Your Password Reset Link for Emdeo"
+  email_verification_message = "Click on the following link https://${local.domain}/reset?confirm={####} to reset your password."
+  admin_create_user_config   {
+    allow_admin_create_user_only = true
+    invite_message_template {
+      email_subject = "New Emdeo Account"
+      email_message = "A new account has been created for you on Emdeo. Log in with {username} as your username and {####} as your temporary password."
+      sms_message = "Click the following link to create your emdeo account https://${local.domain}/password?username={username}&temporary={####}"
+    }
+  }
   
   password_policy {
     minimum_length                   = 8

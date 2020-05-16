@@ -27,7 +27,7 @@ const Header = styled.h2`
   text-transform: uppercase;
 `;
 
-const ResetLink = styled(Link)`
+const ForgotLink = styled(Link)`
   color: ${CONTENT_COLOR};
 `;
 
@@ -77,7 +77,7 @@ const LoginPage = () => {
             ]}
           />
         </FormContainer>
-        <ResetLink to={"/reset"}>Forgot Password?</ResetLink>
+        <ForgotLink to={"/forgot"}>Forgot Password?</ForgotLink>
       </Container>
     </PublicPage>
   );
