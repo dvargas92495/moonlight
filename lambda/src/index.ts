@@ -80,7 +80,12 @@ const transformHandler = (
   Promise.resolve(handler(event))
     .then((r) => {
       forEach(r.headers, (value: string, header: string) =>
-        res.setHeader(header, value)
+        res.setHeader(
+          header,
+          header === "Access-Control-Allow-Origin"
+            ? "http://localhost:3000"
+            : value
+        )
       );
       res.status(r.statusCode).send(r.body);
     })
@@ -93,7 +98,7 @@ const lambdas = fs.readdirSync("./src/functions");
 lambdas.forEach((lambda) => {
   const stripTs = lambda.substring(0, lambda.length - 3);
   const lambdaParts = split(stripTs, "-");
-  const method = lambdaParts[0];
+  const method = lambdaParts[0] as keyof typeof app;
   const pathWithBy = `/api/${join(
     slice(lambdaParts, 1, lambdaParts.length),
     "/"
@@ -101,22 +106,7 @@ lambdas.forEach((lambda) => {
   const p = pathWithBy.replace(/\/by\//g, "/:");
   import("./functions/" + lambda).then((m) => {
     const path = p === "/api/specialist/views" ? "/api/specialist-views" : p; // GROSS ANTI PATTERN
-    switch (method) {
-      case "get":
-        app.get(path, transformHandler(m.handler));
-        break;
-      case "post":
-        app.post(path, transformHandler(m.handler));
-        break;
-      case "delete":
-        app.delete(path, transformHandler(m.handler));
-        break;
-      case "put":
-        app.put(path, transformHandler(m.handler));
-        break;
-      default:
-        throw new Error(`Unsupported method: ${method}`);
-    }
+    app[method](path, transformHandler(m.handler));
   });
 });
 
