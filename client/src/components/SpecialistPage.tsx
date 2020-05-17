@@ -6,6 +6,7 @@ import Form, { FieldType } from "./core/Form";
 import ProfileContent from "./ProfileContent";
 import { useUserId } from "../hooks/router";
 import Schedule from "./scheduler/Schedule";
+import Scheduler from "./devExtreme/Scheduler";
 import styled from "styled-components";
 import { CONTENT_COLOR } from "../styles/colors";
 
@@ -81,7 +82,7 @@ const SettingsContent = () => {
 
 const SchedulerContent = () => {
   const userId = useUserId();
-  return <Schedule viewUserId={userId} userId={userId} />;
+  return <Scheduler viewUserId={userId} userId={userId} />;
 };
 
 const SpecialistPage = () => (
