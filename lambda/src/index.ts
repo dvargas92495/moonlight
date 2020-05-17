@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import fileUpload, { UploadedFile } from "express-fileupload";
 import { ParamsDictionary } from "express-serve-static-core";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -10,6 +11,7 @@ import fs from "fs";
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(fileUpload());
 
 const transformHandler = (
   handler: (
@@ -24,8 +26,12 @@ const transformHandler = (
     isBase64Encoded: boolean;
   }>
 ) => (req: Request<ParamsDictionary>, res: Response<any>) => {
+  // TODO - File uploading still doesn't work, need to be able to reserialize for lambda
+  const body = req.files
+    ? JSON.stringify(req.files.UploadFiles)
+    : JSON.stringify(req.body);
   const event = {
-    body: JSON.stringify(req.body),
+    body,
     headers: reduce(
       reject(keys(req.headers), (header) => isArray(req.headers[header])),
       (acc, header) => ({ ...acc, [header]: req.headers[header] }),
