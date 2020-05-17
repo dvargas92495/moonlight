@@ -2,6 +2,7 @@
 **/node_modules
 **/build
 todo.txt
+.env.local
 
 # ide
 .vscode

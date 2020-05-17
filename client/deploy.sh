@@ -11,6 +11,9 @@ fi
 ENV_NAME=${TF_WORKSPACE/moonlight-health/emdeo}
 DOMAIN="${ENV_NAME//-/.}.com"
 
+API_GATEWAY_REST_API_ID=$(aws apigateway get-rest-apis --query "items[?name=='${ENV_NAME}'].id" --output text)
+echo "REACT_APP_API_GATEWAY_INVOKE_URL=https://${API_GATEWAY_REST_API_ID}.execute-api.us-east-1.amazonaws.com/production/" > .env.local
+
 npm install
 npm run build
 aws s3 sync --delete build "s3://${ENV_NAME}"

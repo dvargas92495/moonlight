@@ -20,10 +20,7 @@ module.exports = {
   },
   plugins: [
     new Dotenv({
-      path: "../client/.env.local",
-    }),
-    new Dotenv({
-      path: "../client/.env",
+      path: ".env.local",
     }),
     new webpack.IgnorePlugin(/.\/native/),
   ],
