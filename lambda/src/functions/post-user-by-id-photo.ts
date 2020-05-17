@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import Busboy from "busboy";
-import { pick, set } from "lodash";
+import { pick, set, isEmpty } from "lodash";
 import { s3, envName, connectRdsClient } from "../layers/aws";
 import { okResponse, serverErrorResponse } from "../layers/util";
 
@@ -35,6 +35,11 @@ export const handler = async (event: APIGatewayProxyEvent) =>
       ) => {
         const { id } = event.pathParameters;
         const { file, filename, contentType } = event.body;
+        if (isEmpty(file)) {
+          throw new Error(
+            `Failed to parse any file content for ${filename} of type ${contentType}`
+          );
+        }
         const size = file.length;
         const client = connectRdsClient();
         return client
