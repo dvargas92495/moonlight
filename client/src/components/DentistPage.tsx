@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserPage from "./UserPage";
-import Schedule from "./scheduler/Schedule";
+import Scheduler from "./devExtreme/Scheduler";
 import { map } from "lodash";
 import { getSpecialistViews } from "../hooks/apiClient";
 import styled from "styled-components";
@@ -75,7 +75,7 @@ const SpecialistsContent = () => {
         ))}
       </SpecialistOptionsContainer>
       {selectedSchedule && (
-        <Schedule userId={selectedSchedule.userId} viewUserId={userId} />
+        <Scheduler userId={selectedSchedule.userId} viewUserId={userId} />
       )}
     </Content>
   );
