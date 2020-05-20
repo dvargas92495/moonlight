@@ -723,12 +723,6 @@ const WeekView = ({
         <TimeCell />
         {map(range(0, 7), (i) => {
           const tdDate = startOfDay(addDays(start, i));
-          const eventsThisDay = filter(
-            events,
-            (e) =>
-              isEqual(e.StartTime, tdDate) &&
-              isEqual(e.EndTime, addDays(tdDate, 1))
-          );
 
           const onClick = (e: React.MouseEvent) => {
             if (!personal) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, ReactInstance } from "react";
 import Paper from "@material-ui/core/Paper";
 import {
   ViewState,
@@ -27,10 +27,17 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
+  getDay,
+  getHours,
 } from "date-fns";
 import api from "../../hooks/apiClient";
-import { map, reject } from "lodash";
+import { map, reject, split, includes, omit, noop } from "lodash";
 import { FileProps } from "../core/FileInput";
+import styled from "styled-components";
+import { CONTENT_COLOR, QUARTER_OPAQUE } from "../../styles/colors";
+import { compareProps } from "../../hooks/debugHelpers";
+
+const FOCUS_BACKGROUND = "#3f51b526";
 
 type View = "Day" | "Week" | "Month";
 
@@ -53,6 +60,25 @@ type EventObject = {
   StartTime: string;
   EndTime: string;
 };
+
+const StyleCell = (CellComponent: React.FunctionComponent<any>) => styled(
+  CellComponent
+)<{
+  isUnavailable?: boolean;
+}>`
+  background: ${(props) =>
+    props.isUnavailable && `${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+
+  &&:hover {
+    background: ${(props) =>
+      props.isUnavailable && `${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  }
+
+  &&:focus {
+    background: ${(props) =>
+      props.isUnavailable && `${CONTENT_COLOR}${QUARTER_OPAQUE}`};
+  }
+`;
 
 const eventToAppointmentModel = (e: EventObject) => ({
   ...e,
@@ -87,9 +113,29 @@ const getScheduleBounds = (currentDate: Date, currentView: View) => {
 
 const DEFAULT_VIEW = "Week";
 
-const TimeTableCell = ({ onDoubleClick }: WeekView.TimeTableCellProps) => {
-  return <WeekView.TimeTableCell onDoubleClick={onDoubleClick} />;
-};
+const DayTimeTableCell = StyleCell(({ isUnavailable, ...props }) => (
+  <DayView.TimeTableCell
+    {...props}
+    onClick={isUnavailable ? noop : props.onDoubleClick}
+    onDoubleClick={() => {}}
+  />
+));
+
+const WeekTimeTableCell = StyleCell(({ isUnavailable, ...props }) => (
+  <WeekView.TimeTableCell
+    {...props}
+    onClick={isUnavailable ? noop : props.onDoubleClick}
+    onDoubleClick={() => {}}
+  />
+));
+
+const MonthTimeTableCell = (props: MonthView.TimeTableCellProps) => (
+  <MonthView.TimeTableCell onClick={props.onDoubleClick} {...props} />
+);
+
+const AllDayPanelCell = (props: AllDayPanel.CellProps) => (
+  <AllDayPanel.Cell onClick={props.onDoubleClick} {...props} />
+);
 
 const Scheduler = ({
   userId,
@@ -158,15 +204,39 @@ const Scheduler = ({
       )
       .finally(() => setLoadingSchedule(false));
   }, [setWorkHours, setLoadingSchedule, userId]);
-  /*
+
   const workStart = parseInt(split(workHours.start, ":")[0]);
   const workEnd = parseInt(split(workHours.end, ":")[0]);
-  const isUnavailable = !(
-    includes(workHours.days, getDay(tdHour)) &&
-    getHours(tdHour) >= workStart &&
-    getHours(tdHour) < workEnd
+  const isUnavailable = useCallback(
+    (tdHour: Date) =>
+      !(
+        includes(workHours.days, getDay(tdHour)) &&
+        getHours(tdHour) >= workStart &&
+        getHours(tdHour) < workEnd
+      ),
+    [workHours, workStart, workEnd]
   );
-  */
+
+  const DayViewCell = useCallback(
+    (props) => (
+      <DayTimeTableCell
+        {...props}
+        isUnavailable={props.startDate && isUnavailable(props.startDate)}
+      />
+    ),
+    [isUnavailable]
+  );
+
+  const WeekViewCell = useCallback(
+    (props) => (
+      <WeekTimeTableCell
+        {...props}
+        isUnavailable={props.startDate && isUnavailable(props.startDate)}
+      />
+    ),
+    [isUnavailable]
+  );
+
   return loadingSchedule ? (
     <div>Loading...</div>
   ) : (
@@ -178,21 +248,25 @@ const Scheduler = ({
           onCurrentViewNameChange={(v: string) => setCurrentView(v as View)}
         />
         <EditingState onCommitChanges={onCommitChanges} />
-        <DayView startDayHour={9} endDayHour={20} />
-        <WeekView
-          startDayHour={9}
+        <DayView
+          startDayHour={6}
           endDayHour={20}
-          timeTableCellComponent={TimeTableCell}
+          timeTableCellComponent={DayViewCell}
         />
-        {personal && <MonthView />}
+        <WeekView
+          startDayHour={6}
+          endDayHour={20}
+          timeTableCellComponent={WeekViewCell}
+        />
+        {personal && <MonthView timeTableCellComponent={MonthTimeTableCell} />}
         <Toolbar />
         <ViewSwitcher />
         <DateNavigator />
         <Appointments />
-        <AllDayPanel />
+        <AllDayPanel cellComponent={AllDayPanelCell} />
         <EditRecurrenceMenu />
         <AppointmentTooltip showDeleteButton />
-        <ConfirmationDialog />
+        <ConfirmationDialog ignoreCancel />
         <AppointmentForm />
       </DXScheduler>
     </Paper>
