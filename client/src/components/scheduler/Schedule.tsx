@@ -256,16 +256,6 @@ const EventContentContainer = styled.div`
   font-size: 12px;
 `;
 
-const EventSummaryContainer = styled.div<{ hours: number }>`
-  position: relative;
-  width: 90%;
-  background: ${SECONDARY_BACKGROUND_COLOR};
-  color: ${CONTENT_COLOR};
-  font-size: 13px;
-  padding-left: 2px;
-  cursor: pointer;
-`;
-
 const PatientSummaryContainer = styled.div`
   color: ${SECONDARY_BACKGROUND_COLOR};
   padding-top: 16px;
@@ -604,7 +594,6 @@ const DayHourView = ({
 const DayView = ({
   personal,
   currentDate,
-  events,
   openEventOverlay,
   selectedHour,
   selectedEndHour,
@@ -616,7 +605,6 @@ const DayView = ({
   currentDate: Date;
   selectedHour: Date;
   selectedEndHour: Date;
-  events: EventObject[];
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
   setSelectedHour: (d: Date) => void;
   setSelectedEndHour: (d: Date) => void;
@@ -626,13 +614,6 @@ const DayView = ({
   const tdHours = useMemo(
     () => map(range(3, 24), (h) => setHours(startOfHour(currentDate), h)),
     [currentDate]
-  );
-
-  const eventsThisDay = filter(
-    events,
-    (e) =>
-      isEqual(e.StartTime, currentDate) &&
-      isEqual(e.EndTime, addDays(currentDate, 1))
   );
 
   const onClick = (e: React.MouseEvent) => {
@@ -689,7 +670,6 @@ const DayView = ({
 const WeekView = ({
   personal,
   currentDate,
-  events,
   openEventOverlay,
   selectedHour,
   selectedEndHour,
@@ -701,7 +681,6 @@ const WeekView = ({
   currentDate: Date;
   selectedHour: Date;
   selectedEndHour: Date;
-  events: EventObject[];
   openEventOverlay: ({ x, y }: { x: number; y: number }) => void;
   setSelectedHour: (d: Date) => void;
   setSelectedEndHour: (d: Date) => void;
@@ -933,7 +912,6 @@ const Schedule = ({
       <CalendarTable ref={tableRef}>
         <DayView
           personal={personal}
-          events={events}
           currentDate={currentDate}
           openEventOverlay={openEventOverlay}
           selectedHour={selectedHour}
@@ -944,7 +922,6 @@ const Schedule = ({
         />
         <WeekView
           personal={personal}
-          events={events}
           currentDate={currentDate}
           openEventOverlay={openEventOverlay}
           selectedHour={selectedHour}
