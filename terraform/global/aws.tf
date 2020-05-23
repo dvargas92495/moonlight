@@ -26,7 +26,8 @@ data "aws_iam_policy_document" "admin_policy" {
     actions = [
       "ses:VerifyDomainIdentity",
       "ses:GetIdentityVerificationAttributes",
-      "ses:DeleteIdentity"
+      "ses:DeleteIdentity",
+      "ses:SendEmail"
     ]
 
     resources = ["*"]
