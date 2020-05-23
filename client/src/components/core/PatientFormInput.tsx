@@ -2,7 +2,7 @@ import React from "react";
 import { BsTrashFill } from "react-icons/bs";
 import { map } from "lodash";
 import styled from "styled-components";
-import { SECONDARY_BACKGROUND_COLOR } from "../../styles/colors";
+import { CONTENT_COLOR } from "../../styles/colors";
 import { useApiDelete } from "../../hooks/apiClient";
 import RequestFeedback from "../RequestFeedback";
 import FileInput, { FileProps } from "./FileInput";
@@ -22,11 +22,11 @@ const FileTopLine = styled.div`
 `;
 
 const FileContent = styled.span`
-  color: ${SECONDARY_BACKGROUND_COLOR};
+  color: ${CONTENT_COLOR};
 `;
 
 const FileDelete = styled(BsTrashFill)`
-  color: ${SECONDARY_BACKGROUND_COLOR};
+  color: ${CONTENT_COLOR};
   cursor: pointer;
 `;
 

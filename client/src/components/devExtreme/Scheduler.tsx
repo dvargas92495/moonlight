@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ReactInstance } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Paper from "@material-ui/core/Paper";
 import {
   ViewState,
@@ -29,15 +29,30 @@ import {
   endOfMonth,
   getDay,
   getHours,
+  format,
 } from "date-fns";
 import api, { useApiPost, useApiDelete } from "../../hooks/apiClient";
-import { map, reject, split, includes, noop, parseInt } from "lodash";
+import {
+  map,
+  reject,
+  split,
+  includes,
+  noop,
+  parseInt,
+  isEmpty,
+  find,
+} from "lodash";
 import { FileProps } from "../core/FileInput";
 import styled from "styled-components";
-import { CONTENT_COLOR, QUARTER_OPAQUE } from "../../styles/colors";
+import {
+  CONTENT_COLOR,
+  QUARTER_OPAQUE,
+  SECONDARY_BACKGROUND_COLOR,
+} from "../../styles/colors";
 import { Grid } from "@material-ui/core";
 import RequestFeedback from "../RequestFeedback";
 import Button from "../core/Button";
+import DownloadLink from "../core/DownloadLink";
 
 const DEFAULT_VIEW = "Week";
 
@@ -47,6 +62,7 @@ type PatientInfo = {
   forms: FileProps[];
   identifiers: { [key: string]: string };
   dateOfBirth: string;
+  id: number;
 };
 
 type EventObject = {
@@ -172,13 +188,25 @@ const ActionEvent = ({
   });
   return (
     <ActionEventContainer>
-      <Button isPrimary onClick={() => acceptEvent({ id })}>
+      <Button isPrimary onClick={() => acceptEvent({ eventId: id })}>
         Accept
       </Button>
       <RequestFeedback error={acceptError} loading={acceptLoading} />
       <Button onClick={() => rejectEvent(id)}>Reject</Button>
       <RequestFeedback error={rejectError} loading={rejectLoading} />
     </ActionEventContainer>
+  );
+};
+
+const AppointmentTooltipHeader = ({
+  ...restProps
+}: AppointmentTooltip.HeaderProps) => {
+  const { appointmentData } = restProps;
+  return (
+    <AppointmentTooltip.Header
+      {...restProps}
+      showDeleteButton={!!appointmentData && !appointmentData.IsReadonly}
+    />
   );
 };
 
@@ -209,10 +237,83 @@ const AppointmentTooltipContent = ({
   </AppointmentTooltip.Content>
 );
 
+const PatientSummaryContainer = styled.div`
+  padding: 8px;
+  border: 1px solid ${SECONDARY_BACKGROUND_COLOR};
+`;
+
+const AppointmentFormPatientSection = ({
+  patients,
+  onFieldChange,
+}: {
+  patients: PatientInfo[];
+  onFieldChange: (change: any) => void;
+}) => {
+  const [allPatients, setAllPatients] = useState<{
+    data: PatientInfo[];
+    loading: boolean;
+  }>({ data: [], loading: true });
+  const onPatientsChange = useCallback(
+    (value) =>
+      onFieldChange({
+        Patients: [...patients, find(allPatients.data, { id: value })],
+      }),
+    [allPatients, patients, onFieldChange]
+  );
+  const attachedIds = map(patients, "id");
+  const availableOptions = map(
+    reject(allPatients.data, (p) => includes(attachedIds, p.id)),
+    (p) => ({
+      id: p.id,
+      text: `${p.identifiers.firstName} ${p.identifiers.lastName}`,
+    })
+  );
+  useEffect(() => {
+    api
+      .get("patients")
+      .then((res) => setAllPatients({ data: res.data, loading: false }));
+  }, [setAllPatients]);
+  return allPatients.loading ? (
+    <AppointmentForm.Label text={"Loading..."} />
+  ) : (
+    <Grid>
+      <AppointmentForm.Label
+        text={"Patients"}
+        // @ts-ignore
+        type={"title"}
+      />
+      <AppointmentForm.Select
+        value={""}
+        onValueChange={onPatientsChange}
+        type={"filledSelect"}
+        availableOptions={availableOptions}
+      />
+      {map(patients, (p) => (
+        <PatientSummaryContainer>
+          <div>
+            {`${p.identifiers.firstName} ${p.identifiers.lastName} - ${format(
+              new Date(p.dateOfBirth),
+              "yyyy/MM/dd"
+            )}`}
+          </div>
+          <div>{`Email: ${p.identifiers.email || "None"}`}</div>
+          <div>{`Phone Number: ${p.identifiers.phoneNumber || "None"}`}</div>
+          {map(p.forms, ({ name }, i) => (
+            <DownloadLink key={i} href={`patients/${p.id}/form/${name}`}>
+              {name}
+            </DownloadLink>
+          ))}
+        </PatientSummaryContainer>
+      ))}
+    </Grid>
+  );
+};
+
 const AppointmentFormLayout = ({
   personal,
   ...restProps
 }: AppointmentForm.BasicLayoutProps & { personal: boolean }) => {
+  const { appointmentData } = restProps;
   const TextEditorComponent = useCallback(
     (props) => {
       const { type, value, onValueChange } = props;
@@ -244,14 +345,21 @@ const AppointmentFormLayout = ({
         <React.Fragment />
       );
     },
-    []
+    [personal]
   );
   return (
     <AppointmentForm.BasicLayout
       {...restProps}
       textEditorComponent={TextEditorComponent}
       booleanEditorComponent={BooleanEditorComponent}
-    ></AppointmentForm.BasicLayout>
+    >
+      {(!personal || !isEmpty(appointmentData?.Patients)) && (
+        <AppointmentFormPatientSection
+          patients={appointmentData?.Patients || []}
+          onFieldChange={restProps.onFieldChange}
+        />
+      )}
+    </AppointmentForm.BasicLayout>
   );
 };
 
@@ -409,7 +517,7 @@ const Scheduler = ({
         <AppointmentTooltip
           visible={tooltipVisible}
           onVisibilityChange={setTooltipVisible}
-          showDeleteButton={personal}
+          headerComponent={AppointmentTooltipHeader}
           contentComponent={AppointmentTooltipContentComponent}
         />
         <ConfirmationDialog ignoreCancel />

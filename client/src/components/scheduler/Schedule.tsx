@@ -90,12 +90,6 @@ type EventResponse = EventCommon & {
   EndTime: string;
 };
 
-const formatEventResponse = (e: EventResponse) => ({
-  ...e,
-  StartTime: new Date(e.StartTime),
-  EndTime: new Date(e.EndTime),
-});
-
 const Container = styled.div`
   border: 1px solid ${SECONDARY_BACKGROUND_COLOR};
   width: 100%;
@@ -183,42 +177,6 @@ const TimeCell = styled(TableCell)`
   text-align: center;
 `;
 
-const HourCell = styled(TableCell)<{
-  personal?: boolean;
-  isUnavailable?: boolean;
-  selected: boolean;
-}>`
-  background: ${(props) =>
-    `${CONTENT_COLOR}${
-      props.selected
-        ? THREE_QUARTER_OPAQUE
-        : props.isUnavailable
-        ? HALF_OPAQUE
-        : QUARTER_OPAQUE
-    }`};
-  padding: 0;
-  text-align: left;
-
-  &:hover {
-    background: ${(props) =>
-      (props.personal || !props.isUnavailable) &&
-      `${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
-  }
-`;
-
-const DayCell = styled(TableCell)<{
-  isUnavailable?: boolean;
-}>`
-  background: ${`${CONTENT_COLOR}${QUARTER_OPAQUE}`};
-  padding: 1px;
-  height: 126px;
-  text-align: left;
-
-  &:hover {
-    background: ${`${CONTENT_COLOR}${THREE_QUARTER_OPAQUE}`};
-  }
-`;
-
 const DayCellContainer = styled.div`
   height: 18px;
   font-size: 14px;
@@ -275,87 +233,6 @@ const FormContainer = styled.div`
   padding-left: 16px;
   color: ${SECONDARY_BACKGROUND_COLOR};
 `;
-
-const PatientDialog = React.forwardRef<
-  HTMLDivElement,
-  {
-    Id: number;
-    events: EventObject[];
-    setEvents: (events: EventObject[]) => void;
-    setIndex: (index: number) => void;
-    birthdayRef: React.RefObject<HTMLDivElement>;
-  }
->(({ Id, events, setEvents, setIndex, birthdayRef }, ref) => {
-  const handleResponse = useCallback(
-    ({
-      patientId,
-      firstName,
-      lastName,
-      dateOfBirth,
-      email,
-      phoneNumber,
-    }: {
-      patientId: number;
-      firstName: string;
-      lastName: string;
-      dateOfBirth: string;
-      email: string;
-      phoneNumber: string;
-    }) => {
-      const event = find(events, { Id });
-      if (event) {
-        event.Patients[patientId] = {
-          identifiers: {
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-          },
-          dateOfBirth,
-          forms: [] as FileProps[],
-        };
-        setIndex(keys(event.Patients).length - 1);
-        // spreading to force a rerender
-        setEvents([...events]);
-      }
-    },
-    [Id, events, setEvents, setIndex]
-  );
-  return (
-    <FormModal
-      openModalText={"Add Patient"}
-      path={`events/${Id}/patient`}
-      handleResponse={handleResponse}
-      fields={[
-        {
-          placeholder: "First Name",
-          name: "firstName",
-          type: FieldType.TEXT,
-        },
-        {
-          placeholder: "Last Name",
-          name: "lastName",
-          type: FieldType.TEXT,
-        },
-        { placeholder: "Email", name: "email", type: FieldType.TEXT },
-        {
-          placeholder: "Phone Number",
-          name: "phoneNumber",
-          type: FieldType.TEXT,
-        },
-        {
-          placeholder: "Date of Birth (mm/dd/yyyy)",
-          name: "dateOfBirth",
-          type: FieldType.DATE,
-          ref: birthdayRef,
-        },
-      ]}
-      ref={ref}
-    >
-      <PatientHeader>Enter Patient Information</PatientHeader>
-    </FormModal>
-  );
-});
 
 const PatientSummary = React.forwardRef<
   HTMLDivElement,
@@ -441,18 +318,6 @@ const PatientSummary = React.forwardRef<
           )}
         </div>
       )}
-      {!eventSelected?.IsPending &&
-        viewUserId === eventSelected?.CreatedBy &&
-        eventSelected?.Id && (
-          <PatientDialog
-            Id={eventSelected.Id}
-            events={events}
-            setEvents={setEvents}
-            setIndex={setIndex}
-            ref={ref}
-            birthdayRef={birthdayRef}
-          />
-        )}
     </PatientSummaryContainer>
   );
 });
@@ -481,14 +346,6 @@ const Schedule = ({
   const patientRef = useRef<HTMLDivElement>(null);
   const birthdayRef = useRef<HTMLDivElement>(null);
 
-  const openEventOverlay = useCallback(
-    ({ y, x }) => {
-      setOverlayTop(y);
-      setOverlayLeft(x);
-      setIsEventOpen(true);
-    },
-    [setOverlayTop, setOverlayLeft, setIsEventOpen]
-  );
   const closeEventOverlay = useCallback(() => {
     setSelectedHour(new Date(0));
     setSelectedEndHour(new Date(60));

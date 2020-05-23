@@ -30,10 +30,11 @@ locals {
     "events/get",
     "events/post",
     "events/{id}/delete",
-    "events/{id}/patient/post",
     "password/post",
     "password/confirm/post",
     "password/reset/post",
+    "patients/get",
+    "patients/post",
     "patients/{id}/form/post",
     "patients/{id}/form/{name}/get",
     "patients/{id}/form/{name}/delete",
@@ -404,7 +405,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.125.1"
+  stage_description = "2020.144.0"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 

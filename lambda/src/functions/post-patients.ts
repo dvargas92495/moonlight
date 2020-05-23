@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { okResponse, userErrorResponse } from "../layers/util";
+import { okResponse, serverErrorResponse } from "../layers/util";
 import { patientIdentifiers } from "../layers/enums";
 import { connectRdsClient } from "../layers/aws";
 
@@ -7,7 +7,6 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   const { firstName, lastName, dateOfBirth, email, phoneNumber } = JSON.parse(
     event.body
   );
-  const { id: eventId } = event.pathParameters;
   const client = connectRdsClient();
   return client
     .query("BEGIN")
@@ -21,21 +20,12 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     )
     .then((res) =>
       client.query(
-        `INSERT INTO patient_event_links(patient_id,event_id)
-     VALUES ($1,$2)
-     RETURNING *
-    `,
-        [res.rows[0].id, eventId]
-      )
-    )
-    .then((res) =>
-      client.query(
         `INSERT INTO patient_identifiers(patient_id,type,value)
      VALUES ($1,$2,$3), ($1,$4,$5), ($1, $6, $7), ($1, $8, $9)
      RETURNING *
     `,
         [
-          res.rows[0].patient_id,
+          res.rows[0].id,
           patientIdentifiers.FIRST_NAME,
           firstName,
           patientIdentifiers.LAST_NAME,
@@ -64,7 +54,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     .catch((e) =>
       client.query("ROLLBACK").then(() => {
         client.end();
-        return userErrorResponse(e.message);
+        return serverErrorResponse(e.message);
       })
     );
 };
