@@ -30,14 +30,16 @@ import {
   getDay,
   getHours,
 } from "date-fns";
-import api from "../../hooks/apiClient";
-import { map, reject, split, includes, omit, noop } from "lodash";
+import api, { useApiPost, useApiDelete } from "../../hooks/apiClient";
+import { map, reject, split, includes, noop, parseInt } from "lodash";
 import { FileProps } from "../core/FileInput";
 import styled from "styled-components";
 import { CONTENT_COLOR, QUARTER_OPAQUE } from "../../styles/colors";
-import { compareProps } from "../../hooks/debugHelpers";
+import { Grid } from "@material-ui/core";
+import RequestFeedback from "../RequestFeedback";
+import Button from "../core/Button";
 
-const FOCUS_BACKGROUND = "#3f51b526";
+const DEFAULT_VIEW = "Week";
 
 type View = "Day" | "Week" | "Month";
 
@@ -111,8 +113,6 @@ const getScheduleBounds = (currentDate: Date, currentView: View) => {
   }
 };
 
-const DEFAULT_VIEW = "Week";
-
 const DayTimeTableCell = StyleCell(({ isUnavailable, ...props }) => (
   <DayView.TimeTableCell
     {...props}
@@ -137,6 +137,124 @@ const AllDayPanelCell = (props: AllDayPanel.CellProps) => (
   <AllDayPanel.Cell onClick={props.onDoubleClick} {...props} />
 );
 
+const ActionEventContainer = styled.div`
+  display: flex;
+`;
+
+const ActionEvent = ({
+  id,
+  closeTooltip,
+  appointments,
+  setAppointments,
+}: {
+  id: number;
+  closeTooltip: () => void;
+  appointments: EventObject[];
+  setAppointments: (events: EventObject[]) => void;
+}) => {
+  const {
+    error: acceptError,
+    loading: acceptLoading,
+    handleSubmit: acceptEvent,
+  } = useApiPost("accept", (e: EventObject) => {
+    const otherAppointments = reject(appointments, { Id: e.Id });
+    setAppointments([...otherAppointments, eventToAppointmentModel(e)]);
+    closeTooltip();
+  });
+  const {
+    error: rejectError,
+    loading: rejectLoading,
+    handleSubmit: rejectEvent,
+  } = useApiDelete("events", () => {
+    const otherEvents = reject(appointments, { Id: id });
+    setAppointments(otherEvents);
+    closeTooltip();
+  });
+  return (
+    <ActionEventContainer>
+      <Button isPrimary onClick={() => acceptEvent({ id })}>
+        Accept
+      </Button>
+      <RequestFeedback error={acceptError} loading={acceptLoading} />
+      <Button onClick={() => rejectEvent(id)}>Reject</Button>
+      <RequestFeedback error={rejectError} loading={rejectLoading} />
+    </ActionEventContainer>
+  );
+};
+
+const AppointmentTooltipContent = ({
+  appointments,
+  setAppointments,
+  closeTooltip,
+  appointmentData,
+  personal,
+  ...restProps
+}: AppointmentTooltip.ContentProps & {
+  closeTooltip: () => void;
+  appointments: EventObject[];
+  setAppointments: (events: EventObject[]) => void;
+  personal: boolean;
+}) => (
+  <AppointmentTooltip.Content {...restProps} appointmentData={appointmentData}>
+    {appointmentData?.IsPending && personal && (
+      <Grid container alignItems="center">
+        <ActionEvent
+          id={+(appointmentData?.id || 0)}
+          closeTooltip={closeTooltip}
+          appointments={appointments}
+          setAppointments={setAppointments}
+        />
+      </Grid>
+    )}
+  </AppointmentTooltip.Content>
+);
+
+const AppointmentFormLayout = ({
+  personal,
+  ...restProps
+}: AppointmentForm.BasicLayoutProps & { personal: boolean }) => {
+  const TextEditorComponent = useCallback(
+    (props) => {
+      const { type, value, onValueChange } = props;
+      if (!personal && type === "titleTextEditor") {
+        return (
+          <AppointmentForm.Select
+            value={value || ""}
+            onValueChange={onValueChange}
+            type={"filledSelect"}
+            availableOptions={[
+              {
+                text: "Request Booking",
+                id: "Request Booking",
+              },
+            ]}
+          />
+        );
+      }
+      return <AppointmentForm.TextEditor {...props} />;
+    },
+    [personal]
+  );
+
+  const BooleanEditorComponent = useCallback(
+    (props: AppointmentForm.BooleanEditorProps) => {
+      return personal || props.label !== "All Day" ? (
+        <AppointmentForm.BooleanEditor {...props} />
+      ) : (
+        <React.Fragment />
+      );
+    },
+    []
+  );
+  return (
+    <AppointmentForm.BasicLayout
+      {...restProps}
+      textEditorComponent={TextEditorComponent}
+      booleanEditorComponent={BooleanEditorComponent}
+    ></AppointmentForm.BasicLayout>
+  );
+};
+
 const Scheduler = ({
   userId,
   viewUserId,
@@ -155,6 +273,7 @@ const Scheduler = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>(DEFAULT_VIEW);
   const [appointments, setAppointments] = useState<AppointmentModel[]>([]);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const onCommitChanges = useCallback(
     ({ added, deleted }) => {
@@ -163,7 +282,7 @@ const Scheduler = ({
           .post("events", {
             StartTime: added.startDate.toJSON(),
             EndTime: added.endDate.toJSON(),
-            RecurrenceRule: added.title,
+            RecurrenceRule: added.rRule,
             Subject: added.title,
             userId,
             createdBy: viewUserId,
@@ -237,6 +356,28 @@ const Scheduler = ({
     [isUnavailable]
   );
 
+  const closeTooltip = useCallback(() => setTooltipVisible(false), [
+    setTooltipVisible,
+  ]);
+
+  const AppointmentTooltipContentComponent = useCallback(
+    (props) => (
+      <AppointmentTooltipContent
+        {...props}
+        personal={personal}
+        appointments={appointments}
+        setAppointments={setAppointments}
+        closeTooltip={closeTooltip}
+      />
+    ),
+    [closeTooltip, appointments, setAppointments, personal]
+  );
+
+  const BasicLayoutComponent = useCallback(
+    (props) => <AppointmentFormLayout personal={personal} {...props} />,
+    [personal]
+  );
+
   return loadingSchedule ? (
     <div>Loading...</div>
   ) : (
@@ -265,9 +406,14 @@ const Scheduler = ({
         <Appointments />
         <AllDayPanel cellComponent={AllDayPanelCell} />
         <EditRecurrenceMenu />
-        <AppointmentTooltip showDeleteButton />
+        <AppointmentTooltip
+          visible={tooltipVisible}
+          onVisibilityChange={setTooltipVisible}
+          showDeleteButton={personal}
+          contentComponent={AppointmentTooltipContentComponent}
+        />
         <ConfirmationDialog ignoreCancel />
-        <AppointmentForm />
+        <AppointmentForm basicLayoutComponent={BasicLayoutComponent} />
       </DXScheduler>
     </Paper>
   );
