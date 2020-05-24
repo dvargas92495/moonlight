@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { okResponse, serverErrorResponse } from "../layers/util";
 import { eventFrequency } from "../layers/enums";
 import { connectRdsClient, ses, domain } from "../layers/aws";
-import { filter, map, find } from "lodash";
+import { filter, map, find, isEmpty } from "lodash";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const {
@@ -11,6 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     Subject,
     StartTime,
     EndTime,
+    patientIds,
     isWeekly,
   } = JSON.parse(event.body);
   const IsPending = userId != createdBy;
@@ -23,6 +24,20 @@ export const handler = async (event: APIGatewayProxyEvent) => {
        RETURNING id`,
         [userId, createdBy, Subject, StartTime, EndTime, IsPending]
       )
+      .then((res) => {
+        if (!isEmpty(patientIds)) {
+          const patientValues = map(patientIds, (_, i) => `($1,$${i + 2})`);
+          return client
+            .query(
+              `INSERT INTO patient_event_links(event_id,patient_id)	VALUES ${patientValues.join(
+                ", "
+              )}`,
+              [res.rows[0].id, ...patientIds]
+            )
+            .then(() => res);
+        }
+        return res;
+      })
       .then((res) => {
         const { id } = res.rows[0];
         if (isWeekly) {
@@ -99,6 +114,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           return response;
         }
       })
-      .catch((e) => serverErrorResponse(e.message))
+      .catch((e) =>
+        client
+          .query("ROLLBACK")
+          .then(() => client.end())
+          .then(() => serverErrorResponse(e.message))
+      )
   );
 };

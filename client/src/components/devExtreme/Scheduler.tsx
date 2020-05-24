@@ -394,6 +394,7 @@ const Scheduler = ({
             Subject: added.title,
             userId,
             createdBy: viewUserId,
+            patientIds: map(added.Patients, "id"),
           })
           .then((e) =>
             setAppointments([...appointments, eventToAppointmentModel(e.data)])

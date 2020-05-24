@@ -96,6 +96,7 @@ const transformHandler = (
       res.status(r.statusCode).send(r.body);
     })
     .catch((e) => {
+      console.log(e);
       res.status(500).send({ message: e.message });
     });
 };
