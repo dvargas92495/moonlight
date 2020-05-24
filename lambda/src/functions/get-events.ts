@@ -50,6 +50,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           Patients: {} as { [id: number]: PatientInfo },
           RecurrenceRule,
           fullName: e.first_name + " " + e.last_name,
+          notes: e.notes,
         };
       });
       const eventsById = keyBy(events, "Id");

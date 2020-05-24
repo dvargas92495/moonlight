@@ -11,6 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     Subject,
     StartTime,
     EndTime,
+    notes,
     patientIds,
     isWeekly,
   } = JSON.parse(event.body);
@@ -19,10 +20,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   return client.query("BEGIN").then(() =>
     client
       .query(
-        `INSERT INTO events(user_id, created_by, subject, start_time, end_time, is_pending)
-       VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO events(user_id, created_by, subject, start_time, end_time, is_pending, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-        [userId, createdBy, Subject, StartTime, EndTime, IsPending]
+        [userId, createdBy, Subject, StartTime, EndTime, IsPending, notes]
       )
       .then((res) => {
         if (!isEmpty(patientIds)) {
@@ -63,6 +64,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           IsPending,
           Id,
           RecurrenceRule,
+          notes,
         });
         if (userId != createdBy) {
           return client

@@ -77,6 +77,7 @@ type EventObject = {
   RecurrenceRule: string;
   StartTime: string;
   EndTime: string;
+  notes: string;
 };
 
 const StyleCell = (CellComponent: React.FunctionComponent<any>) => styled(
@@ -395,6 +396,7 @@ const Scheduler = ({
             userId,
             createdBy: viewUserId,
             patientIds: map(added.Patients, "id"),
+            notes: added.notes,
           })
           .then((e) =>
             setAppointments([...appointments, eventToAppointmentModel(e.data)])
