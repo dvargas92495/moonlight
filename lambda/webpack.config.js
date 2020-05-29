@@ -8,7 +8,7 @@ const functionEntry = functions.reduce((acc, e) => {
   acc[e.substring(0, e.length - 3)] = `./src/functions/${e}`;
   return acc;
 }, {});
-delete functionEntry["__tests__"];
+delete functionEntry["__test"];
 const entry = jobs.reduce((acc, j) => {
   acc[j.substring(0, j.length - 3)] = `./src/jobs/${j}`;
   return acc;
