@@ -1,5 +1,6 @@
 {
   "projectId": "hh3a16",
   "testFiles": "**/*.feature",
-  "supportFile": "cypress/support/index.ts"
+  "supportFile": "cypress/support/index.ts",
+  "integrationFolder": "cypress/e2e"
 }

@@ -9,6 +9,9 @@ export TF_VAR_RDS_MASTER_USER_PASSWORD=$QA_RDS_MASTER_USER_PASSWORD
 cd client
 npm test
 
+cd ../lambda
+npm test
+
 export CYPRESS_BASE_URL="https://env1.qa.emdeo.com"
 cd ../qa
 npm test

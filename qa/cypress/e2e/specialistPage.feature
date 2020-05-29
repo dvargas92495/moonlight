@@ -3,7 +3,7 @@ Feature: Specialist Page
   All features available on the specialist page
   
   Scenario: Save Availability
-    Given I am already logged in
+    Given I am already logged in as Specialist
     And I click SETTINGS
     
     When I type "08:00" into "Start of Working Hours" input

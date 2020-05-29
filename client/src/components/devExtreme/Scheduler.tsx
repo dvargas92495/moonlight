@@ -49,7 +49,8 @@ import {
   QUARTER_OPAQUE,
   SECONDARY_BACKGROUND_COLOR,
 } from "../../styles/colors";
-import { Grid } from "@material-ui/core";
+import { Grid, IconButton } from "@material-ui/core";
+import { Delete } from "@material-ui/icons";
 import RequestFeedback from "../RequestFeedback";
 import Button from "../core/Button";
 import DownloadLink from "../core/DownloadLink";
@@ -78,6 +79,7 @@ type EventObject = {
   StartTime: string;
   EndTime: string;
   notes: string;
+  allDay: boolean;
 };
 
 const StyleCell = (CellComponent: React.FunctionComponent<any>) => styled(
@@ -202,12 +204,15 @@ const ActionEvent = ({
 const AppointmentTooltipHeader = ({
   ...restProps
 }: AppointmentTooltip.HeaderProps) => {
-  const { appointmentData } = restProps;
+  const { appointmentData, onDeleteButtonClick } = restProps;
   return (
-    <AppointmentTooltip.Header
-      {...restProps}
-      showDeleteButton={!!appointmentData && !appointmentData.IsReadonly}
-    />
+    <AppointmentTooltip.Header {...restProps} showDeleteButton={false}>
+      {!!appointmentData && !appointmentData.IsReadonly && (
+        <IconButton onClick={onDeleteButtonClick} title={"Delete"}>
+          <Delete />
+        </IconButton>
+      )}
+    </AppointmentTooltip.Header>
   );
 };
 
@@ -366,10 +371,10 @@ const AppointmentFormLayout = ({
 
 const Scheduler = ({
   userId,
-  viewUserId,
+  viewUserId = userId,
 }: {
   userId: number;
-  viewUserId: number;
+  viewUserId?: number;
 }) => {
   const personal = userId === viewUserId;
   const [workHours, setWorkHours] = useState({
@@ -397,6 +402,7 @@ const Scheduler = ({
             createdBy: viewUserId,
             patientIds: map(added.Patients, "id"),
             notes: added.notes,
+            allDay: added.allDay,
           })
           .then((e) =>
             setAppointments([...appointments, eventToAppointmentModel(e.data)])
