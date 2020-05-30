@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import fileUpload, { UploadedFile } from "express-fileupload";
+import fileUpload from "express-fileupload";
 import { ParamsDictionary } from "express-serve-static-core";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -111,10 +111,12 @@ lambdas.forEach((lambda) => {
     "/"
   )}`;
   const p = pathWithBy.replace(/\/by\//g, "/:");
-  import("./functions/" + lambda).then((m) => {
-    const path = p === "/api/specialist/views" ? "/api/specialist-views" : p; // GROSS ANTI PATTERN
-    app[method](path, transformHandler(m.handler));
-  });
+  if (lambda !== "__tests__") {
+    import("./functions/" + lambda).then((m) => {
+      const path = p === "/api/specialist/views" ? "/api/specialist-views" : p; // GROSS ANTI PATTERN
+      app[method](path, transformHandler(m.handler));
+    });
+  }
 });
 
 const port = process.env.PORT || 5000;

@@ -5,10 +5,11 @@
   "main": "index.ts",
   "devDependencies": {
     "@cypress/webpack-preprocessor": "4.1.1",
+    "@testing-library/cypress": "^6.0.0",
     "@types/cypress-cucumber-preprocessor": "1.14.0",
     "@types/lodash": "4.14.150",
     "@types/node": "13.1.4",
-    "cypress": "3.8.1",
+    "cypress": "4.7.0",
     "cypress-cucumber-preprocessor": "1.18.0",
     "lodash": "4.17.15",
     "ts-loader": "6.2.1",

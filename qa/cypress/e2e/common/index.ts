@@ -21,7 +21,7 @@ const visitPage = (page: string) =>
 
 Given("I open {word} page", visitPage);
 
-Given("I am already logged in", () => {
+Given("I am already logged in as Specialist", () => {
   visitPage("login");
   cy.fixture("testUser").then(({ username, password }) => {
     fillInput(username, 0);
@@ -60,12 +60,39 @@ When("I click link with text {string}", (linkText) => {
   cy.get(`a:contains("${linkText}")`).click();
 });
 
+When("I click container with text {string}", (content) => {
+  cy.findByText(content).click();
+});
+
+When("I click element with title {string}", (content) => {
+  cy.findByTitle(content).click();
+});
+
 When("I click {word}", (text) => {
   cy.get(`div:contains("${text}")`).last().click();
 });
 
+When("I click cell under {word}", (day) =>
+  cy.findByText(day).then((d) => {
+    const { top, left } = d[0].getBoundingClientRect();
+    return cy.root().click(left + 20, top + 60);
+  })
+);
+
+When("I type {string} in an input with placeholder {string}", (value, label) =>
+  cy.findByPlaceholderText(label).type(value)
+);
+
 Then("I should see {string}", (content) => {
-  cy.contains(content);
+  cy.findByText(content).should("be.visible");
+});
+
+Then("I should see svg in container with {string}", (content) =>
+  cy.findByText(content).parent().find("svg").should("be.visible")
+);
+
+Then("I should not see {string}", (content) => {
+  cy.findByText(content).should("not.be.visible");
 });
 
 Then(

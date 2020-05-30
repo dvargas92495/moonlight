@@ -4,14 +4,15 @@ import { eventFrequency } from "../layers/enums";
 import { connectRdsClient, ses, domain } from "../layers/aws";
 import { filter, map, find, isEmpty } from "lodash";
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (event: Partial<APIGatewayProxyEvent>) => {
   const {
     userId,
-    createdBy,
+    createdBy = userId,
     Subject,
     StartTime,
     EndTime,
-    notes,
+    notes = "",
+    allDay = false,
     patientIds,
     isWeekly,
   } = JSON.parse(event.body);
@@ -20,10 +21,20 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   return client.query("BEGIN").then(() =>
     client
       .query(
-        `INSERT INTO events(user_id, created_by, subject, start_time, end_time, is_pending, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id`,
-        [userId, createdBy, Subject, StartTime, EndTime, IsPending, notes]
+        `
+INSERT INTO events(user_id, created_by, subject, start_time, end_time, is_pending, notes, all_day)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id`,
+        [
+          userId,
+          createdBy,
+          Subject,
+          StartTime,
+          EndTime,
+          IsPending,
+          notes,
+          allDay,
+        ]
       )
       .then((res) => {
         if (!isEmpty(patientIds)) {
@@ -65,6 +76,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
           Id,
           RecurrenceRule,
           notes,
+          allDay,
         });
         if (userId != createdBy) {
           return client
