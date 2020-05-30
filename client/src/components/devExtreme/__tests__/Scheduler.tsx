@@ -6,5 +6,5 @@ const USER_ID = 1;
 
 test("Render Scheduler with just user id", () => {
   const { container } = render(<Scheduler userId={USER_ID} />);
-  expect(container).toBeInDocument();
+  expect(container).toBeInTheDocument();
 });
