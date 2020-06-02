@@ -26,15 +26,31 @@
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.1",
     "react-select": "3.1.0",
-    "styled-components": "4.4.1",
+    "styled-components": "5.1.1",
     "typescript": "3.7.2"
   },
   "scripts": {
     "prestart": "echo REACT_APP_API_GATEWAY_INVOKE_URL=http://localhost:5000/api/ > .env.local",
     "start": "react-scripts start",
-    "build": "rm -Rf build/ && react-scripts build",
-    "test": "react-scripts test",
+    "prebuild": "rm -Rf build/",
+    "build": "react-scripts build",
+    "test": "react-scripts test --coverage --watchAll=false",
+    "test:watch": "react-scripts test",
     "prettier": "prettier --write src/**/*"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 9,
+        "functions": 7,
+        "lines": 34,
+        "statements": 33
+      }
+    },
+    "coveragePathIgnorePatterns": [
+      "/src/hooks/debugHelpers.ts",
+      "/src/index.ts"
+    ]
   },
   "browserslist": {
     "production": [
@@ -56,6 +72,7 @@
     "@types/react-modal": "3.10.5",
     "@types/react-portal": "4.0.2",
     "@types/react-select": "3.0.11",
+    "jest-styled-components": "7.0.2",
     "prettier": "1.19.1"
   }
 }
