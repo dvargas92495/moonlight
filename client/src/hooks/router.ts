@@ -1,11 +1,11 @@
-import { useLocation } from "react-router-dom"
+import { useLocation } from "react-router-dom";
 
 export const useUserId = () => {
-    const location = useLocation();
-    return location?.state?.userId || 0;
-}
+  const location = useLocation<{ userId: number }>();
+  return location?.state?.userId || 0;
+};
 
 export const useUserType = () => {
-    const location = useLocation();
-    return location?.state?.type || '';
-}
+  const location = useLocation<{ type: string }>();
+  return location?.state?.type || "";
+};
