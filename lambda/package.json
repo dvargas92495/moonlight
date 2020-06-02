@@ -6,7 +6,7 @@
     "build": "rm -Rf build/ && webpack",
     "start": "webpack --config webpack.local.config.js && node local/index.js",
     "test:local": "jest --watch",
-    "test:ci": "jest",
+    "test:ci": "jest --coverage",
     "test": "is-ci \"test:ci\" \"test:local\""
   },
   "license": "MIT",
