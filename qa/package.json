@@ -4,16 +4,17 @@
   "description": "End to End tests for Emdeo",
   "main": "index.ts",
   "devDependencies": {
+    "@cypress/code-coverage": "^3.8.1",
     "@cypress/webpack-preprocessor": "4.1.1",
     "@testing-library/cypress": "^6.0.0",
     "@types/cypress-cucumber-preprocessor": "1.14.0",
     "@types/lodash": "4.14.150",
     "@types/node": "13.1.4",
     "cypress": "4.7.0",
-    "cypress-cucumber-preprocessor": "1.18.0",
+    "cypress-cucumber-preprocessor": "2.4.0",
     "lodash": "4.17.15",
     "ts-loader": "6.2.1",
-    "webpack": "4.41.5"
+    "webpack": "4.43.0"
   },
   "scripts": {
     "pretest": "npm install",
@@ -26,6 +27,7 @@
     "typescript": "3.7.4"
   },
   "cypress-cucumber-preprocessor": {
-    "nonGlobalStepDefinitions": true
+    "nonGlobalStepDefinitions": true,
+    "stepDefinitions": "cypress/e2e"
   }
 }

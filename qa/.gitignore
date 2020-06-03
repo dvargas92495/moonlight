@@ -1,3 +1,5 @@
 cypress/videos
 cypress/fixtures/example.json
 cypress/screenshots
+coverage
+.nyc_output

@@ -7,5 +7,5 @@
     "esModuleInterop": true,
     "types": ["cypress", "node", "@types/testing-library__cypress"]
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "support/*"]
 }

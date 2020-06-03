@@ -143,6 +143,7 @@ const DayTimeTableCell = StyleCell(({ isUnavailable, ...props }) => (
 const WeekTimeTableCell = StyleCell(({ isUnavailable, ...props }) => (
   <WeekView.TimeTableCell
     {...props}
+    title={format(props.startDate, "EEE hh:mm")}
     onClick={isUnavailable ? noop : props.onDoubleClick}
     onDoubleClick={() => {}}
   />

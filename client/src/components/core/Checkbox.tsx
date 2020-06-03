@@ -25,8 +25,9 @@ const Checkbox = ({
         checked={checked}
         onChange={(e) => setChecked(e.target.checked)}
         className={className}
+        id={label}
       />
-      <span>{label}</span>
+      <label htmlFor={label}>{label}</label>
     </div>
   );
 };

@@ -16,3 +16,10 @@ Feature: Scheduler
     And I click button with text "Delete"
 
     Then I should not see "Testing All Day"
+
+  Scenario: Specialist Save Recurring Event
+    Given I am already logged in as Specialist
+
+    When I click element with title "Thu 12:00"
+    And I type "Recurring" in an input with placeholder "Title"
+    And I check "Repeat" input
