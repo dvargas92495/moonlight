@@ -38,19 +38,11 @@ When("I type {string} into {string} input", (value, label) => {
   cy.get(`input[placeholder="${label}"]`).clear().type(value);
 });
 
-When("I check {string} input", (label) => {
-  cy.get(`span:contains("${label}")`)
-    .parent()
-    .find('input[type="checkbox"]')
-    .check();
-});
+When("I check {string} input", (label) => cy.findByLabelText(label).check());
 
-When("I uncheck {string} input", (label) => {
-  cy.get(`span:contains("${label}")`)
-    .parent()
-    .find('input[type="checkbox"]')
-    .uncheck();
-});
+When("I uncheck {string} input", (label) =>
+  cy.findByLabelText(label).uncheck()
+);
 
 When("I click button with text {string}", (buttonText) => {
   cy.get(`button:contains("${buttonText}")`).click();
@@ -78,6 +70,8 @@ When("I click cell under {word}", (day) =>
     return cy.root().click(left + 20, top + 60);
   })
 );
+
+When("I click cell under {word} at {string}", (day) => cy.findByText(day));
 
 When("I type {string} in an input with placeholder {string}", (value, label) =>
   cy.findByPlaceholderText(label).type(value)
