@@ -36,7 +36,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false",
     "test:watch": "react-scripts test",
-    "prettier": "prettier --write src/**/*"
+    "prettier": "prettier --write src/**/*",
+    "eject": "react-scripts eject"
   },
   "jest": {
     "coverageThreshold": {
