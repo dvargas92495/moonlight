@@ -171,12 +171,16 @@
     "@types/react-modal": "3.10.5",
     "@types/react-portal": "4.0.2",
     "@types/react-select": "3.0.11",
+    "babel-plugin-istanbul": "6.0.0",
     "jest-styled-components": "7.0.2",
     "prettier": "1.19.1"
   },
   "babel": {
     "presets": [
       "react-app"
+    ],
+    "plugins": [
+      "istanbul"
     ]
   },
   "eslintConfig": {
