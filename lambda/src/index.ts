@@ -7,8 +7,10 @@ import { reduce, keys, reject, forEach, split, slice, join } from "lodash";
 import { isArray } from "util";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import fs from "fs";
+import cypressCodeCoverage from "@cypress/code-coverage/middleware/express";
 
 const app = express();
+cypressCodeCoverage(app);
 app.use(cors());
 app.use(bodyParser.json());
 app.use(fileUpload());
