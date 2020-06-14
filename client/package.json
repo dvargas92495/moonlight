@@ -31,7 +31,7 @@
   },
   "scripts": {
     "prestart": "echo REACT_APP_API_GATEWAY_INVOKE_URL=http://localhost:5000/api/ > .env.local",
-    "start": "react-scripts start",
+    "start": "react-app-rewired start",
     "prebuild": "rm -Rf build/",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false",
