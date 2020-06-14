@@ -4,7 +4,8 @@
   "description": "Layers of Dependencies",
   "scripts": {
     "build": "rm -Rf build/ && webpack",
-    "start": "webpack --config webpack.local.config.js && node local/index.js",
+    "prestart": "webpack --config webpack.local.config.js",
+    "start": "nyc --silent node local/index.js",
     "test:local": "jest --watch",
     "test:ci": "jest --coverage",
     "test": "is-ci \"test:ci\" \"test:local\""
@@ -12,6 +13,7 @@
   "license": "MIT",
   "repository": "dvargas92495/emdeo",
   "devDependencies": {
+    "@cypress/code-coverage": "3.8.1",
     "@types/aws-lambda": "8.10.40",
     "@types/axios": "0.14.0",
     "@types/busboy": "0.2.3",
@@ -29,6 +31,7 @@
     "faker": "^4.1.0",
     "is-ci": "2.0.0",
     "jest": "26.0.1",
+    "nyc": "15.1.0",
     "ts-jest": "26.0.0",
     "ts-loader": "6.2.1",
     "typescript": "3.9.3",

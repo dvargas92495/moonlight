@@ -10,4 +10,5 @@ module.exports = {
     path: path.join(__dirname, "local"),
     filename: "index.js",
   },
+  devtool: "eval-source-map",
 };

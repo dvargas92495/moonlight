@@ -31,7 +31,7 @@
   },
   "scripts": {
     "prestart": "echo REACT_APP_API_GATEWAY_INVOKE_URL=http://localhost:5000/api/ > .env.local",
-    "start": "react-scripts start",
+    "start": "react-app-rewired start",
     "prebuild": "rm -Rf build/",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false",
@@ -72,6 +72,7 @@
     "@types/react-modal": "3.10.5",
     "@types/react-portal": "4.0.2",
     "@types/react-select": "3.0.11",
+    "babel-plugin-istanbul": "6.0.0",
     "jest-styled-components": "7.0.2",
     "prettier": "1.19.1"
   }

@@ -20,7 +20,7 @@
     "pretest": "npm install",
     "test": "cypress run --record --spec **/*.feature",
     "test:local": "cypress run --spec **/*.feature",
-    "cypress": "cypress open"
+    "start": "cypress open"
   },
   "dependencies": {
     "minimist": "1.2.5",

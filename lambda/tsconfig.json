@@ -9,5 +9,5 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "include": ["src"]
+  "include": ["src", "local-app-env.d.ts"]
 }
