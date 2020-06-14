@@ -14,4 +14,5 @@ npm test
 
 export CYPRESS_BASE_URL="https://env1.qa.emdeo.com"
 cd ../qa
+rm cypress.env.json
 npm test

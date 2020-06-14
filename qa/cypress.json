@@ -2,10 +2,5 @@
   "projectId": "hh3a16",
   "testFiles": "**/*.feature",
   "supportFile": "cypress/support/index.ts",
-  "integrationFolder": "cypress/e2e",
-  "env": {
-    "codeCoverage": {
-      "url": "http://localhost:5000/__coverage__"
-    }
-  }
+  "integrationFolder": "cypress/e2e"
 }
