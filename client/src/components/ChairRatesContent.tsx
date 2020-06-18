@@ -41,7 +41,7 @@ const ChairRatesContent = () => {
         );
       }
     },
-    [setData]
+    [data, setData]
   );
   return (
     <MaterialTable
