@@ -7,6 +7,7 @@ import Button from "./core/Button";
 import api, { useApiPost } from "../hooks/apiClient";
 import RequestFeedback from "./RequestFeedback";
 import DeleteUserModal from "./core/DeleteUserModal";
+import ChairRatesContent from "./ChairRatesContent";
 
 const Content = styled.div`
   display: flex;
@@ -154,8 +155,9 @@ const SupportPage = () => (
   <>
     <UserPage
       header="Your Support Dashboard"
-      initialTab="users"
+      initialTab="rates"
       tabContent={{
+        rates: <ChairRatesContent />,
         users: <UserManagementContent />,
       }}
     />
