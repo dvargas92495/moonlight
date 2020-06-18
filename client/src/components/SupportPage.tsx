@@ -8,6 +8,7 @@ import api, { useApiPost } from "../hooks/apiClient";
 import RequestFeedback from "./RequestFeedback";
 import DeleteUserModal from "./core/DeleteUserModal";
 import ChairRatesContent from "./ChairRatesContent";
+import MonthlyReportsContent from "./MonthlyReportsContent";
 
 const Content = styled.div`
   display: flex;
@@ -158,6 +159,7 @@ const SupportPage = () => (
       initialTab="rates"
       tabContent={{
         rates: <ChairRatesContent />,
+        reports: <MonthlyReportsContent />,
         users: <UserManagementContent />,
       }}
     />
