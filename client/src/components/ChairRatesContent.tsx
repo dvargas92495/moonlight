@@ -46,7 +46,7 @@ const ChairRatesContent = () => {
   return (
     <MaterialTable
       columns={[
-        { title: "Office \\ Specialist", field: "office" },
+        { title: "Office", field: "office" },
         ...map(specialists, (s) => ({
           ...s,
           render: (rowData: RowData) => (
