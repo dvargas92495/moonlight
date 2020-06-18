@@ -7,8 +7,8 @@ import PreviousPage from "@material-ui/icons/NavigateBefore";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import FilledInput from "@material-ui/core/FilledInput";
-import { reject, find, sortBy, map } from "lodash";
 import InputAdornment from "@material-ui/core/InputAdornment";
+import { reject, find, sortBy, map } from "lodash";
 
 type TableIcon = React.ForwardRefExoticComponent<
   React.RefAttributes<SVGSVGElement>

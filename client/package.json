@@ -40,14 +40,6 @@
     "prettier": "prettier --write src/**/*"
   },
   "jest": {
-    "coverageThreshold": {
-      "global": {
-        "branches": 9,
-        "functions": 7,
-        "lines": 34,
-        "statements": 33
-      }
-    },
     "coveragePathIgnorePatterns": [
       "/src/hooks/debugHelpers.ts",
       "/src/index.ts"
