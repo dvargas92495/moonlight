@@ -5,8 +5,8 @@ import { useUserId } from "../hooks/router";
 import styled from "styled-components";
 
 const Container = styled.div<{ loaded: boolean }>`
-    opacity: ${(props) => (props.loaded ? 1 : 0)}
-    transition: opacity ${(props) => (props.loaded ? 0.78 : 0.12)}s;
+  opacity: ${(props) => (props.loaded ? 1 : 0)};
+  transition: opacity ${(props) => (props.loaded ? 0.78 : 0.12)}s;
 `;
 
 const WebPage = ({ children }: { children: React.ReactNode }) => {
