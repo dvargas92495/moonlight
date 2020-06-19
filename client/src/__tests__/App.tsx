@@ -76,7 +76,7 @@ test("renders App header", () => {
       overflow-y: hidden;
     }
 
-    .c6 { 
+    .c6 {
       opacity: 1;
       -webkit-transition: opacity 0.78s;
       transition: opacity 0.78s;
