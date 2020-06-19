@@ -8,7 +8,7 @@ locals {
   s3_origin_id  = "S3-${local.env_name}"
   is_prod       = local.env_name == "emdeo"
   is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
-  dev_ip        = "70.19.82.56/32"
+  dev_ip        = "72.226.107.58/32"
   ips           = toset(local.is_dev ? [local.dev_ip] : [
     local.dev_ip,
     "72.66.88.213/32", // Ryan's IP

