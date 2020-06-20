@@ -23,6 +23,6 @@ jobs:
         with:
           node-version: 12.16.1
       - run: ./install.sh
-        working_directory: ./travis
+        working-directory: ./travis
       - run: ./script-branch.sh
-        working_directory: ./travis
+        working-directory: ./travis
