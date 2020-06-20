@@ -29,9 +29,6 @@ install: travis/install.sh
 jobs:
   fail_fast: true
   include:
-    - env: TF_WORKSPACE=env1-qa-moonlight-health
-      script: travis/script-branch.sh
-      if: branch != master
     - env: TF_WORKSPACE=moonlight-health
       script: travis/script-master.sh
       if: branch = master
