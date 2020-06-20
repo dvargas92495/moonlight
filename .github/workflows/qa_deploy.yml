@@ -11,6 +11,7 @@ env:
   AWS_DEFAULT_REGION: us-east-1
   TF_CLI_CONFIG_FILE: /home/travis/.terraformrc
   TF_IN_AUTOMATION: true
+  TF_WORKSPACE: env1-qa-moonlight-health
 
 jobs:
   deploy:
@@ -22,7 +23,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.16.1
-      - run: ./install.sh
-        working-directory: ./travis
+      - uses: chrislennon/action-aws-cli@v1.1
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.12.24
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
       - run: ./script-branch.sh
         working-directory: ./travis

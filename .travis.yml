@@ -24,8 +24,6 @@ cache:
   directories:
     - ~/.cache
 
-install: travis/install.sh
-
 jobs:
   fail_fast: true
   include:
