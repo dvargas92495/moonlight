@@ -7,7 +7,6 @@ env:
   CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
   PROD_RDS_MASTER_USER_PASSWORD: ${{ secrets.PROD_RDS_MASTER_USER_PASSWORD }}
   QA_RDS_MASTER_USER_PASSWORD: ${{ secrets.QA_RDS_MASTER_USER_PASSWORD }}
-  TERRAFORM_API_TOKEN: ${{ secrets.TERRAFORM_API_TOKEN }}
   AWS_DEFAULT_REGION: us-east-1
   TF_CLI_CONFIG_FILE: /home/travis/.terraformrc
   TF_IN_AUTOMATION: true
@@ -24,9 +23,8 @@ jobs:
         with:
           node-version: 12.16.1
       - uses: chrislennon/action-aws-cli@v1.1
-      - uses: hashicorp/setup-terraform@v1.0.1
+      - uses: hashicorp/setup-terraform@v1.1.0
         with:
-          terraform_version: 0.12.24
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
       - run: ./script-branch.sh
         working-directory: ./travis
