@@ -14,8 +14,8 @@ else
 fi
 
 cd terraform/environment
-./terraform init
-./terraform apply -auto-approve
+terraform init
+terraform apply -auto-approve
 cd ../..
 
 export RDS_MASTER_HOST=$(aws rds describe-db-instances --db-instance-identifier ${ENV_NAME} --query "DBInstances[0].Endpoint.Address" --output text)

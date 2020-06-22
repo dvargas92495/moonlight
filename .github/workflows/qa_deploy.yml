@@ -1,0 +1,29 @@
+name: QA Deploy
+on: pull_request
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+  TF_VAR_RDS_MASTER_USER_PASSWORD: ${{ secrets.QA_RDS_MASTER_USER_PASSWORD }}
+  AWS_DEFAULT_REGION: us-east-1
+  TF_IN_AUTOMATION: true
+  TF_WORKSPACE: env1-qa-moonlight-health
+  CYPRESS_BASE_URL: https://env1.qa.emdeo.com
+
+jobs:
+  deploy:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.16.1
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.16.1
+      - uses: chrislennon/action-aws-cli@v1.1
+      - uses: hashicorp/setup-terraform@v1.1.0
+        with:
+          terraform_version: 0.12.24
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+      - run: ./travis/script-branch.sh
