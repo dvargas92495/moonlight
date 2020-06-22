@@ -26,5 +26,4 @@ jobs:
         with:
           terraform_version: 0.12.24
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
-      - run: ./script.sh
-        working-directory: ./travis
+      - run: ./travis/script.sh
