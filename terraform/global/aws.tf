@@ -27,7 +27,8 @@ data "aws_iam_policy_document" "admin_policy" {
       "ses:VerifyDomainIdentity",
       "ses:GetIdentityVerificationAttributes",
       "ses:DeleteIdentity",
-      "ses:SendEmail"
+      "ses:SendEmail",
+      "ec2:*"
     ]
 
     resources = ["*"]
@@ -108,4 +109,30 @@ resource "aws_iam_group_policy_attachment" "route53" {
 resource "aws_iam_group_policy_attachment" "acm" {
   group       = aws_iam_group.admin.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCertificateManagerFullAccess"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "image-id"
+    values = ["ami-085925f297f89fce1"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"]
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  key_name = "Emdeo-Github-Action"
+
+  tags = {
+    Application = "Emdeo"
+  }
 }

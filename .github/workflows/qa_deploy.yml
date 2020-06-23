@@ -14,7 +14,7 @@ env:
 jobs:
   deploy:
     name: Deploy to QA
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 12.16.1
@@ -26,4 +26,10 @@ jobs:
         with:
           terraform_version: 0.12.24
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
-      - run: ./travis/script-branch.sh
+      - run: ./travis/script.sh
+      - run: npm test
+        working-directory: client
+      - run: npm test
+        working-directory: lambda
+      - run: npm test
+        working-directory: qa

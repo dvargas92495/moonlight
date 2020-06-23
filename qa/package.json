@@ -18,7 +18,7 @@
   },
   "scripts": {
     "pretest": "npm install",
-    "test": "cypress run --record --spec **/*.feature",
+    "test": "cypress run --record --spec **/*.feature --env coverage=false",
     "test:local": "cypress run --spec **/*.feature",
     "start": "cypress open"
   },
