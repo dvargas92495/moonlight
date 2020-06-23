@@ -24,6 +24,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8.2"
+      - run: rm -Rf /opt/hostedtoolcache/aws/
       - uses: chrislennon/action-aws-cli@v1.1
       - uses: hashicorp/setup-terraform@v1.1.0
         with:
