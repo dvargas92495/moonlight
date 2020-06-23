@@ -21,7 +21,6 @@ cd ../..
 export RDS_MASTER_HOST=$(aws rds describe-db-instances --db-instance-identifier ${ENV_NAME} --query "DBInstances[0].Endpoint.Address" --output text)
 
 cd db
-npm install
 npm run migrate
 
 cd ../lambda
