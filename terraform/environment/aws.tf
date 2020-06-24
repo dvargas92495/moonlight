@@ -13,6 +13,7 @@ locals {
     local.dev_ip,
     "72.66.88.213/32", // Ryan's IP
     "10.0.1.58/32",    // Raj's IP
+    "34.204.94.154/32" // Github Action's IP
   ])
   app_storage   = [
     "patient-forms",

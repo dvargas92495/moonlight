@@ -9,18 +9,22 @@ env:
   TF_VAR_RDS_MASTER_USER_PASSWORD: ${{ secrets.PROD_RDS_MASTER_USER_PASSWORD }}
   AWS_DEFAULT_REGION: us-east-1
   TF_IN_AUTOMATION: true
-  TF_WORKSPACE: env1-qa-moonlight-health
+  TF_WORKSPACE: moonlight-health
 
 jobs:
   deploy:
     name: Deploy to Prod
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 12.16.1
         uses: actions/setup-node@v1
         with:
           node-version: 12.16.1
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8.2"
+      - run: rm -Rf /opt/hostedtoolcache/aws/
       - uses: chrislennon/action-aws-cli@v1.1
       - uses: hashicorp/setup-terraform@v1.1.0
         with:
