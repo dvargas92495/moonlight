@@ -7,7 +7,7 @@ import Button from "./core/Button";
 import api, { useApiPost } from "../hooks/apiClient";
 import RequestFeedback from "./RequestFeedback";
 import DeleteUserModal from "./core/DeleteUserModal";
-import ChairRatesContent from "./ChairRatesContent";
+import ChairRatesContent from "./OfficesContent";
 import MonthlyReportsContent from "./MonthlyReportsContent";
 
 const Content = styled.div`

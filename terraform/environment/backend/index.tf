@@ -30,6 +30,8 @@ locals {
     "events/get",
     "events/post",
     "events/{id}/delete",
+    "office/post",
+    "offices/get",
     "password/post",
     "password/confirm/post",
     "password/reset/post",
