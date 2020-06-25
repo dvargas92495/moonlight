@@ -1,6 +1,7 @@
 import React, { useState, useCallback, ChangeEvent, useEffect } from "react";
 import MaterialTable, { Column } from "material-table";
 import AddIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
 import FirstPage from "@material-ui/icons/FirstPage";
 import LastPage from "@material-ui/icons/LastPage";
 import NextPage from "@material-ui/icons/NavigateNext";
@@ -85,20 +86,19 @@ const OfficesContent = () => {
   const [specialists, setSpecialists] = useState<Column<RowData>[]>([]);
   const setRowData = useCallback(
     (rest: RowData[], other: RowData) =>
-      setData(sortBy([...rest, other], "office")),
+      setData(sortBy([...reject(rest, { id: other.id }), other], "office")),
     [setData]
   );
   const onInputChange = useCallback(
     (office, specialist) => (e: ChangeEvent<HTMLInputElement>) => {
       const row = find(data, { office });
       if (row) {
-        const rest = reject(data, { office });
-        setRowData(rest, { ...row, [specialist]: e.target.value });
+        setRowData(data, { ...row, [specialist]: e.target.value });
       }
     },
     [data, setRowData]
   );
-  const onSuccessAddOffice = useCallback((r: RowData) => setRowData(data, r), [
+  const onSuccess = useCallback((r: RowData) => setRowData(data, r), [
     setRowData,
     data,
   ]);
@@ -161,10 +161,23 @@ const OfficesContent = () => {
             isFreeAction: true,
             onClick: openDialog,
           },
+          () => ({
+            icon: () => <EditIcon />,
+            tooltip: "Edit Office",
+            onClick: () => {
+              openDialog();
+              // setDialogRowData(r);
+            },
+          }),
         ]}
+        localization={{
+          header: {
+            actions: "",
+          },
+        }}
       />
       <AddOfficeDialog
-        onSuccess={onSuccessAddOffice}
+        onSuccess={onSuccess}
         open={open}
         closeDialog={closeDialog}
       />

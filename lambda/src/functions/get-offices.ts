@@ -1,4 +1,4 @@
-import { map } from "lodash";
+import { map, sortBy } from "lodash";
 import { okResponse, serverErrorResponse } from "../layers/util";
 import { connectRdsClient } from "../layers/aws";
 import { ratesBySpecialists, specialists } from "../layers/specialists";
@@ -10,14 +10,17 @@ export const handler = async () => {
     .then((res) => {
       client.end();
       return okResponse({
-        offices: map(res.rows, (r) => ({
-          office: r.name,
-          id: r.id,
-          address: r.address,
-          contact: r.contact,
-          taxId: r.tax_id,
-          ...ratesBySpecialists(r.default_rate),
-        })),
+        offices: sortBy(
+          map(res.rows, (r) => ({
+            office: r.name,
+            id: r.id,
+            address: r.address,
+            contact: r.contact,
+            taxId: r.tax_id,
+            ...ratesBySpecialists(r.default_rate),
+          })),
+          "office"
+        ),
         specialists,
       });
     })
