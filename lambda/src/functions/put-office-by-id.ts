@@ -3,14 +3,16 @@ import { okResponse, serverErrorResponse } from "../layers/util";
 import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+  const { id } = event.pathParameters;
   const { name, address, taxId, contact } = JSON.parse(event.body);
   const client = connectRdsClient();
   return client
     .query(
-      `INSERT INTO offices(name, address, tax_id, contact)
-      VALUES ($1, $2, $3, $4)
+      `UPDATE offices
+      SET name=$1, address=$2, tax_id=$3, contact=$4
+      WHERE id=$5
       RETURNING *`,
-      [name, address, taxId, contact]
+      [name, address, taxId, contact, id]
     )
     .then((res) => {
       client.end();
