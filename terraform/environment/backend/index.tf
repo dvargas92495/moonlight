@@ -31,6 +31,10 @@ locals {
     "events/post",
     "events/{id}/delete",
     "office/post",
+    "office/{id}/delete"
+    "office/{id}/put",
+    "office/{id}/rates/get",
+    "office/{id}/rates/put",
     "offices/get",
     "password/post",
     "password/confirm/post",

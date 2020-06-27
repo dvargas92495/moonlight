@@ -110,6 +110,11 @@ const OfficeTable = ({
               updatedBy: userId,
             }),
         }}
+        localization={{
+          header: {
+            actions: "",
+          },
+        }}
       />
     </>
   );
