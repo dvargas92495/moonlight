@@ -17,7 +17,7 @@ export const handler = async () => {
             contact: r.contact,
             taxId: r.tax_id,
           })),
-          "office"
+          "name"
         ),
         page: 0,
         totalCount: res.rows.length,

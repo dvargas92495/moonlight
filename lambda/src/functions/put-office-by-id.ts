@@ -4,7 +4,9 @@ import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   const { id } = event.pathParameters;
-  const { name, address, taxId, contact } = JSON.parse(event.body);
+  const { name = "", address = "", taxId = "", contact = "" } = JSON.parse(
+    event.body
+  );
   const client = connectRdsClient();
   return client
     .query(

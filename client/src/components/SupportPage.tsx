@@ -7,8 +7,9 @@ import Button from "./core/Button";
 import api, { useApiPost } from "../hooks/apiClient";
 import RequestFeedback from "./RequestFeedback";
 import DeleteUserModal from "./core/DeleteUserModal";
-import ChairRatesContent from "./OfficesContent";
+import OfficesContent from "./OfficesContent";
 import MonthlyReportsContent from "./MonthlyReportsContent";
+import ProfileContent from "./ProfileContent";
 
 const Content = styled.div`
   display: flex;
@@ -156,11 +157,12 @@ const SupportPage = () => (
   <>
     <UserPage
       header="Your Support Dashboard"
-      initialTab="rates"
+      initialTab="offices"
       tabContent={{
-        rates: <ChairRatesContent />,
+        offices: <OfficesContent />,
         reports: <MonthlyReportsContent />,
         users: <UserManagementContent />,
+        profile: <ProfileContent />,
       }}
     />
   </>
