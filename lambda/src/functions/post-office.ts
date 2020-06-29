@@ -3,7 +3,9 @@ import { okResponse, serverErrorResponse } from "../layers/util";
 import { connectRdsClient } from "../layers/aws";
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-  const { name, address, taxId, contact } = JSON.parse(event.body);
+  const { name = "", address = "", taxId = "", contact = "" } = JSON.parse(
+    event.body
+  );
   const client = connectRdsClient();
   return client
     .query(

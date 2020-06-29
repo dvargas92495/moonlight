@@ -45,6 +45,8 @@ const OfficeTable = ({
           {
             title: "Specialist",
             field: "specialistId",
+            editable: "onAdd",
+            initialEditValue: 1,
             editComponent: (props) => (
               <FormControl fullWidth>
                 <InputLabel id={`specialist-${props.rowData.specialistId}`}>
@@ -58,13 +60,18 @@ const OfficeTable = ({
                   fullWidth
                 >
                   <MenuItem value={1}>Dr. Patel</MenuItem>
-                  <MenuItem value={2}>Dr. Vargas</MenuItem>
                 </Select>
               </FormControl>
             ),
+            lookup: { 1: "Dr. Patel" },
           },
-          { title: "Rate", field: "rate", render: (r) => `$${r.rate}` },
-          { title: "Updated On", field: "updatedDateUtc", editable: "never" },
+          { title: "Rate", field: "rate", type: "currency" },
+          {
+            title: "Updated On",
+            field: "updatedDateUtc",
+            editable: "never",
+            type: "datetime",
+          },
           { title: "Updated By", field: "updatedBy", editable: "never" },
         ]}
         data={() =>
@@ -88,6 +95,8 @@ const OfficeTable = ({
         options={{
           search: false,
           pageSizeOptions: [5, 10],
+          sorting: false,
+          draggable: false,
         }}
         actions={[
           {
@@ -154,6 +163,8 @@ const OfficesTable = ({
         options={{
           search: false,
           pageSizeOptions: [5, 10],
+          draggable: false,
+          sorting: false,
         }}
         actions={[
           (r) => ({
