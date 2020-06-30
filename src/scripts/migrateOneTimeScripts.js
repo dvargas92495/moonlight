@@ -34,9 +34,20 @@ rds
           .filter((s) => !executed.has(s))
           .map((s) => {
             console.log(`Running one time script: ${s}`);
-            spawnSync("node", [path.join(__dirname, "one-time", s)], {
-              stdio: ["inherit", "inherit", "inherit"],
-            });
+            const cmd = spawnSync(
+              "node",
+              [path.join(__dirname, "one-time", s)],
+              {
+                stdio: ["inherit", "inherit", "inherit"],
+                env: {
+                  ...process.env,
+                  RDS_MASTER_HOST: host,
+                },
+              }
+            );
+            if (cmd.status != 0) {
+              throw new Error(cmd.error);
+            }
             const version = s.substring(0, 14);
             const name = s.substring(15);
             return client.query(
