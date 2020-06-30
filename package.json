@@ -1,0 +1,23 @@
+{
+  "name": "emdeo",
+  "version": "1.0.0",
+  "description": "Platform that facilitates dynamic specialist practices",
+  "scripts": {
+    "migrate-scripts": "node src/scripts/migrateOneTimeScripts.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvargas92495/moonlight.git"
+  },
+  "author": "dvargas92495",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dvargas92495/moonlight/issues"
+  },
+  "homepage": "https://emdeo.com/",
+  "dependencies": {
+    "aws-sdk": "2.708.0",
+    "pg": "8.2.1"
+  }
+}

@@ -5,14 +5,6 @@ set -e
 ENV_NAME=${TF_WORKSPACE/moonlight-health/emdeo}
 DOMAIN="https://${ENV_NAME//-/.}.com"
 
-if [ -z "$(ls -A travis/manual)" ]; then
-   echo "No manual migrations to run"
-else
-    for filename in travis/manual/*.sh; do
-        ./$filename
-    done
-fi
-
 cd terraform/environment
 terraform init
 terraform apply -auto-approve

@@ -26,4 +26,6 @@ jobs:
         with:
           terraform_version: 0.12.24
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+      - run: npm install
+      - run: npm run migrate-scripts
       - run: ./travis/script.sh
