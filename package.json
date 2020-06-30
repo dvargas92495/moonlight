@@ -17,6 +17,7 @@
   },
   "homepage": "https://emdeo.com/",
   "dependencies": {
+    "aws-sdk": "2.708.0",
     "pg": "8.2.1"
   }
 }
