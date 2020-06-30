@@ -10,7 +10,10 @@ const rds = new AWS.RDS({ version: "2014-10-31" });
 
 rds
   .describeDBInstances({
-    DBInstanceIdentifier: process.env.ENV_NAME,
+    DBInstanceIdentifier: process.env.TF_WORKSPACE.replace(
+      "moonlight-health",
+      "emdeo"
+    ),
   })
   .promise()
   .then((response) => {
@@ -45,4 +48,8 @@ rds
         .then(() => client.end())
         .then(() => console.log("Finished migrating scripts!"));
     });
+  })
+  .catch((e) => {
+    console.error(e.message);
+    process.exit(1);
   });
