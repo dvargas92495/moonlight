@@ -10,6 +10,7 @@ import PreviousPage from "@material-ui/icons/NavigateBefore";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import CheckIcon from "@material-ui/icons/Check";
 import ClearIcon from "@material-ui/icons/Clear";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import api from "../hooks/apiClient";
 import { useUserId } from "../hooks/router";
@@ -76,6 +77,7 @@ const ChairRatesTable = ({
             type: "datetime",
           },
           { title: "Updated By", field: "updatedBy", editable: "never" },
+          { field: "latestDate", hidden: true },
         ]}
         data={() =>
           api.get(`office/${selectedOffice.id}/rates`).then((res) => res.data)
@@ -95,6 +97,7 @@ const ChairRatesTable = ({
           Clear: ClearIcon as TableIcon,
           Edit: EditIcon as TableIcon,
           Delete: DeleteIcon as TableIcon,
+          DetailPanel: KeyboardArrowRightIcon as TableIcon,
         }}
         options={{
           search: false,
@@ -128,6 +131,14 @@ const ChairRatesTable = ({
             actions: "",
           },
         }}
+        parentChildData={(row, rows) =>
+          rows.find(
+            (a) =>
+              a.updatedDateUtc === row.latestDate &&
+              row.updatedDateUtc !== row.latestDate &&
+              a.specialistId === row.specialistId
+          )
+        }
       />
     </>
   );
