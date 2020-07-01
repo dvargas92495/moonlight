@@ -30,9 +30,12 @@ locals {
     "events/get",
     "events/post",
     "events/{id}/delete",
+    "integrations/{id}/get",
     "office/post",
     "office/{id}/delete",
     "office/{id}/put",
+    "office/{id}/integration/post",
+    "office/{id}/integrations/get",
     "office/{id}/rates/get",
     "office/{id}/rates/put",
     "offices/get",
@@ -53,7 +56,9 @@ locals {
     "user/{id}/photo/get",
     "user/{id}/photo/post",
     "user/post",
-    "vcita/appointments/scheduled/post"
+    "vcita/appointments/scheduled/post",
+    "vcita/clients/created/post",
+    "vcita/clients/updated/post"
   ]
 
   public_lambdas = [
@@ -62,7 +67,9 @@ locals {
     "password/confirm/post",
     "password/reset/post",
     "signin/post",
-    "vcita/appointments/scheduled/post"
+    "vcita/appointments/scheduled/post",
+    "vcita/clients/created/post",
+    "vcita/clients/updated/post"
   ]
 
   job_lambdas = [
@@ -414,7 +421,7 @@ resource "aws_api_gateway_integration_response" "mock" {
 resource "aws_api_gateway_deployment" "production" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name  = "production"
-  stage_description = "2020.181.1"
+  stage_description = "2020.182.0"
 
   depends_on  = [
     aws_api_gateway_integration.integration, 

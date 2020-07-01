@@ -18,6 +18,7 @@
   "homepage": "https://emdeo.com/",
   "dependencies": {
     "aws-sdk": "2.708.0",
+    "axios": "0.19.2",
     "pg": "8.2.1"
   }
 }

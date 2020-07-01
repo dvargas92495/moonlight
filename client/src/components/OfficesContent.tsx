@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MaterialTable from "material-table";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
@@ -17,6 +17,10 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Grid from "@material-ui/core/Grid";
+import Link from "@material-ui/core/Link";
+import { map } from "lodash";
+import { Typography } from "@material-ui/core";
 
 type TableIcon = React.ForwardRefExoticComponent<
   React.RefAttributes<SVGSVGElement>
@@ -30,7 +34,7 @@ type OfficeData = {
   address: string;
 };
 
-const OfficeTable = ({
+const ChairRatesTable = ({
   selectedOffice,
   setSelectedOffice,
 }: {
@@ -54,8 +58,7 @@ const OfficeTable = ({
                 </InputLabel>
                 <Select
                   labelId={`specialist-${props.rowData.specialistId}`}
-                  id="demo-simple-select"
-                  value={props.rowData.specialistId || 1}
+                  value={props.rowData.specialistId}
                   onChange={(e) => props.onChange(e.target.value)}
                   fullWidth
                 >
@@ -80,6 +83,7 @@ const OfficeTable = ({
         title={`Chair Rates for ${selectedOffice.name}`}
         style={{
           width: "100%",
+          height: "100%",
         }}
         icons={{
           FirstPage: FirstPage as TableIcon,
@@ -94,9 +98,9 @@ const OfficeTable = ({
         }}
         options={{
           search: false,
-          pageSizeOptions: [5, 10],
-          sorting: false,
+          paging: false,
           draggable: false,
+          sorting: false,
         }}
         actions={[
           {
@@ -129,74 +133,205 @@ const OfficeTable = ({
   );
 };
 
+const IntegrationsEditLinkComponent = ({
+  integration,
+  link,
+  onChange,
+}: {
+  integration: number;
+  link: string;
+  onChange: (v: any) => void;
+}) => {
+  const [menuItems, setMenuItems] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    api
+      .get(`integrations/${integration}`)
+      .then((res) => setMenuItems(res.data))
+      .finally(() => setLoading(false));
+  }, [setLoading, integration, setMenuItems]);
+  return loading ? (
+    <Typography variant={"body1"}>Loading...</Typography>
+  ) : (
+    <FormControl fullWidth>
+      <InputLabel id={`integration-link-${link}`}>Link</InputLabel>
+      <Select
+        labelId={`integration-link-${link}`}
+        value={link || menuItems[0]}
+        onChange={(e) => onChange(e.target.value)}
+        fullWidth
+      >
+        {map(menuItems, (mi, i) => (
+          <MenuItem value={mi} key={i}>
+            {mi}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+};
+
+const IntegrationsTable = ({
+  selectedOffice,
+}: {
+  selectedOffice: OfficeData;
+}) => {
+  return (
+    <MaterialTable
+      columns={[
+        {
+          field: "integration",
+          title: "Integration",
+          editable: "onAdd",
+          initialEditValue: 1,
+          editComponent: (props) => (
+            <FormControl fullWidth>
+              <InputLabel id={`integration-${props.rowData.integration}`}>
+                Integration
+              </InputLabel>
+              <Select
+                labelId={`integration-${props.rowData.integration}`}
+                value={props.rowData.integration}
+                onChange={(e) => props.onChange(e.target.value)}
+                fullWidth
+              >
+                <MenuItem value={1}>vCita</MenuItem>
+              </Select>
+            </FormControl>
+          ),
+          lookup: { 1: "vCita" },
+        },
+        {
+          field: "link",
+          title: "Link",
+          render: (r) => (
+            <Link href={r.url} target="_blank" rel="noopener">
+              {r.link}
+            </Link>
+          ),
+          editComponent: (props) => (
+            <IntegrationsEditLinkComponent
+              {...props.rowData}
+              onChange={props.onChange}
+            />
+          ),
+        },
+        { field: "url", hidden: true },
+      ]}
+      data={() =>
+        api
+          .get(`office/${selectedOffice.id}/integrations`)
+          .then((res) => res.data)
+      }
+      title={`Integrations for ${selectedOffice.name}`}
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
+      icons={{
+        Add: AddIcon as TableIcon,
+        Check: CheckIcon as TableIcon,
+        Clear: ClearIcon as TableIcon,
+        Edit: EditIcon as TableIcon,
+        Delete: DeleteIcon as TableIcon,
+      }}
+      options={{
+        search: false,
+        paging: false,
+        draggable: false,
+        sorting: false,
+      }}
+      localization={{
+        header: {
+          actions: "",
+        },
+      }}
+      editable={{
+        isEditable: () => true,
+        isDeletable: () => true,
+        onRowAdd: (r) =>
+          api.post(`office/${selectedOffice.id}/integration`, {
+            ...r,
+            officeId: selectedOffice.id,
+          }),
+        onRowUpdate: () => Promise.resolve(),
+        onRowDelete: () => Promise.resolve(),
+      }}
+    />
+  );
+};
+
 const OfficesTable = ({
   setSelectedOffice,
 }: {
   setSelectedOffice: (s: OfficeData) => void;
-}) => {
-  return (
-    <>
-      <MaterialTable
-        columns={[
-          { field: "id", hidden: true },
-          { title: "Name", field: "name" },
-          { title: "Address", field: "address" },
-          { title: "Tax Id", field: "taxId" },
-          { title: "Contact", field: "contact" },
-        ]}
-        data={() => api.get("offices").then((res) => res.data)}
-        title="Office Management"
-        style={{
-          width: "100%",
-        }}
-        icons={{
-          FirstPage: FirstPage as TableIcon,
-          LastPage: LastPage as TableIcon,
-          NextPage: NextPage as TableIcon,
-          PreviousPage: PreviousPage as TableIcon,
-          Add: AddIcon as TableIcon,
-          Check: CheckIcon as TableIcon,
-          Clear: ClearIcon as TableIcon,
-          Edit: EditIcon as TableIcon,
-          Delete: DeleteIcon as TableIcon,
-        }}
-        options={{
-          search: false,
-          pageSizeOptions: [5, 10],
-          draggable: false,
-          sorting: false,
-        }}
-        actions={[
-          (r) => ({
-            icon: () => <VisibilityIcon />,
-            tooltip: "View Rates",
-            onClick: () => setSelectedOffice(r),
-          }),
-        ]}
-        localization={{
-          header: {
-            actions: "",
-          },
-        }}
-        editable={{
-          isEditable: () => true,
-          isDeletable: () => true,
-          onRowAdd: (r) => api.post("office", r),
-          onRowUpdate: (r) => api.put(`office/${r.id}`, r),
-          onRowDelete: (r) => api.delete(`office/${r.id}`),
-        }}
-      />
-    </>
-  );
-};
+}) => (
+  <MaterialTable
+    columns={[
+      { field: "id", hidden: true },
+      { title: "Name", field: "name" },
+      { title: "Address", field: "address" },
+      { title: "Tax Id", field: "taxId" },
+      { title: "Contact", field: "contact" },
+    ]}
+    data={() => api.get("offices").then((res) => res.data)}
+    title="Office Management"
+    style={{
+      width: "100%",
+    }}
+    icons={{
+      FirstPage: FirstPage as TableIcon,
+      LastPage: LastPage as TableIcon,
+      NextPage: NextPage as TableIcon,
+      PreviousPage: PreviousPage as TableIcon,
+      Add: AddIcon as TableIcon,
+      Check: CheckIcon as TableIcon,
+      Clear: ClearIcon as TableIcon,
+      Edit: EditIcon as TableIcon,
+      Delete: DeleteIcon as TableIcon,
+    }}
+    options={{
+      search: false,
+      pageSizeOptions: [5, 10],
+      draggable: false,
+      sorting: false,
+    }}
+    actions={[
+      (r) => ({
+        icon: () => <VisibilityIcon />,
+        tooltip: "View Details",
+        onClick: () => setSelectedOffice(r),
+      }),
+    ]}
+    localization={{
+      header: {
+        actions: "",
+      },
+    }}
+    editable={{
+      isEditable: () => true,
+      isDeletable: () => true,
+      onRowAdd: (r) => api.post("office", r),
+      onRowUpdate: (r) => api.put(`office/${r.id}`, r),
+      onRowDelete: (r) => api.delete(`office/${r.id}`),
+    }}
+  />
+);
 
 const OfficesContent = () => {
   const [selectedOffice, setSelectedOffice] = useState<OfficeData>();
   return selectedOffice ? (
-    <OfficeTable
-      selectedOffice={selectedOffice}
-      setSelectedOffice={setSelectedOffice}
-    />
+    <Grid container>
+      <Grid item xs={12}>
+        <ChairRatesTable
+          selectedOffice={selectedOffice}
+          setSelectedOffice={setSelectedOffice}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <IntegrationsTable selectedOffice={selectedOffice} />
+      </Grid>
+    </Grid>
   ) : (
     <OfficesTable setSelectedOffice={setSelectedOffice} />
   );

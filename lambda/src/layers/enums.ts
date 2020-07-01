@@ -23,3 +23,7 @@ export const applicationStatus = {
   ACCEPTED: 1,
   REJECTED: 2,
 };
+
+export const integrations = {
+  vCita: 1,
+};
