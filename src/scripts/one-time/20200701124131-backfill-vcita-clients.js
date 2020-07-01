@@ -31,13 +31,17 @@ axios
     values = values.substring(0, values.length - 2);
     client.connect();
     return client.query(
-      `INSERT INTO vcita_clients(client_id, first_name, last_name, email) VALUES ${values}`,
+      `INSERT INTO vcita_clients(client_id, first_name, last_name, email) 
+      VALUES ${values} 
+      ON CONFLICT (client_id) 
+      DO UPDATE SET first_name=excluded.first_name, last_name=excluded.last_name, email=excluded.email`,
       valuesArr
     );
   })
-  .then((r) =>
-    console.log(`Successfully inserted ${r.rowCount} rows to vcita_clients`)
-  )
+  .then((r) => {
+    client.end();
+    console.log(`Successfully inserted ${r.rowCount} rows to vcita_clients`);
+  })
   .catch((e) => {
     console.error(e.message);
     process.exit(1);
