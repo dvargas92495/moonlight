@@ -28,4 +28,8 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
       - run: npm install
       - run: npm run migrate-scripts
+      - run: terraform init
+        working-directory: ./terraform/environment
+      - run: terraform apply -auto-approve
+        working-directory: ./terraform/environment
       - run: ./travis/script.sh

@@ -42,11 +42,15 @@ rds
                 env: {
                   ...process.env,
                   RDS_MASTER_HOST: host,
+                  ENV_NAME: process.env.TF_WORKSPACE.replace(
+                    "moonlight-health",
+                    "emdeo"
+                  ),
                 },
               }
             );
             if (cmd.status != 0) {
-              throw new Error(cmd.error);
+              process.exit(1);
             }
             const version = s.substring(0, 14);
             const name = s.substring(15);
