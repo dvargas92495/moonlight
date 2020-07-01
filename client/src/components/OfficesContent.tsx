@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MaterialTable from "material-table";
 import AddIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
@@ -19,7 +19,7 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import Grid from "@material-ui/core/Grid";
 import Link from "@material-ui/core/Link";
-import { map } from "lodash";
+import { map, sortBy, keys } from "lodash";
 import { Typography } from "@material-ui/core";
 
 type TableIcon = React.ForwardRefExoticComponent<
@@ -133,50 +133,39 @@ const ChairRatesTable = ({
   );
 };
 
-const IntegrationsEditLinkComponent = ({
-  integration,
-  link,
-  onChange,
-}: {
-  integration: number;
-  link: string;
-  onChange: (v: any) => void;
-}) => {
-  const [menuItems, setMenuItems] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    api
-      .get(`integrations/${integration}`)
-      .then((res) => setMenuItems(res.data))
-      .finally(() => setLoading(false));
-  }, [setLoading, integration, setMenuItems]);
-  return loading ? (
-    <Typography variant={"body1"}>Loading...</Typography>
-  ) : (
-    <FormControl fullWidth>
-      <InputLabel id={`integration-link-${link}`}>Link</InputLabel>
-      <Select
-        labelId={`integration-link-${link}`}
-        value={link || menuItems[0]}
-        onChange={(e) => onChange(e.target.value)}
-        fullWidth
-      >
-        {map(menuItems, (mi, i) => (
-          <MenuItem value={mi} key={i}>
-            {mi}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
-
 const IntegrationsTable = ({
   selectedOffice,
 }: {
   selectedOffice: OfficeData;
 }) => {
-  return (
+  const [vcitaClients, setVcitaClients] = useState<{
+    [clientId: string]: string;
+  }>({});
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    api
+      .get("integrations")
+      .then((res) => setVcitaClients(res.data.vcitaClients))
+      .finally(() => setLoading(false));
+  }, [setLoading, setVcitaClients]);
+  const onRowUpsert = useCallback(
+    (r) =>
+      api.put(`office/${selectedOffice.id}/integration`, {
+        ...r,
+        officeId: selectedOffice.id,
+      }),
+    [selectedOffice]
+  );
+  const menuItems = sortBy(
+    map(keys(vcitaClients), (id: string) => ({
+      id,
+      link: vcitaClients[id],
+    })),
+    "link"
+  );
+  return loading ? (
+    <Typography variant={"body1"}>Loading...</Typography>
+  ) : (
     <MaterialTable
       columns={[
         {
@@ -206,15 +195,30 @@ const IntegrationsTable = ({
           title: "Link",
           render: (r) => (
             <Link href={r.url} target="_blank" rel="noopener">
-              {r.link}
+              {vcitaClients[r.link]}
             </Link>
           ),
+          initialEditValue: menuItems[0].id,
           editComponent: (props) => (
-            <IntegrationsEditLinkComponent
-              {...props.rowData}
-              onChange={props.onChange}
-            />
+            <FormControl fullWidth>
+              <InputLabel id={`integration-link-${props.rowData.link}`}>
+                Link
+              </InputLabel>
+              <Select
+                labelId={`integration-link-${props.rowData.link}`}
+                value={props.rowData.link}
+                onChange={(e) => props.onChange(e.target.value)}
+                fullWidth
+              >
+                {map(menuItems, (mi, i) => (
+                  <MenuItem value={mi.id} key={i}>
+                    {mi.link}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           ),
+          lookup: vcitaClients,
         },
         { field: "url", hidden: true },
       ]}
@@ -249,13 +253,12 @@ const IntegrationsTable = ({
       editable={{
         isEditable: () => true,
         isDeletable: () => true,
-        onRowAdd: (r) =>
-          api.post(`office/${selectedOffice.id}/integration`, {
-            ...r,
-            officeId: selectedOffice.id,
-          }),
-        onRowUpdate: () => Promise.resolve(),
-        onRowDelete: () => Promise.resolve(),
+        onRowAdd: onRowUpsert,
+        onRowUpdate: onRowUpsert,
+        onRowDelete: (r) =>
+          api.delete(
+            `office/${selectedOffice.id}/integration/${r.integration}`
+          ),
       }}
     />
   );
