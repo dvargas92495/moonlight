@@ -1,4 +1,4 @@
-import { map, groupBy, keys, reduce } from "lodash";
+import { map, groupBy, keys, reduce, sortBy } from "lodash";
 import differenceInHours from "date-fns/differenceInHours";
 import format from "date-fns/format";
 import addMonths from "date-fns/addMonths";
@@ -14,7 +14,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   const endDate = addMonths(startDate, 1);
   return client
     .query(
-      `SELECT * FROM vcita_appointments WHERE start_time > $1 AND start_time < $2`,
+      `SELECT a.start_time, a.end_time, a.client_id, o.name, c.first_name FROM vcita_appointments a
+      LEFT JOIN office_vcita_links l ON l.client_id = a.client_id
+      LEFT JOIN offices o ON o.id = l.office_id
+      LEFT JOIN vcita_clients c ON c.client_id = a.client_id 
+      WHERE start_time > $1 AND start_time < $2`,
       [startDate, endDate]
     )
     .then((res) => {
@@ -26,20 +30,24 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         )}`,
         totalDue:
           200 * differenceInHours(new Date(r.end_time), new Date(r.start_time)),
-        parentOffice: r.client_id,
+        parentOffice:
+          r.name || (r.first_name && `${r.first_name} (vCita)`) || r.client_id,
       }));
       const appointmentsByClient = groupBy(childData, "parentOffice");
-      const parentData = map(keys(appointmentsByClient), (k) => {
-        const totalDue = reduce(
-          appointmentsByClient[k],
-          (acc, cur) => cur.totalDue + acc,
-          0
-        );
-        return {
-          office: k,
-          totalDue,
-        };
-      });
+      const parentData = sortBy(
+        map(keys(appointmentsByClient), (k) => {
+          const totalDue = reduce(
+            appointmentsByClient[k],
+            (acc, cur) => cur.totalDue + acc,
+            0
+          );
+          return {
+            office: k,
+            totalDue,
+          };
+        }),
+        "office"
+      );
       return okResponse({
         data: [...parentData, ...childData],
         page: 0,
