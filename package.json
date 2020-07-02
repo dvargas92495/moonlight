@@ -4,6 +4,7 @@
   "description": "Platform that facilitates dynamic specialist practices",
   "scripts": {
     "migrate-scripts": "node src/scripts/migrateOneTimeScripts.js",
+    "psql": "PGPASSWORD=$TF_VAR_RDS_MASTER_USER_PASSWORD psql -h $RDS_MASTER_HOST -U emdeo",
     "test": "jest"
   },
   "repository": {
