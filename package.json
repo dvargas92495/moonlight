@@ -4,7 +4,8 @@
   "description": "Platform that facilitates dynamic specialist practices",
   "scripts": {
     "migrate-scripts": "node src/scripts/migrateOneTimeScripts.js",
-    "psql": "PGPASSWORD=$TF_VAR_RDS_MASTER_USER_PASSWORD psql -h $RDS_MASTER_HOST -U emdeo",
+    "psql": "cross-env-shell PGPASSWORD=$TF_VAR_RDS_MASTER_USER_PASSWORD psql -h $RDS_MASTER_HOST -U emdeo",
+    "ssh": "cross-env-shell ssh -i Emdeo-Github-Action.pem ubuntu@$EC2_INSTANCE",
     "test": "jest"
   },
   "repository": {
@@ -21,5 +22,8 @@
     "aws-sdk": "2.708.0",
     "axios": "0.19.2",
     "pg": "8.2.1"
+  },
+  "devDependencies": {
+    "cross-env": "7.0.2"
   }
 }

@@ -10,6 +10,7 @@ import DeleteUserModal from "./core/DeleteUserModal";
 import OfficesContent from "./OfficesContent";
 import MonthlyReportsContent from "./MonthlyReportsContent";
 import ProfileContent from "./ProfileContent";
+import SpecialistsContent from "./SpecialistsContent";
 
 const Content = styled.div`
   display: flex;
@@ -160,6 +161,7 @@ const SupportPage = () => (
       initialTab="offices"
       tabContent={{
         offices: <OfficesContent />,
+        specialists: <SpecialistsContent />,
         reports: <MonthlyReportsContent />,
         users: <UserManagementContent />,
         profile: <ProfileContent />,
