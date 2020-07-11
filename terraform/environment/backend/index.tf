@@ -52,6 +52,8 @@ locals {
     "profile/get",
     "profile/post",
     "signin/post",
+    "specialist/{id}/rates/get",
+    "specialists/get",
     "specialist-views/get",
     "user/{id}/delete",
     "user/{id}/photo/get",

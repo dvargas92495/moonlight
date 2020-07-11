@@ -20,27 +20,25 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import Grid from "@material-ui/core/Grid";
 import Link from "@material-ui/core/Link";
-import { map, sortBy, keys, mapValues, keyBy } from "lodash";
+import { map, sortBy, keys, keyBy, mapValues } from "lodash";
 import { Typography } from "@material-ui/core";
 
 type TableIcon = React.ForwardRefExoticComponent<
   React.RefAttributes<SVGSVGElement>
 >;
 
-type OfficeData = {
+type SpecialistData = {
   name: string;
   id: number;
-  taxId: string;
-  contact: string;
-  address: string;
+  email: string;
 };
 
 const ChairRatesTable = ({
-  selectedOffice,
-  setSelectedOffice,
+  selectedSpecialist,
+  setSelectedSpecialist,
 }: {
-  selectedOffice: OfficeData;
-  setSelectedOffice: (o?: OfficeData) => void;
+  selectedSpecialist: SpecialistData;
+  setSelectedSpecialist: (o?: SpecialistData) => void;
 }) => {
   const userId = useUserId();
   const [lookup, setLookup] = useState<{ id: string; name: string }[]>([]);
@@ -48,10 +46,11 @@ const ChairRatesTable = ({
 
   useEffect(() => {
     api
-      .get("specialists")
+      .get("offices")
       .then((res) => setLookup(sortBy(res.data.data, "name")))
       .finally(() => setLoading(false));
   }, [setLoading, setLookup]);
+
   return loading ? (
     <Typography variant={"body1"}>Loading...</Typography>
   ) : (
@@ -59,18 +58,18 @@ const ChairRatesTable = ({
       <MaterialTable
         columns={[
           {
-            title: "Specialist",
-            field: "specialistId",
+            title: "Office",
+            field: "officeId",
             editable: "onAdd",
             initialEditValue: lookup[0]?.id,
             editComponent: (props) => (
               <FormControl fullWidth>
-                <InputLabel id={`specialist-${props.rowData.specialistId}`}>
-                  Specialist
+                <InputLabel id={`office-${props.rowData.officeId}`}>
+                  Office
                 </InputLabel>
                 <Select
-                  labelId={`specialist-${props.rowData.specialistId}`}
-                  value={props.rowData.specialistId}
+                  labelId={`office-${props.rowData.officeId}`}
+                  value={props.rowData.officeId}
                   onChange={(e) => props.onChange(e.target.value)}
                   fullWidth
                 >
@@ -93,9 +92,11 @@ const ChairRatesTable = ({
           { field: "latestDate", hidden: true },
         ]}
         data={() =>
-          api.get(`office/${selectedOffice.id}/rates`).then((res) => res.data)
+          api
+            .get(`specialist/${selectedSpecialist.id}/rates`)
+            .then((res) => res.data)
         }
-        title={`Chair Rates for ${selectedOffice.name}`}
+        title={`Chair Rates for ${selectedSpecialist.name}`}
         style={{
           width: "100%",
           height: "100%",
@@ -123,18 +124,18 @@ const ChairRatesTable = ({
             icon: () => <ArrowBackIcon />,
             tooltip: "Back",
             isFreeAction: true,
-            onClick: () => setSelectedOffice(),
+            onClick: () => setSelectedSpecialist(),
           },
         ]}
         editable={{
           isEditable: () => true,
           onRowAdd: (r) =>
-            api.put(`office/${selectedOffice.id}/rates`, {
+            api.put(`specialist/${selectedSpecialist.id}/rates`, {
               ...r,
               updatedBy: userId,
             }),
           onRowUpdate: (r) =>
-            api.put(`office/${selectedOffice.id}/rates`, {
+            api.put(`specialist/${selectedSpecialist.id}/rates`, {
               ...r,
               updatedBy: userId,
             }),
@@ -149,7 +150,7 @@ const ChairRatesTable = ({
             (a) =>
               a.updatedDateUtc === row.latestDate &&
               row.updatedDateUtc !== row.latestDate &&
-              a.specialistId === row.specialistId
+              a.officeId === row.officeId
           )
         }
       />
@@ -160,7 +161,7 @@ const ChairRatesTable = ({
 const IntegrationsTable = ({
   selectedOffice,
 }: {
-  selectedOffice: OfficeData;
+  selectedOffice: SpecialistData;
 }) => {
   const [vcitaClients, setVcitaClients] = useState<{
     [clientId: string]: string;
@@ -288,21 +289,19 @@ const IntegrationsTable = ({
   );
 };
 
-const OfficesTable = ({
-  setSelectedOffice,
+const SpecialistsTable = ({
+  setSelectedSpecialist,
 }: {
-  setSelectedOffice: (s: OfficeData) => void;
+  setSelectedSpecialist: (s: SpecialistData) => void;
 }) => (
   <MaterialTable
     columns={[
       { field: "id", hidden: true },
       { title: "Name", field: "name" },
-      { title: "Address", field: "address" },
-      { title: "Tax Id", field: "taxId" },
-      { title: "Contact", field: "contact" },
+      { title: "Email", field: "email" },
     ]}
-    data={() => api.get("offices").then((res) => res.data)}
-    title="Office Management"
+    data={() => api.get("specialists").then((res) => res.data)}
+    title="Specialist Management"
     style={{
       width: "100%",
     }}
@@ -327,7 +326,7 @@ const OfficesTable = ({
       (r) => ({
         icon: () => <VisibilityIcon />,
         tooltip: "View Details",
-        onClick: () => setSelectedOffice(r),
+        onClick: () => setSelectedSpecialist(r),
       }),
     ]}
     localization={{
@@ -335,33 +334,28 @@ const OfficesTable = ({
         actions: "",
       },
     }}
-    editable={{
-      isEditable: () => true,
-      isDeletable: () => true,
-      onRowAdd: (r) => api.post("office", r),
-      onRowUpdate: (r) => api.put(`office/${r.id}`, r),
-      onRowDelete: (r) => api.delete(`office/${r.id}`),
-    }}
   />
 );
 
-const OfficesContent = () => {
-  const [selectedOffice, setSelectedOffice] = useState<OfficeData>();
-  return selectedOffice ? (
+const SpecialistsContent = () => {
+  const [selectedSpecialist, setSelectedSpecialist] = useState<
+    SpecialistData
+  >();
+  return selectedSpecialist ? (
     <Grid container>
       <Grid item xs={12}>
         <ChairRatesTable
-          selectedOffice={selectedOffice}
-          setSelectedOffice={setSelectedOffice}
+          selectedSpecialist={selectedSpecialist}
+          setSelectedSpecialist={setSelectedSpecialist}
         />
       </Grid>
       <Grid item xs={12}>
-        <IntegrationsTable selectedOffice={selectedOffice} />
+        <IntegrationsTable selectedOffice={selectedSpecialist} />
       </Grid>
     </Grid>
   ) : (
-    <OfficesTable setSelectedOffice={setSelectedOffice} />
+    <SpecialistsTable setSelectedSpecialist={setSelectedSpecialist} />
   );
 };
 
-export default OfficesContent;
+export default SpecialistsContent;
