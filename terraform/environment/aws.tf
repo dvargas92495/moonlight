@@ -7,10 +7,7 @@ locals {
   camelcase_env = replace(title(replace(local.env_name, "-"," ")), " ", "")
   s3_origin_id  = "S3-${local.env_name}"
   is_prod       = local.env_name == "emdeo"
-  is_dev        = replace(local.env_name, "-dev-emdeo", "") != local.env_name
-  dev_ip        = "72.226.107.58/32"
-  ips           = toset(local.is_dev ? [local.dev_ip] : [
-    local.dev_ip,
+  ips           = toset([
     "72.66.88.213/32", // Ryan's IP
     "10.0.1.58/32",    // Raj's IP
     "34.204.94.154/32" // Github Action's IP
@@ -37,52 +34,6 @@ provider "aws" {
 
 data "aws_iam_user" "admin" {
   user_name = "emdeo-admin"
-}
-
-resource "aws_waf_ipset" "ipset" {
-  name        = "ip${local.camelcase_env}"
-
-  dynamic "ip_set_descriptors" {
-    for_each = local.ips
-    content {
-      type  = "IPV4"
-      value = ip_set_descriptors.value
-    }
-  }
-}
-
-resource "aws_waf_rule" "waf_rule" {
-  name        = "rule${local.camelcase_env}"
-  metric_name = "rule${local.camelcase_env}"
-
-  predicates {
-    data_id = aws_waf_ipset.ipset.id
-    negated = false
-    type    = "IPMatch"
-  }
-}
-
-resource "aws_waf_web_acl" "waf_acl" {
-  name        = "acl${local.camelcase_env}"
-  metric_name = "acl${local.camelcase_env}"
-
-  default_action {
-    type = "BLOCK"
-  }
-
-  rules {
-    action {
-      type = "ALLOW"
-    }
-
-    priority = 1
-    rule_id  = aws_waf_rule.waf_rule.id
-    type     = "REGULAR"
-  }
-
-  tags = {
-    Application = "Emdeo"
-  }
 }
 
 resource "aws_s3_bucket" "client" {
@@ -191,18 +142,18 @@ data "aws_route53_zone" "primary" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  name    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.cert.domain_validation_options.0.resource_record_type
+  name    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name
+  type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
   zone_id = data.aws_route53_zone.primary.id
-  records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
+  records = ["${tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_value}"]
   ttl     = 60
 }
 
 resource "aws_route53_record" "www_cert_validation" {
-  name    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_name
-  type    = aws_acm_certificate.cert.domain_validation_options.1.resource_record_type
+  name    = tolist(aws_acm_certificate.cert.domain_validation_options)[1].resource_record_name
+  type    = tolist(aws_acm_certificate.cert.domain_validation_options)[1].resource_record_type
   zone_id = data.aws_route53_zone.primary.id
-  records = [aws_acm_certificate.cert.domain_validation_options.1.resource_record_value]
+  records = [tolist(aws_acm_certificate.cert.domain_validation_options)[1].resource_record_value]
   ttl     = 60
 }
 
@@ -277,7 +228,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = local.is_prod ? null : aws_waf_web_acl.waf_acl.id
 }
 
 resource "aws_route53_record" "A" {
@@ -376,7 +326,6 @@ resource "aws_cloudfront_distribution" "s3_www_distribution" {
     response_page_path = "/index.html"
   }
 
-  web_acl_id = local.is_prod ? null : aws_waf_web_acl.waf_acl.id
 }
 
 resource "aws_route53_record" "www-A" {
