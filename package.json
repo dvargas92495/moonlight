@@ -20,7 +20,7 @@
   "homepage": "https://emdeo.com/",
   "dependencies": {
     "aws-sdk": "2.708.0",
-    "axios": "0.19.2",
+    "axios": "0.21.1",
     "pg": "8.2.1"
   },
   "devDependencies": {
