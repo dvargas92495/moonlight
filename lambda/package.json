@@ -48,7 +48,7 @@
     "express-fileupload": "1.1.7-alpha.3",
     "jsonwebtoken": "8.5.1",
     "jwk-to-pem": "2.0.3",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "minimist": "1.2.5",
     "pg": "8.1.0"
   }
